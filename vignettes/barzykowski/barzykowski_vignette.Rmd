@@ -1,0 +1,198 @@
+---
+title: "Cue Word Valence Data Example"
+author: "Erin M. Buchanan"
+date: "`r Sys.Date()`"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+# Libraries necessary for this vignette
+library(rio)
+library(flextable)
+library(dplyr)
+library(tidyr)
+```
+
+### Project/Data Title: 
+
+Cue Word Valence
+
+Data provided by: Krystian Barzykowski
+
+### Project/Data Description: 
+
+Participants participated in a voluntary memory task, where they were provided with word-cue in response to which they were about to recall an autobiographical memory. The item set consists of 30 word-cues that were rated/classified by 142 separate participants.
+
+### Methods Description: 
+
+They briefly described the content of their thoughts and rated it on a 7-point scale: (a) to what extent the content was accompanied by unexpected physiological sensations (henceforth, called physiological sensation), (b) to what extent they had deliberately tried to bring the thought to mind (henceforth, called effort), (c) clarity (i.e. how clearly and well an individual remembered a given memory/mental content), (d) how detailed the content was,
+(e) how specific and concrete the content was, (f) intensity of emotions experienced in response to the content, (g) how surprising the
+content was, (h) how personal it was, and (i) the relevance to current life situation (not included). 
+
+### Data Location: 
+
+Data included within this vignette. 
+
+```{r}
+DF <- import("barzykowski_data.xlsx") %>% 
+  bind_rows(import("barzykowski_data.xlsx", sheet = 2)) %>% 
+  bind_rows(import("barzykowski_data.xlsx", sheet = 3)) %>% 
+  bind_rows(import("barzykowski_data.xlsx", sheet = 4)) %>% 
+  bind_rows(import("barzykowski_data.xlsx", sheet = 5)) %>% 
+  bind_rows(import("barzykowski_data.xlsx", sheet = 6)) %>% 
+  bind_rows(import("barzykowski_data.xlsx", sheet = 7)) %>% 
+  bind_rows(import("barzykowski_data.xlsx", sheet = 8)) %>% 
+  bind_rows(import("barzykowski_data.xlsx", sheet = 9)) %>% 
+  bind_rows(import("barzykowski_data.xlsx", sheet = 10)) %>% 
+  bind_rows(import("barzykowski_data.xlsx", sheet = 11)) %>% 
+  bind_rows(import("barzykowski_data.xlsx", sheet = 12)) %>% 
+  bind_rows(import("barzykowski_data.xlsx", sheet = 13)) %>% 
+  bind_rows(import("barzykowski_data.xlsx", sheet = 14)) %>% 
+  bind_rows(import("barzykowski_data.xlsx", sheet = 15)) %>% 
+  bind_rows(import("barzykowski_data.xlsx", sheet = 16)) %>% 
+  bind_rows(import("barzykowski_data.xlsx", sheet = 17)) %>% 
+  bind_rows(import("barzykowski_data.xlsx", sheet = 18)) %>% 
+  bind_rows(import("barzykowski_data.xlsx", sheet = 19)) %>% 
+  bind_rows(import("barzykowski_data.xlsx", sheet = 20)) %>% 
+  bind_rows(import("barzykowski_data.xlsx", sheet = 21)) %>% 
+  bind_rows(import("barzykowski_data.xlsx", sheet = 22)) %>% 
+  bind_rows(import("barzykowski_data.xlsx", sheet = 23)) %>% 
+  bind_rows(import("barzykowski_data.xlsx", sheet = 24)) %>% 
+  bind_rows(import("barzykowski_data.xlsx", sheet = 25)) %>% 
+  bind_rows(import("barzykowski_data.xlsx", sheet = 26)) %>% 
+  bind_rows(import("barzykowski_data.xlsx", sheet = 27)) %>% 
+  bind_rows(import("barzykowski_data.xlsx", sheet = 28)) %>% 
+  bind_rows(import("barzykowski_data.xlsx", sheet = 29)) %>% 
+  bind_rows(import("barzykowski_data.xlsx", sheet = 30)) 
+
+str(DF)
+```
+
+### Date Published: 
+
+No official publication, see citation below.  
+
+### Dataset Citation: 
+
+The cues were used in study published here: Barzykowski, K., Niedźwieńska, A., & Mazzoni, G. (2019). How intention to retrieve a memory and expectation that it will happen influence retrieval of autobiographical memories. Consciousness and Cognition, 72, 31-48. DOI: https://doi.org/10.1016/j.concog.2019.03.011 
+
+### Keywords: 
+
+cue-word, valence, memory retrieval
+
+### Use License: 
+
+Open access with reference to original paper (Attribution-NonCommercial-ShareAlike CC BY-NC-SA)
+
+### Geographic Description - City/State/Country of Participants:
+
+Poland, Kraków
+
+### Column Metadata:
+
+```{r}
+metadata <- import("barzykowski_metadata.xlsx")
+
+flextable(metadata) %>% autofit()
+```
+
+### AIPE Analysis 
+
+Note that the data is already in long format (each item has one row), and therefore, we do not need to restructure the data. 
+
+#### Stopping Rule
+
+In this example, we have multiple variables to choose from for our analysis. We could include several to find the sample size rules for further study. In this example, I'll use the variables with the least and most variability and take the average. This choice is somewhat arbitrary - in a real study, you could chose to use only the variables you were interested in and pick the most conservative values or simply average together estimates from all variables. 
+
+```{r}
+apply(DF[ , -c(1,2)], 2, sd)
+```
+
+These are Likert type items. The variance within them appears roughly equal. The lowest variance appears to be `r names(which.min(apply(DF[ , -c(1,2)], 2, sd)))`, and the max appears to be `r names(which.max(apply(DF[ , -c(1,2)], 2, sd)))`.
+
+What the usual standard error for the data that could be considered for our stopping rule?
+
+```{r}
+# individual SEs for how surprising 
+SE1 <- tapply(DF$`How surprising`, DF$`Cue no`, function (x) { sd(x)/sqrt(length(x)) })
+
+SE1
+mean(SE1)
+
+# individual SEs for personal nature
+SE2 <- tapply(DF$`Personal nature`, DF$`Cue no`, function (x) { sd(x)/sqrt(length(x)) })
+
+SE2
+mean(SE2)
+```
+
+The average SE across both variables is `r mean(c(SE1, SE2))`. 
+
+#### Minimum Sample Size
+
+How large does the sample have to be for 80% of the items to be below our stopping SE rule? 
+
+```{r}
+# sequence of sample sizes to try
+samplesize_values <- seq(25, 60, 5)
+
+# create a blank table for us to save the values in 
+sim_table <- matrix(NA, 
+                    nrow = length(samplesize_values), 
+                    ncol = length(unique(DF$`Cue no`)))
+
+# make it a data frame
+sim_table <- as.data.frame(sim_table)
+
+# add a place for sample size values 
+sim_table$sample_size <- NA
+sim_table$var <- "surprising"
+
+# make a second table for the second variable
+sim_table2 <- sim_table
+sim_table2$var <- "personal"
+
+# loop over sample sizes
+for (i in 1:length(samplesize_values)){
+    
+  # temp dataframe that samples and summarizes
+  temp <- DF %>% 
+    group_by(`Cue no`) %>% 
+    sample_n(samplesize_values[i], replace = T) %>% 
+    summarize(se1 = sd(`How surprising`)/sqrt(length(`How surprising`)), 
+              se2 = sd(`Personal nature`)/sqrt(length(`Personal nature`))) 
+  
+  # variable 1
+  colnames(sim_table)[1:length(unique(DF$`Cue no`))] <- temp$`Cue no`
+  sim_table[i, 1:length(unique(DF$`Cue no`))] <- temp$se1
+  sim_table[i, "sample_size"] <- samplesize_values[i]
+  
+  # variable 2
+  colnames(sim_table2)[1:length(unique(DF$`Cue no`))] <- temp$`Cue no`
+  sim_table2[i, 1:length(unique(DF$`Cue no`))] <- temp$se2
+  sim_table2[i, "sample_size"] <- samplesize_values[i]
+  
+}
+
+# figure out cut off
+final_sample <- 
+  bind_rows(sim_table, sim_table2) %>%
+  pivot_longer(cols = -c(sample_size, var)) %>% 
+  rename(item = name, se = value) %>% 
+  group_by(sample_size, var) %>% 
+  summarize(Percent_Below = sum(se <= mean(c(SE1, SE2)))/length(unique(DF$`Cue no`))) %>% 
+  filter(Percent_Below >= .80) %>% 
+  arrange(Percent_Below)
+
+flextable(final_sample) %>% autofit()
+```
+
+In this scenario, we could go with the point in which they both meet the 80% criterion, which is `r (final_sample %>% filter(var == "personal") %>% pull(sample_size))[1]` for the personal variable and `r (final_sample %>% filter(var == "surprising") %>% pull(sample_size))[1]` for the surprising variable. Because these are close, we could use the minimum, be more conservative and use the the mean, or be most conservative and use the maximum. 
+
+#### Maximum Sample Size
+
+The maximum sample size can be found using any higher number of item cut off (i.e., 90%, 100%). In this case, we could use `r (final_sample %>% filter(var == "personal") %>% filter(Percent_Below >= .9) %>% pull(sample_size))[1]` for personal or `r (final_sample %>% filter(var == "surprising") %>% filter(Percent_Below >= .9) %>% pull(sample_size))[1]` for surprising. Given that we are estimating a maximum sample size, we could suggest the maximum value here for personal. 
+
+

@@ -1,0 +1,157 @@
+---
+title: "Attractiveness Ratings Example"
+author: "Erin M. Buchanan"
+date: "`r Sys.Date()`"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+# Set a random see
+set.seed(5989320)
+
+# Libraries necessary for this vignette
+library(rio)
+library(flextable)
+library(dplyr)
+library(tidyr)
+library(psych)
+```
+
+### Project/Data Title: 
+
+Attractiveness Ratings 
+
+Data provided by: Carlota Batres 
+
+### Project/Data Description: 
+
+This dataset contains 200 participants rating 20 faces on attractiveness. Ethical approval was received from the Franklin and Marshall Institutional Review Board and each participant provided informed consent. All participants were located in the United States. Participants were instructed that they would be viewing several faces which were photographed facing forward, under constant camera and lighting conditions, with neutral expressions, and closed mouths. Each participant would have to rate the attractiveness of the presented faces. More specifically, participants were asked "How attractive is this face?", where 1 = "Not at all attractive" and 7 = "Very attractive". Participants rated each face individually, in random order, and with no time limit. Upon completion, participants were paid for participation in the study.
+
+### Methods Description: 
+
+The data was collected online using Amazon’s Mechanical Turk platform.  
+
+### Data Location: 
+
+Included with the vignette. 
+
+```{r}
+DF <- import("batres_data.sav")
+
+str(DF)
+```
+
+### Date Published: 
+
+No official publication date.
+
+### Dataset Citation: 
+
+Batres, C. (2022). Attractiveness Ratings. [Data set]. 
+
+### Keywords: 
+
+faces, ratings
+
+### Use License: 
+
+Attribution-NonCommercial-ShareAlike CC BY-NC-SA
+
+### Geographic Description - City/State/Country of Participants:
+
+United States
+
+### Column Metadata: 
+
+```{r}
+metadata <- import("batres_metadata.xlsx")
+
+flextable(metadata) %>% autofit()
+```
+
+### AIPE Analysis 
+
+```{r}
+# Reformat the data
+DF_long <- pivot_longer(DF, cols = -c(Participant_Number)) %>% 
+  rename(item = name, score = value)
+
+flextable(head(DF_long)) %>% autofit()
+```
+
+#### Stopping Rule
+
+What the usual standard error for the data that could be considered for our stopping rule?
+
+```{r}
+# individual SEs
+SE <- tapply(DF_long$score, DF_long$item, function (x) { sd(x)/sqrt(length(x)) })
+
+SE
+
+min(SE)
+mean(SE)
+max(SE)
+```
+
+We see that the items have a range of `r min(SE)` to `r max(SE)`. Given we have `r nrow(DF)` participants in this study, we could use the mean SE = `r mean(SE)` as our critical value for our stopping rule. We could decide to be more conservative if the pilot data was smaller by using the third quartile or the 90th percentile SE. (Note: you could use smaller values of SE as well, but in general, it may pay off to be more conservative on the sample size estimates). We could also have a set SE to a specific target if we do not believe we have representative pilot data in this example. You should also consider the scale when estimating these values (i.e., 1-7 scales will have smaller estimates than 1-100 scales). 
+
+#### Minimum Sample Size
+
+To estimate minimum sample size, we should figure out what number of participants it would take to achieve 80% of the SEs for items below our critical score of `r mean(SE)`?
+
+```{r}
+# sequence of sample sizes to try
+samplesize_values <- seq(100, 300, 5)
+
+# create a blank table for us to save the values in 
+sim_table <- matrix(NA, 
+                    nrow = length(samplesize_values), 
+                    ncol = length(unique(DF_long$item)))
+
+# make it a data frame
+sim_table <- as.data.frame(sim_table)
+
+# add a place for sample size values 
+sim_table$sample_size <- NA
+
+# loop over sample sizes
+for (i in 1:length(samplesize_values)){
+    
+  # temp dataframe that samples and summarizes
+  temp <- DF_long %>% 
+    group_by(item) %>% 
+    sample_n(samplesize_values[i], replace = T) %>% 
+    summarize(se = sd(score)/sqrt(length(score))) 
+  
+  colnames(sim_table)[1:length(unique(DF_long$item))] <- temp$item
+  sim_table[i, 1:length(unique(DF_long$item))] <- temp$se
+  sim_table[i, "sample_size"] <- samplesize_values[i]
+  }
+
+# figure out cut off
+final_sample <- 
+  sim_table %>% 
+  pivot_longer(cols = -c(sample_size)) %>% 
+  rename(item = name, se = value) %>% 
+  group_by(sample_size) %>% 
+  summarize(Percent_Below = sum(se <= mean(SE))/length(unique(DF_long$item))) %>% 
+  filter(Percent_Below >= .80)
+
+flextable(final_sample) %>% autofit()
+```
+
+Based on these simulations, we can decide our minimum sample size is likely close to `r min(final_sample$sample_size)`. 
+
+#### Maximum Sample Size
+
+In this example, we could set our maximum sample size for 90% power, which would equate to `r final_sample %>% filter(Percent_Below >= .90) %>% pull(sample_size) %>% min()` participants. 
+
+#### Final Sample Size
+
+In any estimate for sample size, you should also consider the potential for missing data and/or unusable data due to any other exclusion criteria in your study (i.e., attention checks, speeding, getting the answer right, etc.). In this study, we likely expect all participants to see all items and therefore, we could expect to use the minimum sample size as our final sample size, the point at which all items reach our SE criterion, or the maximum sample size. Note that maximum sample sizes can also be defined by time, money, or other means. 
+
+
+

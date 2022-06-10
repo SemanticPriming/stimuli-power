@@ -1,0 +1,62 @@
+---
+title: "TITLE OF DATA/EXAMPLE"
+author: "YOUR AUTHOR NAME"
+date: "`r Sys.Date()`"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+### Project/Data Title: 
+
+Copy and paste the data title here. 
+
+### Project/Data Description: 
+
+Copy and paste their data description here. Feel free to fix typos and other issues. 
+
+### Methods Description: 
+
+Copy and paste their method description here. Feel free to fix typos and other issues. 
+
+### Data Location: 
+
+Here you should say included or give the link to the data. 
+
+### Date Published: 
+
+(YYYY-MM-DD) 
+
+### Dataset Citation: 
+
+(please include author information) 
+
+### Keywords: 
+
+### Use License: 
+
+### Geographic Description - City/State/Country of Participants:
+
+### Column Metadata: 
+
+We should import their column information and display it. Maybe a csv format and gets imported? It should include the following:
+
+- Variable Name
+- Variable Description
+- Type (numeric, character, logical, etc.)
+
+### AIPE Analysis 
+
+You should use their column information to simulate/figure out:
+- minimum sample size
+- a stopping rule
+- maximum sample size 
+
+What columns should we use to simulate the data? 
+Item labels are found: 
+Variable(s) of interest are found: 
+
+
+
