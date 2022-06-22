@@ -1,54 +1,44 @@
 ---
-title             : "The title"
+title             : "Power to the Stimuli: Not the Effect"
 shorttitle        : "Title"
 
 author: 
-  - name          : "First Author"
+  - name          : "Erin M. Buchanan"
     affiliation   : "1"
     corresponding : yes    # Define only one corresponding author
-    address       : "Postal address"
-    email         : "my@email.com"
+    address       : "326 Market St., Harrisburg, PA, 17101"
+    email         : "ebuchanan@harrisburgu.edu"
     role:         # Contributorship roles (e.g., CRediT, https://casrai.org/credit/)
       - Conceptualization
       - Writing - Original Draft Preparation
       - Writing - Review & Editing
-  - name          : "Ernst-August Doelle"
-    affiliation   : "1,2"
+      - Resources
+      - Validation 
+      - Visualization 
+      - Project Administration 
+      - Formal Analysis
+  - name          : "Other Folks as Per Order on Doc"
+    affiliation   : "2"
     role:
       - Writing - Review & Editing
+      - Data Curation
+      - Resources
 
 affiliation:
   - id            : "1"
-    institution   : "Wilhelm-Wundt-University"
+    institution   : "Harrisburg University of Science and Technology"
   - id            : "2"
-    institution   : "Konstanz Business School"
+    institution   : "Other Instituions"
 
 authornote: |
-  Add complete departmental affiliations for each author here. Each new line herein must be indented, like this line.
-
-  Enter author note here.
+  The authors would like to thank K.D. Valentine for her assistance in formulation of correction scores. 
 
 abstract: |
-  One or two sentences providing a **basic introduction** to the field,  comprehensible to a scientist in any discipline.
+  We will add an abstract that explains that we are going to 1) talk about this cool procedure, 2) show some simulations that the procedure works, and 3) give two examples of the procedure in action. You should try it out! 
   
-  Two to three sentences of **more detailed background**, comprehensible  to scientists in related disciplines.
-  
-  One sentence clearly stating the **general problem** being addressed by  this particular study.
-  
-  One sentence summarizing the main result (with the words "**here we show**" or their equivalent).
-  
-  Two or three sentences explaining what the **main result** reveals in direct comparison to what was thought to be the case previously, or how the  main result adds to previous knowledge.
-  
-  One or two sentences to put the results into a more **general context**.
-  
-  Two or three sentences to provide a **broader perspective**, readily comprehensible to a scientist in any discipline.
-  
-  <!-- https://tinyurl.com/ybremelq -->
-  
-keywords          : "keywords"
-wordcount         : "X"
+keywords          : "power, sampling, accuracy in parameter estimation"
 
-bibliography      : ["r-references.bib"]
+# bibliography      : ["r-references.bib"]
 
 floatsintext      : no
 figurelist        : no
@@ -60,39 +50,791 @@ draft             : no
 
 documentclass     : "apa6"
 classoption       : "man"
-output            : papaja::apa6_pdf
+output            : papaja::apa6_docx
 ---
 
 ```{r setup, include = FALSE}
-library("papaja")
-r_refs("r-references.bib")
-```
-
-```{r analysis-preferences}
-# Seed for random number generation
-set.seed(42)
+set.seed(895893)
 knitr::opts_chunk$set(cache.extra = knitr::rand_seed)
+library(dplyr)
+library(ggplot2)
+library(tidyr)
+library(broom)
+library(papaja)
+library(rio)
 ```
 
+This part we will put in a real introduction. Things we need to discuss:
 
+  - Repeated measures data with items
+  - Accuracy in Parameter Estimation 
+  - Adaptive sampling
+  - MLM designs account for item heterogeneity but a lot of people anova
 
-# Methods
-We report how we determined our sample size, all data exclusions (if any), all manipulations, and all measures in the study. <!-- 21-word solution (Simmons, Nelson & Simonsohn, 2012; retrieved from http://ssrn.com/abstract=2160588) -->
+## Simulating Sample Size 
 
-## Participants
+Using ideas from accuracy in parameter estimation, we suggest the following procedure to determine a sample size for each item:
 
-## Material
+1) Use pilot data that closely resembles your intended data collection, on the same or similar items that will be used in the study. In this procedure, we will assume that the pilot data is representative of a larger population of sampled items that you intend to assess. 
+2) Calculate the standard error of each item from the pilot data to create a cutoff score for when an item is "accurately measured". The simulations below will explore what criterion to use when determining the cutoff score from the pilot data. 
+3) Sample, with replacement, from your pilot data using sample sizes starting at 20 participants and increase in small units (e.g., 20, 25, 30) up to a value that you consider the maximum sample size. We will demonstrate example maximum sample sizes based on the data simulation below; however, a practical maximum sample size may be determined by time (e.g, one semester data collection) or researcher resources (e.g., 200 participants worth of funding). While 20 participants would likely represent an underpowered study, we simply suggest this starting minimum for simulation purposes. 
+4) For each simulated sample, calculate the standard error for each item, and use these values to ascertain the percentage of items that meet the cutoff score determined in step 2. 
+5) Find the minimum sample size that meets 80%, 85%, 90%, and 95% of the items. We recommend these scores to ensure that most items are accurately measured, in a similar vein to common power criteria suggestions. Each researcher can determine which of these is their minimum or maximum sample size (e.g., individual can choose to use 80% as a minimum and 90% as a maximum). 
+6) Report these values, and designate a minimum sample size, the cutoff criterion, and the maximum sample size. Each researcher should also report if they plan to use an adaptive design, which would stop data collection after meeting the cutoff criterion for each item. 
 
-## Procedure
+## Key Issues 
 
-## Data analysis
-We used `r cite_r("r-references.bib")` for all our analyses.
+Given the long history of research on power, there are a few key issues that this procedure should address: 
 
+1) We should see differences in projected sample sizes based on the variability in the variance for those items (i.e., heterogeneity should increase projected sample size).
+2) We should see projected sample sizes that "level off" when pilot data increases. As with regular power estimates, studies can be "overpowered" to detect an effect, and this same idea should be present. For example, if one has a 500 person pilot study, our simulations should suggest a point at which items are likely measured well, which may have happened well before 500. 
+
+# Method
+
+## Data Simulation 
+
+*Population*. The data was simulated using the `rnorm` function assuming a normal distribution for 30 scale type items. Each population was simulated with 1000 data points. No items were rounded for this simulation. 
+
+First, the scale of the data was manipulated by creating three sets of scales. The first scale was mimicked after small rating scales (i.e., 1-7 type style) using a $\mu$ = 4 with a $\sigma$ = .25 around the mean to create item mean variability. The second scale included a larger potential distribution of scores with a $\mu$ = 50 ($\sigma$ = 10) imitating a 0-100 scale. Last, the final scale included a $\mu$ = 1000 ($\sigma$ = 150) simulating a study that may include response latency data in the milliseconds. While there are many potential scales, these three represent a large number of potential variables in the social sciences. As we are suggesting item variances as a key factor for estimating sample sizes, the scale of the data is influential on the amount of *potential* variance. Smaller ranges of data (1-7) cannot necessarily have the same variance as larger ranges (0-100). 
+
+Next, item variance heterogeneity was included by manipulating the potential $\sigma$ for each individual item. For small scales, the $\sigma$ = 2 points with a variability of .2, .4, and .8 for low, medium, and high heterogeneity in the variances between items. For the medium scale of data, $\sigma$ = 25 with a variance of 4, 8, and 16. Last, for the large scale of data, $\sigma$ = 400 with a variance of 50, 100, and 200 for heterogeneity. 
+
+```{r sim_pop, include = F, echo = F}
+# small potential variability overall, sort of 1-7ish scale
+mu1 <- rnorm(30, 4, .25)
+sigma1.1 <- rnorm(30, 2, .2)
+sigma2.1 <- rnorm(30, 2, .4)
+sigma3.1 <- rnorm(30, 2, .8)
+
+# medium potential variability 0 to 100 scale
+mu2 <- rnorm(30, 50, 10)
+sigma1.2 <- rnorm(30, 25, 4)
+sigma2.2 <- rnorm(30, 25, 8)
+sigma3.2 <- rnorm(30, 25, 16)
+
+while(sum(sigma3.2 < 0) > 0){
+  sigma3.2 <- rnorm(30, 25, 16)
+}
+
+# large potential variability in the 1000s scale
+mu3 <- rnorm(30, 1000, 150)
+sigma1.3 <- rnorm(30, 400, 50)
+sigma2.3 <- rnorm(30, 400, 100)
+sigma3.3 <- rnorm(30, 400, 200)
+
+while(sum(sigma3.3 < 0) > 0){
+  sigma3.3 <- rnorm(30, 400, 200)
+}
+
+population1 <- data.frame(
+  item = rep(1:30, 1000*3),
+  scale = rep(1:3, each = 1000*30),
+  score = c(rnorm(1000*30, mean = mu1, sd = sigma1.1),
+            rnorm(1000*30, mean = mu2, sd = sigma1.2),
+            rnorm(1000*30, mean = mu3, sd = sigma1.3))
+  )
+
+population2 <- data.frame(
+  item = rep(1:30, 1000*3),
+  scale = rep(1:3, each = 1000*30),
+  score = c(rnorm(1000*30, mean = mu1, sd = sigma2.1),
+            rnorm(1000*30, mean = mu2, sd = sigma2.2),
+            rnorm(1000*30, mean = mu3, sd = sigma2.3))
+  )
+
+population3 <- data.frame(
+  item = rep(1:30, 1000*3),
+  scale = rep(1:3, each = 1000*30),
+  score = c(rnorm(1000*30, mean = mu1, sd = sigma3.1),
+            rnorm(1000*30, mean = mu2, sd = sigma3.2),
+            rnorm(1000*30, mean = mu3, sd = sigma3.3))
+  )
+```
+
+*Samples*. Each population was then sampled as if a researcher was conducting a pilot study. The sample sizes started at 20 participants per item increasing in units of 5 up to 100 participants. 
+
+```{r sim_sample, include = F, echo = F}
+# create pilot samples from 20 to 100
+samples1 <- samples2 <- samples3 <- list() 
+sizes <- c(20, 25, 30, 35, 40, 45, 50, 55, 60, 65, 70, 75, 80, 85, 90, 95, 100)
+for (i in 1:length(sizes)){
+  samples1[[i]] <- population1 %>% 
+    group_by(item, scale) %>% 
+    slice_sample(n = sizes[i])
+  
+  samples2[[i]] <- population2 %>% 
+    group_by(item, scale) %>% 
+    slice_sample(n = sizes[i])
+    
+  samples3[[i]] <- population3 %>% 
+    group_by(item, scale) %>% 
+    slice_sample(n = sizes[i])
+}
+```
+
+*Cutoff Score Criterions*. The standard errors of each item were calculated to mimic the AIPE procedure of finding an appropriately small confidence interval, as standard error functions as the main component in the formula for normal distribution confidence intervals. Standard errors were calculated at each decile of the items up to 90% (i.e., 0% smallest SE, 10% ..., 90% largest SE). The lower deciles would represent a strict criterion for accurate measurement, as many items would need smaller SEs to meet cutoff scores, while the higher deciles would represent less strict criterions for cutoff scores. 
+
+```{r calc_SE, include = F, echo = F}
+# calculate the SEs and the cutoff scores 
+SES1 <- SES2 <- SES3 <- list()
+cutoffs1 <- cutoffs2 <- cutoffs3 <- list()
+sd_items1 <- sd_items2 <- sd_items3 <- list()
+for (i in 1:length(samples1)){
+  sd_items1[[i]] <- samples1[[i]] %>% group_by(item, scale) %>% 
+    summarize(sd = sd(score), .groups = "keep") %>% 
+    ungroup() %>% group_by(scale) %>% summarize(sd_item = sd(sd))
+  sd_items2[[i]] <- samples2[[i]] %>% group_by(item, scale) %>% 
+    summarize(sd = sd(score), .groups = "keep") %>% 
+    ungroup() %>% group_by(scale) %>% summarize(sd_item = sd(sd))
+  sd_items3[[i]] <- samples3[[i]] %>% group_by(item, scale) %>% 
+    summarize(sd = sd(score), .groups = "keep") %>% 
+    ungroup() %>% group_by(scale) %>% summarize(sd_item = sd(sd))
+  
+  SES1[[i]] <- tapply(samples1[[i]]$score,
+                     list(samples1[[i]]$item,
+                          samples1[[i]]$scale),
+                     function (x){ sd(x)/sqrt(length(x))})
+  SES2[[i]] <- tapply(samples2[[i]]$score,
+                   list(samples2[[i]]$item,
+                        samples2[[i]]$scale),
+                   function (x){ sd(x)/sqrt(length(x))})
+  SES3[[i]] <- tapply(samples3[[i]]$score,
+                 list(samples2[[i]]$item,
+                      samples2[[i]]$scale),
+                 function (x){ sd(x)/sqrt(length(x))})
+
+  cutoffs1[[i]] <- apply(as.data.frame(SES1[[i]]), 2, 
+                         quantile, 
+                         probs = seq(0, .9, by = .1))
+  cutoffs2[[i]] <- apply(as.data.frame(SES2[[i]]), 2, 
+                         quantile, 
+                         probs = seq(0, .9, by = .1))
+  cutoffs3[[i]] <- apply(as.data.frame(SES3[[i]]), 2, 
+                         quantile, 
+                         probs = seq(0, .9, by = .1))
+}
+```
+
+## Researcher Sample Simulation 
+
+In this section, we simulate what a researcher might do if they follow our suggested application of AIPE to sample size planning based on well measured items. Assuming each pilot sample represents a dataset a researcher has collected, we will simulate samples of 20 to 500 to determine what the new sample size suggestion would be. We assume that samples over 500 may be considered too large for many researchers who do not work in teams or have participant funds. The standard error of each item was calculated for each suggested sample size by pilot sample size by population type.
+
+```{r sim_sim, include = F, echo = F}
+# sequence of sample sizes to try
+samplesize_values <- seq(20, 500, 5)
+
+# place to store everything
+sampled_values1 <- sampled_values2 <- sampled_values3 <- list()
+
+# loop over the samples
+for (i in 1:length(samples1)){
+  
+  # create a blank table for us to save the values in 
+  sim_table1 <- matrix(NA, 
+                      nrow = length(samplesize_values), 
+                      ncol = 30*3)
+  
+  # make it a data frame
+  sim_table1 <- sim_table2 <- sim_table3 <- as.data.frame(sim_table1)
+  
+  # add a place for sample size values 
+  sim_table1$sample_size <- sim_table2$sample_size <- sim_table3$sample_size <- NA
+  
+  # loop over pilot sample sizes
+  for (q in 1:length(samplesize_values)){
+      
+    # temp dataframe that samples and summarizes
+    temp <- samples1[[i]] %>% 
+      group_by(item, scale) %>% 
+      slice_sample(n = samplesize_values[q], replace = T) %>% 
+      summarize(se = sd(score)/sqrt(length(score)),
+                .groups = "keep")
+    
+    sim_table1[q, 1:90] <- temp$se
+    sim_table1[q, 91] <- samplesize_values[q]
+    
+    temp <- samples2[[i]] %>% 
+      group_by(item, scale) %>% 
+      slice_sample(n = samplesize_values[q], replace = T) %>% 
+      summarize(se = sd(score)/sqrt(length(score)),
+                .groups = "keep")
+    
+    sim_table2[q, 1:90] <- temp$se
+    sim_table2[q, 91] <- samplesize_values[q]
+    
+    temp <- samples3[[i]] %>% 
+      group_by(item, scale) %>% 
+      slice_sample(n = samplesize_values[q], replace = T) %>% 
+      summarize(se = sd(score)/sqrt(length(score)),
+                .groups = "keep")
+    
+    sim_table3[q, 1:90] <- temp$se
+    sim_table3[q, 91] <- samplesize_values[q]
+    
+    } # end pilot sample loop 
+  
+  sampled_values1[[i]] <- sim_table1
+  sampled_values2[[i]] <- sim_table2
+  sampled_values3[[i]] <- sim_table3
+
+} # end all sample loop 
+```
+
+Next, the percent of items that fall below the cutoff scores, and thus, would be considered "well-measured" were calculated for each decile by sample. From this data, we pinpoint the smallest suggested sample size at which 80%, 85%, 90%, and 95% of the items fall below the cutoff criterion. These values were chosen as popular measures of "power" in which one could determine the minimum suggested sample size (potentially 80% of items) and the maximum suggested sample size (potentially 90%). 
+
+```{r calc_percent, include = F, echo = F}
+summary_list1 <- summary_list2 <- summary_list3 <- list()
+for (i in 1:length(sampled_values1)){
+  
+  # summary list 1 ----
+  summary_list1[[i]] <- sampled_values1[[i]] %>% 
+    pivot_longer(cols = -c(sample_size)) %>% 
+    rename(item = name, se = value) %>% 
+    mutate(scale = rep(1:3, 30*length(samplesize_values))) %>% 
+    mutate(item = rep(rep(1:30, each = 3), length(samplesize_values))) 
+    
+  # cut offs for 1
+  temp1.1 <- summary_list1[[i]] %>% 
+    filter(scale == "1") %>% 
+    group_by(sample_size, scale) %>% 
+    summarize(Percent_Below0 = sum(se <= cutoffs1[[i]][1, 1])/30,
+           Percent_Below10 = sum(se <= cutoffs1[[i]][2, 1])/30,
+           Percent_Below20 = sum(se <= cutoffs1[[i]][3, 1])/30,
+           Percent_Below30 = sum(se <= cutoffs1[[i]][4, 1])/30,
+           Percent_Below40 = sum(se <= cutoffs1[[i]][5, 1])/30,
+           Percent_Below50 = sum(se <= cutoffs1[[i]][6, 1])/30, 
+           Percent_Below60 = sum(se <= cutoffs1[[i]][7, 1])/30, 
+           Percent_Below70 = sum(se <= cutoffs1[[i]][8, 1])/30, 
+           Percent_Below80 = sum(se <= cutoffs1[[i]][9, 1])/30, 
+           Percent_Below90 = sum(se <= cutoffs1[[i]][10, 1])/30, 
+           .groups = "keep") %>% 
+    mutate(original_n = sizes[i], 
+           source = "low")
+    
+  temp1.2 <- summary_list1[[i]] %>% 
+    filter(scale == "2") %>% 
+    group_by(sample_size, scale) %>% 
+    summarize(Percent_Below0 = sum(se <= cutoffs1[[i]][1, 2])/30,
+           Percent_Below10 = sum(se <= cutoffs1[[i]][2, 2])/30,
+           Percent_Below20 = sum(se <= cutoffs1[[i]][3, 2])/30,
+           Percent_Below30 = sum(se <= cutoffs1[[i]][4, 2])/30,
+           Percent_Below40 = sum(se <= cutoffs1[[i]][5, 2])/30,
+           Percent_Below50 = sum(se <= cutoffs1[[i]][6, 2])/30, 
+           Percent_Below60 = sum(se <= cutoffs1[[i]][7, 2])/30, 
+           Percent_Below70 = sum(se <= cutoffs1[[i]][8, 2])/30, 
+           Percent_Below80 = sum(se <= cutoffs1[[i]][9, 2])/30, 
+           Percent_Below90 = sum(se <= cutoffs1[[i]][10, 2])/30, 
+           .groups = "keep") %>% 
+    mutate(original_n = sizes[i],
+           source = "low")
+  
+  temp1.3 <- summary_list1[[i]] %>% 
+    filter(scale == "3") %>% 
+    group_by(sample_size, scale) %>% 
+    summarize(Percent_Below0 = sum(se <= cutoffs1[[i]][1, 3])/30,
+           Percent_Below10 = sum(se <= cutoffs1[[i]][2, 3])/30,
+           Percent_Below20 = sum(se <= cutoffs1[[i]][3, 3])/30,
+           Percent_Below30 = sum(se <= cutoffs1[[i]][4, 3])/30,
+           Percent_Below40 = sum(se <= cutoffs1[[i]][5, 3])/30,
+           Percent_Below50 = sum(se <= cutoffs1[[i]][6, 3])/30, 
+           Percent_Below60 = sum(se <= cutoffs1[[i]][7, 3])/30, 
+           Percent_Below70 = sum(se <= cutoffs1[[i]][8, 3])/30, 
+           Percent_Below80 = sum(se <= cutoffs1[[i]][9, 3])/30, 
+           Percent_Below90 = sum(se <= cutoffs1[[i]][10, 3])/30, 
+           .groups = "keep") %>% 
+    mutate(original_n = sizes[i], 
+           source = "low")
+  
+  #rejoin 
+  summary_list1[[i]] <- bind_rows(temp1.1, temp1.2, temp1.3)
+  
+  # summary list 2 ----
+  summary_list2[[i]] <- sampled_values2[[i]] %>% 
+    pivot_longer(cols = -c(sample_size)) %>% 
+    rename(item = name, se = value) %>% 
+    mutate(scale = rep(1:3, 30*length(samplesize_values))) %>% 
+    mutate(item = rep(rep(1:30, each = 3), length(samplesize_values)))
+  
+  # cut offs for 2
+  temp2.1 <- summary_list2[[i]] %>% 
+    filter(scale == "1") %>% 
+    group_by(sample_size, scale) %>% 
+    summarize(Percent_Below0 = sum(se <= cutoffs2[[i]][1, 1])/30,
+           Percent_Below10 = sum(se <= cutoffs2[[i]][2, 1])/30,
+           Percent_Below20 = sum(se <= cutoffs2[[i]][3, 1])/30,
+           Percent_Below30 = sum(se <= cutoffs2[[i]][4, 1])/30,
+           Percent_Below40 = sum(se <= cutoffs2[[i]][5, 1])/30,
+           Percent_Below50 = sum(se <= cutoffs2[[i]][6, 1])/30, 
+           Percent_Below60 = sum(se <= cutoffs2[[i]][7, 1])/30, 
+           Percent_Below70 = sum(se <= cutoffs2[[i]][8, 1])/30, 
+           Percent_Below80 = sum(se <= cutoffs2[[i]][9, 1])/30, 
+           Percent_Below90 = sum(se <= cutoffs2[[i]][10, 1])/30, 
+           .groups = "keep") %>% 
+    mutate(original_n = sizes[i],
+           source = "med")
+    
+  temp2.2 <- summary_list2[[i]] %>% 
+    filter(scale == "2") %>% 
+    group_by(sample_size, scale) %>% 
+    summarize(Percent_Below0 = sum(se <= cutoffs2[[i]][1, 2])/30,
+           Percent_Below10 = sum(se <= cutoffs2[[i]][2, 2])/30,
+           Percent_Below20 = sum(se <= cutoffs2[[i]][3, 2])/30,
+           Percent_Below30 = sum(se <= cutoffs2[[i]][4, 2])/30,
+           Percent_Below40 = sum(se <= cutoffs2[[i]][5, 2])/30,
+           Percent_Below50 = sum(se <= cutoffs2[[i]][6, 2])/30, 
+           Percent_Below60 = sum(se <= cutoffs2[[i]][7, 2])/30, 
+           Percent_Below70 = sum(se <= cutoffs2[[i]][8, 2])/30, 
+           Percent_Below80 = sum(se <= cutoffs2[[i]][9, 2])/30, 
+           Percent_Below90 = sum(se <= cutoffs2[[i]][10, 2])/30, 
+           .groups = "keep") %>% 
+    mutate(original_n = sizes[i], 
+           source = "med")
+  
+  temp2.3 <- summary_list2[[i]] %>% 
+    filter(scale == "3") %>% 
+    group_by(sample_size, scale) %>% 
+    summarize(Percent_Below0 = sum(se <= cutoffs2[[i]][1, 3])/30,
+           Percent_Below10 = sum(se <= cutoffs2[[i]][2, 3])/30,
+           Percent_Below20 = sum(se <= cutoffs2[[i]][3, 3])/30,
+           Percent_Below30 = sum(se <= cutoffs2[[i]][4, 3])/30,
+           Percent_Below40 = sum(se <= cutoffs2[[i]][5, 3])/30,
+           Percent_Below50 = sum(se <= cutoffs2[[i]][6, 3])/30, 
+           Percent_Below60 = sum(se <= cutoffs2[[i]][7, 3])/30, 
+           Percent_Below70 = sum(se <= cutoffs2[[i]][8, 3])/30, 
+           Percent_Below80 = sum(se <= cutoffs2[[i]][9, 3])/30, 
+           Percent_Below90 = sum(se <= cutoffs2[[i]][10, 3])/30, 
+           .groups = "keep") %>% 
+    mutate(original_n = sizes[i],
+           source = "med")
+  
+  #rejoin 
+  summary_list2[[i]] <- bind_rows(temp2.1, temp2.2, temp2.3)
+  
+  # summary list 3 ----
+  summary_list3[[i]] <- sampled_values3[[i]] %>% 
+    pivot_longer(cols = -c(sample_size)) %>% 
+    rename(item = name, se = value) %>% 
+    mutate(scale = rep(1:3, 30*length(samplesize_values))) %>% 
+    mutate(item = rep(rep(1:30, each = 3), length(samplesize_values)))
+  
+  # cut offs for 3 
+  temp3.1 <- summary_list3[[i]] %>% 
+    filter(scale == "1") %>% 
+    group_by(sample_size, scale) %>% 
+    summarize(Percent_Below0 = sum(se <= cutoffs3[[i]][1, 1])/30,
+           Percent_Below10 = sum(se <= cutoffs3[[i]][2, 1])/30,
+           Percent_Below20 = sum(se <= cutoffs3[[i]][3, 1])/30,
+           Percent_Below30 = sum(se <= cutoffs3[[i]][4, 1])/30,
+           Percent_Below40 = sum(se <= cutoffs3[[i]][5, 1])/30,
+           Percent_Below50 = sum(se <= cutoffs3[[i]][6, 1])/30, 
+           Percent_Below60 = sum(se <= cutoffs3[[i]][7, 1])/30, 
+           Percent_Below70 = sum(se <= cutoffs3[[i]][8, 1])/30, 
+           Percent_Below80 = sum(se <= cutoffs3[[i]][9, 1])/30, 
+           Percent_Below90 = sum(se <= cutoffs3[[i]][10, 1])/30, 
+           .groups = "keep") %>% 
+    mutate(original_n = sizes[i],
+           source = "high")
+     
+  temp3.2 <- summary_list3[[i]] %>% 
+    filter(scale == "2") %>% 
+    group_by(sample_size, scale) %>% 
+    summarize(Percent_Below0 = sum(se <= cutoffs3[[i]][1, 2])/30,
+           Percent_Below10 = sum(se <= cutoffs3[[i]][2, 2])/30,
+           Percent_Below20 = sum(se <= cutoffs3[[i]][3, 2])/30,
+           Percent_Below30 = sum(se <= cutoffs3[[i]][4, 2])/30,
+           Percent_Below40 = sum(se <= cutoffs3[[i]][5, 2])/30,
+           Percent_Below50 = sum(se <= cutoffs3[[i]][6, 2])/30, 
+           Percent_Below60 = sum(se <= cutoffs3[[i]][7, 2])/30, 
+           Percent_Below70 = sum(se <= cutoffs3[[i]][8, 2])/30, 
+           Percent_Below80 = sum(se <= cutoffs3[[i]][9, 2])/30, 
+           Percent_Below90 = sum(se <= cutoffs3[[i]][10, 2])/30, 
+           .groups = "keep") %>% 
+    mutate(original_n = sizes[i],
+           source = "high")
+  
+  temp3.3 <- summary_list3[[i]] %>% 
+    filter(scale == "3") %>% 
+    group_by(sample_size, scale) %>% 
+    summarize(Percent_Below0 = sum(se <= cutoffs3[[i]][1, 3])/30,
+           Percent_Below10 = sum(se <= cutoffs3[[i]][2, 3])/30,
+           Percent_Below20 = sum(se <= cutoffs3[[i]][3, 3])/30,
+           Percent_Below30 = sum(se <= cutoffs3[[i]][4, 3])/30,
+           Percent_Below40 = sum(se <= cutoffs3[[i]][5, 3])/30,
+           Percent_Below50 = sum(se <= cutoffs3[[i]][6, 3])/30, 
+           Percent_Below60 = sum(se <= cutoffs3[[i]][7, 3])/30, 
+           Percent_Below70 = sum(se <= cutoffs3[[i]][8, 3])/30, 
+           Percent_Below80 = sum(se <= cutoffs3[[i]][9, 3])/30, 
+           Percent_Below90 = sum(se <= cutoffs3[[i]][10, 3])/30, 
+           .groups = "keep") %>% 
+    mutate(original_n = sizes[i],
+           source = "high")
+  
+  #rejoin 
+  summary_list3[[i]] <- bind_rows(temp3.1, temp3.2, temp3.3)
+
+  }
+
+summary_DF <- bind_rows(summary_list1, 
+                        summary_list2, 
+                        summary_list3)
+```
+
+```{r calc_percent_combine, include = F, echo = F}
+summary_long_80 <- summary_DF %>% 
+  pivot_longer(cols = -c(sample_size, original_n, source, scale)) %>% 
+  filter(value >= .80) %>% 
+  arrange(sample_size, original_n, source, scale, name) %>% 
+  group_by(original_n, name, source, scale) %>% 
+  slice_head(n = 1) %>% 
+  mutate(power = 80)
+
+summary_long_85 <- summary_DF %>% 
+  pivot_longer(cols = -c(sample_size, original_n, source, scale)) %>% 
+  filter(value >= .85) %>% 
+  arrange(sample_size, original_n, source, scale, name) %>% 
+  group_by(original_n, name, source, scale) %>% 
+  slice_head(n = 1) %>% 
+  mutate(power = 85)
+  
+summary_long_90 <- summary_DF %>% 
+  pivot_longer(cols = -c(sample_size, original_n, source, scale)) %>% 
+  filter(value >= .90) %>% 
+  arrange(sample_size, original_n, source, scale, name) %>% 
+  group_by(original_n, name, source, scale) %>% 
+  slice_head(n = 1) %>% 
+  mutate(power = 90)
+
+summary_long_95 <- summary_DF %>% 
+  pivot_longer(cols = -c(sample_size, original_n, source, scale)) %>% 
+  filter(value >= .95) %>% 
+  arrange(sample_size, original_n, source, scale, name) %>% 
+  group_by(original_n, name, source, scale) %>% 
+  slice_head(n = 1) %>% 
+  mutate(power = 95)
+
+summary_long <- rbind(summary_long_80, 
+                      summary_long_85,
+                      summary_long_90,
+                      summary_long_95)
+
+summary_long$source <- factor(summary_long$source, 
+                              levels = c("low", "med", "high"),
+                              labels = c("Low Variance", "Medium Variance", "High Variance"))
+
+summary_long$scale2 <- factor(summary_long$scale, 
+                              levels = c(1:3),
+                              labels = c("Small Scale", "Medium Scale", "Large Scale"))
+
+sd_items <- bind_rows(sd_items1, sd_items2, sd_items3)
+sd_items$original_n <- rep(rep(sizes, each = 3), 3)
+sd_items$source <- rep(c("Low Variance", "Medium Variance", "High Variance"), each = 3*length(sizes))
+summary_long <- summary_long %>% 
+  full_join(sd_items, 
+            by = c("original_n" = "original_n", "scale" = "scale", 
+                   "source" = "source"))
+
+summary_long$name <- gsub("Percent_Below", "Decile ", summary_long$name)
+```
 
 # Results
 
+## Differences in Item Variance
+
+We examined if this procedure is sensitive to differences in item heterogeneity, as we should expect to collect larger samples if we wish to have a large number of items reach a threshold of acceptable variance; potentially, assuring we *could* average them if a researcher did not wish to use a more complex analysis such as multilevel modeling. 
+
+Figure \@ref(fig:item-figure) illustrates the potential minimum sample size for 80% of items to achieve a desired cutoff score. The black dots denote the original sample size against the suggested sample size. By comparing the facets, we can determine that our suggested procedure does capture the differences in heterogeneity. As heterogeneity increases in item variances, the proposed sample size also increases, especially at stricter cutoffs. Missing cutoff points where sample sizes proposed would be higher than 500. 
+
+```{r item-figure, echo = F, fig.cap="Add a good caption here."}
+summary_long$source <- factor(summary_long$source, 
+                              levels = c("Low Variance", "Medium Variance", "High Variance"))
+
+ggplot(summary_long %>% filter(power == 80), aes(original_n, sample_size, color = name)) + 
+  geom_point() +  
+  geom_point(aes(original_n, original_n), color = "black") + 
+  geom_line() + 
+  theme_classic() + 
+  facet_wrap(~ source*scale2) + 
+  xlab("Pilot Sample Size") + 
+  ylab("Projected Sample Size") + 
+  scale_color_discrete(name = "Cutoff Score")
+```
+
+## Projected Sample Size Sensitivity to Pilot Sample Size
+
+In our second question, we examined if the suggested procedure was sensitive to the amount of information present in the pilot data. Larger pilot data is more informative, and therefore, we should expect a lower projected sample size. As shown in Figure \@ref(fig:sensitive-figure) for only the low variability and small scale data, we do not find this effect. These simulations from the pilot data would nearly always suggest a larger sample size - mostly in a linear trend increasing with sample sizes. This result comes from the nature of the procedure - if we base our estimates on a SE cutoff, we will almost always need a bit more people for items to meet those goals. This result does not achieve our second goal. 
+
+```{r sensitive-figure, echo = F, fig.cap="Add good description here."}
+ggplot(summary_long %>% filter(source == "Low Variance") %>% filter(scale == 1), aes(original_n, sample_size, color = name)) + 
+  geom_point() +  
+  geom_point(aes(original_n, original_n), color = "black") + 
+  geom_line() + 
+  theme_classic() + 
+  facet_wrap(~ power) + 
+  xlab("Pilot Sample Size") + 
+  ylab("Projected Sample Size") + 
+  scale_color_discrete(name = "Cutoff Score")
+```
+
+Therefore, we suggest using a correction factor on the simulation procedure to account for the known asymptotic nature of power (i.e., at larger sample sizes power increases level off). For this function in our simulation study, we combined a correction factor for upward biasing of effect sizes (Hedges' correction) with the formula for exponential decay calculations. The decay factor was calculated as follows: 
+
+$$ 1 - \sqrt{\frac{N_{Pilot} - min(N_{Simulation})}{N_{Pilot}}}^{log_2(N_{Pilot})}$$
+
+$N_{Pilot}$ indicates the sample size of the pilot data minus the minimum simulated sample size to ensure that the smallest sample sizes do not decay (i.e., the formula zeroes out). This value is raised to the power of $log_2$ of the sample size of the pilot data, which decreases the impact of the decay to smaller increments for increasing sample sizes. This value is then multiplied by the projected sample size. As shown in Figure \@ref(fig:corrected-figure), this correction factor produces the desired quality of maintaining that small pilot studies should *increase* sample size, and that sample size suggestions level off as pilot study data sample size increases. 
+
+```{r corrected-figure, echo = F, fig.cap="A corrected figure update this caption."}
+decay <- 1-sqrt((summary_long$original_n-20)/summary_long$original_n)^log2(summary_long$original_n)
+
+summary_long$new_sample <- summary_long$sample_size*decay
+
+ggplot(summary_long %>% filter(source == "Low Variance") %>% filter(scale == 1), aes(original_n, new_sample, color = name)) + 
+  geom_point() +  
+  geom_point(aes(original_n, original_n), color = "black") + 
+  geom_line() + 
+  theme_classic() + 
+  facet_wrap(~ power) + 
+  xlab("Pilot Sample Size") + 
+  ylab("Suggested Sample Size") + 
+  scale_color_discrete(name = "Cutoff Score")
+```
+
+## Corrections for Individual Researchers
+
+We have portrayed that this procedure, with a correction factor, can perform as desired. However, within real scenarios, researchers will only have one pilot sample, not the various simulated samples shown above. What should the researcher do to correct their projected sample size from their own pilot data simulations? 
+
+To explore if we could recover the new projected sample size from data a researcher would have, we used linear models to create a formula for researcher correction. First, the corrected projected sample size was predicted by the original projected sample size. Next, the standard deviation of the item standard deviations was added to the equation to recreate heterogeneity estimates. The scale of the data is embedded into the standard deviation of the items (*r* = `r round(cor(summary_long$scale, summary_long$sd_item), digits = 2)`), and therefore, this variable was not included separately. Last, we included the pilot sample size. 
+```{r regressions, include = F, echo = F}
+user_model <- lm(new_sample ~ sample_size, data = summary_long)
+user_print <- apa_print(user_model)
+user_sum <- summary(user_model)
+
+user_model2 <- lm(new_sample ~ sample_size + sd_item, data = summary_long)
+user_print2 <- apa_print(user_model2)
+
+user_model3 <- lm(new_sample ~ sample_size + sd_item + original_n, data = summary_long)
+user_print3 <- apa_print(user_model3)
+
+change_table <- tidy(anova(user_model, user_model2, user_model3))
+```
+
+The first model using pilot sample size to predict new sample size was significant, *F*(`r user_sum$fstatistic[2]`, `r user_sum$fstatistic[3]`) = `r round(user_sum$fstatistic[1], digits = 2)`, *p* < .001, `r user_print$estimate$modelfit$r2`, capturing nearly 90% of the variance, `r user_print$estimate$sample_size`. The second model with item standard deviation was better than the first model *F*(`r change_table$df[2]`, `r format(change_table$res.df[2], big.mark = "")`) = `r round(change_table$statistic[2], digits = 2)`, *p* < .001, `r user_print2$estimate$modelfit$r2`. The item standard deviation predictor was significant, `r user_print2$full_result$sd_item`. The addition of the original pilot sample size was also significant, *F*(`r change_table$df[3]`, `r format(change_table$res.df[3], big.mark = "")`) = `r round(change_table$statistic[3], digits = 2)`, *p* < .001, `r user_print3$estimate$modelfit$r2`.
+
+As shown in the final model Table \@ref(tab:table-correction), the new suggested sample size is proportional to the original suggested sample size (i.e., *b* < 1), which reduces the sample size suggestion. As variability increases, the suggested sample size also increases to capture differences in heterogeneity shown above; however, this predictor is not significant in the final model, and only contributes a small portion of overall variance. Last, in order to correct for large pilot data, the original pilot sample size decreases the new suggested sample size. This formula approximation captures 96% of the variance in sample size scores and should allow a researcher to estimate based on their own data. 
+
+```{r table-correction, results = 'asis'}
+table_correct <- tidy(user_model3)
+table_correct$term <- c("Intercept", "Projected Sample Size", 
+                        "Item SD", "Pilot Sample Size")
+table_correct$estimate <- printnum(table_correct$estimate, digits = 3)
+table_correct$std.error <- printnum(table_correct$std.error, digits = 3)
+table_correct$statistic <- printnum(table_correct$statistic, digits = 3)
+table_correct$p.value <- printnum(table_correct$p.value, digits = 3,
+                                  zero = FALSE, gt1 = F)
+apa_table(table_correct, 
+          col.names = c("Term", "Estimate", "$SD$", "$t$", "$p$"),
+          caption = "Parameters for All Decile Cutoff Scores")
+```
+
+## Choosing an Appropriate Cutoff
+
+```{r R2_cutoff, include = F, echo = F}
+by_cutoff <- list()
+R2 <- list()
+
+for (cutoff in unique(summary_long$name)){
+  by_cutoff[[cutoff]] <- lm(new_sample ~ sample_size + sd_item + original_n, data = summary_long  %>% filter(name == cutoff))
+  R2[cutoff] <- summary(by_cutoff[[cutoff]])$r.squared
+}
+```
+
+Last, we examine the question of an appropriate SE decile. All graphs for power, heterogeneity, scale, and correction are presented online. First, the 0%, 10%, and 20% deciles are likely too restrictive, providing very large estimates that do not always find a reasonable sample size in proportion to the pilot sample size, scale, and heterogeneity. If we examine the $R^2$ values for each decile of our regression equation separately, we find that the 50% (`r round(R2[["Decile 50"]], digits = 3)`) represents the best match to our corrected sample size suggestions. The 50% decile, in the corrected format, appears to meet all goals: 1) increases with heterogeneity and scale of data, and 2) higher suggested values for small original samples and a leveling effect at larger pilot data. Figure \@ref(fig:decile-figure) illustrates the corrected scores for simulations at the 50% decile recommended cutoff for item standard errors. 
+
+```{r decile-figure, fig.cap = "A picture of the 50% cutoff."}
+ggplot((summary_long %>% filter(name == "Decile 50")), 
+       aes(original_n, new_sample, color = source)) + 
+  geom_point() + 
+  geom_point(aes(original_n, original_n), color = "black") + 
+  geom_line() + 
+  theme_classic() + 
+  facet_wrap(~ scale2*power) + 
+  xlab("Pilot Sample Size") + 
+  ylab("Projected Sample Size") + 
+  scale_color_discrete(name = "Heterogeneity") +
+  theme(legend.position="bottom")
+
+```
+
+The formula for finding the corrected sample size using a 50% decile is: $N_{Corrected Projected} = 39.269 + 0.700 \times X_{N_{Projected}} + 0.003 \times X_{SD Items} - 0.694 \times X_{N_{Pilot}}$. The suggested sample size will be estimated from the 80%, 85%, 90%, or 95% selection at the 50% decile as shown above. The item SD can be calculated directly from the data, and the pilot sample size is the sample size of the data from which a researcher is simulating their samples. Therefore, we will recommend the 50% decile of the item standard errors for step 2 of our suggested simulation procedure, and to correct the projected sample sizes found in step 5 using the correction equation above. While the estimated coefficients could change given variations on our simulation parameters, the general size and pattern of coefficients was consistent, and therefore, we believe this correction equation should work for a variety of use cases. 
+
+# Examples 
+
+```{r import_data, include = F, echo = F}
+conDF <- import("./data/concreteness_trial.rda")
+elpDF <- import("./data/ELPDecisionData.zip")
+```
+
+In this section, we provide two examples of the suggested procedure. The first example includes concreteness ratings from Brysbaert et al. [CITE, 2014]. Instructions given to participants denoted the difference between concrete (i.e., "refers to something that exists in reality") and abstract (i.e., "something you cannot experience directly through your senses or actions") terms. Participants were then asked to rate concreteness of terms using a 1 (abstract) to 5 (concrete) scale. This data represents a small scale dataset that could be used as pilot data for a study using concrete word ratings. The data is available at OSF LINK [CITE]. The second dataset includes a large scale dataset with response latencies, the English Lexicon Project [CITE, Balota et al.]. The English Lexicon Project consists of lexical decision response latencies for English words. In a lexical decision task, participants simply select "word" for real words (e.g., *dog*) and "nonword" for pseudowords (e.g., *wug*). The trial level data is available here [https://elexicon.wustl.edu/, CITE]. Critically, in each of these examples, the individual trial level data for each item is available to simulate and calculate standard errors on. Data that has been summarized could potentially be used, as long as the original standard deviations for each item were present. From the mean and standard deviation for each item, a simulated pilot dataset could be generated for estimating new sample sizes. All code to estimate sample sizes is provided on our OSF page. 
+
+## Concreteness Ratings
+
+```{r con_estimate, echo = F, include = F}
+# sample the data
+con_words <- sample(unique(conDF$Word), size = 100, replace = F)
+con_small <- conDF %>% filter(Word %in% con_words)
+con_small$Word <- droplevels(con_small$Word)
+pilot_size <- round(mean(tapply(con_small$Rating, con_small$Word, length)))
+
+# figure out data loss
+con_small$Rating[con_small$Rating == "n" | con_small$Rating == "N"] <- NA
+con_small$Rating <- as.numeric(con_small$Rating)
+data_loss <- con_small %>% 
+  group_by(Word) %>% 
+  summarize(percent_correct = sum(!is.na(Rating))/n(), .groups = "keep")
+
+con_use <- con_small %>% filter(!is.na(Rating))
+
+# cutoff score 
+SE <- tapply(con_use$Rating, con_use$Word, function (x) { sd(x)/sqrt(length(x))})
+cutoff <- quantile(SE, probs = .50)
+```
+
+The concreteness ratings data includes `r length(unique(conDF$Word))` concepts that were rated for their concreteness. In our fictional study for this example, we selected 100 random words to show participants. In the original study, not every participant rated every word, which created uneven sample sizes for each word. In our random sample of 100 words, the average pilot sample size was `r round(mean(tapply(con_small$Rating, con_small$Word, length)), digits = 2)` (*SD* = `r round(sd(tapply(con_small$Rating, con_small$Word, length)), digits = 2)`), and we will use `r pilot_size` as our pilot sample size for this example. All "do not know" ratings were set as missing data. The 50% decile for items standard error was `r round(cutoff, digits = 3)` for our cutoff criterion. 
+
+```{r con_sample, include = F, echo = F}
+# sequence of sample sizes to try
+samplesize_values <- seq(20, 300, 5)
+
+# create a blank table for us to save the values in 
+sim_table <- matrix(NA, 
+                    nrow = length(samplesize_values), 
+                    ncol = length(unique(con_use$Word)))
+
+# make it a data frame
+sim_table <- as.data.frame(sim_table)
+
+# add a place for sample size values 
+sim_table$sample_size <- NA
+
+# loop over sample sizes
+for (i in 1:length(samplesize_values)){
+    
+  # temp dataframe that samples and summarizes
+  temp <- con_use %>% 
+    group_by(Word) %>% 
+    sample_n(samplesize_values[i], replace = T) %>% 
+    summarize(se = sd(Rating)/sqrt(length(Rating))) 
+  
+  colnames(sim_table)[1:length(unique(con_use$Word))] <- temp$Word
+  sim_table[i, 1:length(unique(con_use$Word))] <- temp$se
+  sim_table[i, "sample_size"] <- samplesize_values[i]
+  }
+
+# figure out potential samples
+final_sample <- 
+  sim_table %>% 
+  pivot_longer(cols = -c(sample_size)) %>% 
+  rename(item = name, se = value) %>% 
+  group_by(sample_size) %>% 
+  summarize(Percent_Below = sum(se <= cutoff)/length(unique(con_use$Word))) %>% 
+  filter(Percent_Below >= .80) %>% 
+  arrange(Percent_Below)
+
+# apply correction
+# calculate the SD of the item's SD 
+sd_items <- sd(tapply(con_use$Rating, con_use$Word, sd))
+
+final_sample$new_sample <- round(39.369 + 0.700*final_sample$sample_size + 0.003*sd_items - 0.694*pilot_size)
+
+final_sample$data_loss_sample <- round(final_sample$new_sample * 1/mean(data_loss$percent_correct))
+```
+
+The pilot data was then simulated, with replacement, with samples from 20 to 300 increasing in units of 5. On each sample, the percent of items below the cutoff score were calculated. After applying our correction equation, we find that a sample size of `r final_sample$new_sample[1]` would allow for at least 80% of items to meet the cutoff criterion. The sample sizes for 85% (`r final_sample$new_sample[2]`), 90% (`r final_sample$new_sample[2]`), and 95% (`r final_sample$new_sample[3]`) are also options for sample size suggestions. Finally, we calculated the potential amount of data retention given that participants could indicate they did not know a word ($M_{correct}$ = `r round(mean(data_loss$percent_correct), digits = 2)`, *SD* = `r round(sd(data_loss$percent_correct), digits = 2)`). In order to account for this facet, the potential sample sizes were multiplied by 1/`r round(mean(data_loss$percent_correct), digits = 2)`, which results in a suggested sample of `r final_sample$data_loss_sample[1]`, `r final_sample$data_loss_sample[2]`, and `r final_sample$data_loss_sample[3]`. Therefore, we could designate our minimum sample per item as `r final_sample$data_loss_sample[1]`, stopping rule of `r cutoff`, and maximum sample size of `r final_sample$data_loss_sample[3]`.
+
+## Response Latencies 
+
+```{r elp_estimate, echo = F, include = F}
+# sample the data
+elp_fake <- sample(unique(elpDF$Stimulus[elpDF$Type == 0]), size = 500, replace = F)
+elp_real <- sample(unique(elpDF$Stimulus[elpDF$Type == 1]), size = 500, replace = F)
+elp_small <- elpDF %>% filter(Stimulus %in% c(elp_fake, elp_real))
+pilot_size <- round(mean(tapply(elp_small$RT, elp_small$Stimulus, length)))
+
+# figure out data loss
+elp_small$RT[elp_small$Accuracy == "0"] <- NA
+data_loss <- elp_small %>% 
+  group_by(Stimulus, Type) %>% 
+  summarize(percent_correct = sum(!is.na(RT))/n(), .groups = "keep")
+
+elp_use <- elp_small %>% filter(!is.na(RT))
+
+# cutoff score 
+SE <- tapply(elp_use$RT, elp_use$Stimulus, function (x) { sd(x)/sqrt(length(x))})
+cutoff <- quantile(SE, probs = .50, na.rm = T)
+
+SE_word <- tapply(elp_use$RT[elp_use$Type == 1], elp_use$Stimulus[elp_use$Type == 1], function (x) { sd(x)/sqrt(length(x))})
+SE_nw <- tapply(elp_use$RT[elp_use$Type == 0], elp_use$Stimulus[elp_use$Type == 0], function (x) { sd(x)/sqrt(length(x))})
+cutoff_word <- quantile(SE_word, probs = .50, na.rm = T)
+cutoff_nw <- quantile(SE_nw, probs = .50, na.rm = T)
+```
+
+The ELP response latency data includes `r length(unique(elpDF$Stimulus))` word-forms, `r length(unique(elpDF$Stimulus[elpDF$Type == 0]))` that are listed as non-words, and `r length(unique(elpDF$Stimulus[elpDF$Type == 1]))` real words. For our example study, we will randomly select 500 real words and 500 non-words to show participants. The average pilot sample size for this random sample was `r format(round(mean(tapply(elp_small$RT, elp_small$Stimulus, length)), digits = 2), nsmall = 2)` (*SD* = `r round(sd(tapply(elp_small$RT, elp_small$Stimulus, length)), digits = 2)`), and *n* = `r pilot_size` will be our pilot size for this example. Again, participants are expected to make mistakes, and we calculated percent correct as `r round(mean(data_loss$percent_correct), digits = 2)`, which was roughly even in the two stimulus categories: $M_{word}$ = `r round(mean(data_loss$percent_correct[data_loss$Type == 1]), digits = 2)` and $M_{non-word}$ = `r round(mean(data_loss$percent_correct[data_loss$Type == 0]), digits = 2)`. The 50% decile for items standard error was `r round(cutoff, digits = 3)` for our cutoff criterion. We additionally checked to ensure that the two stimulus types did not have very different cutoff criterions: 50% decile $SE_{words}$ = `r round(cutoff_word, digits = 3)`, 50% decile $SE_{nonwords}$ = `r round(cutoff_nw, digits =3)`. In this scenario, we could choose to go with the lower SE to be more conservative (i.e., higher projected sample size). Given the values were close for large scale data, we used the 50% decile of all stimuli taken together. 
+
+```{r elp_sample, include = F, echo = F}
+# sequence of sample sizes to try
+samplesize_values <- seq(20, 300, 5)
+
+# create a blank table for us to save the values in 
+sim_table <- matrix(NA, 
+                    nrow = length(samplesize_values), 
+                    ncol = length(unique(elp_use$Stimulus)))
+
+# make it a data frame
+sim_table <- as.data.frame(sim_table)
+
+# add a place for sample size values 
+sim_table$sample_size <- NA
+
+# loop over sample sizes
+for (i in 1:length(samplesize_values)){
+    
+  # temp dataframe that samples and summarizes
+  temp <- elp_use %>% 
+    group_by(Stimulus) %>% 
+    sample_n(samplesize_values[i], replace = T) %>% 
+    summarize(se = sd(RT)/sqrt(length(RT))) 
+  
+  colnames(sim_table)[1:length(unique(elp_use$Stimulus))] <- temp$Stimulus
+  sim_table[i, 1:length(unique(elp_use$Stimulus))] <- temp$se
+  sim_table[i, "sample_size"] <- samplesize_values[i]
+  }
+
+# figure out potential samples
+final_sample <- 
+  sim_table %>% 
+  pivot_longer(cols = -c(sample_size)) %>% 
+  rename(item = name, se = value) %>% 
+  group_by(sample_size) %>% 
+  summarize(Percent_Below = sum(se <= cutoff)/length(unique(elp_use$Word))) %>% 
+  filter(Percent_Below >= .80) %>% 
+  arrange(Percent_Below)
+
+# apply correction
+# calculate the SD of the item's SD 
+sd_items <- sd(tapply(elp_use$RT, elp_use$Stimulus, sd, na.rm = T), na.rm = T)
+
+final_sample$new_sample <- round(39.369 + 0.700*final_sample$sample_size + 0.003*sd_items - 0.694*pilot_size)
+
+final_sample$data_loss_sample <- round(final_sample$new_sample * 1/mean(data_loss$percent_correct))
+```
+
+The pilot response latency data was then simulated in the same way as described above. After calculating the percent below our cutoff score, we applied the correction to the projected sample sizes. A sample size of `r final_sample$new_sample[1]` would equate to 80% of the items reaching our cutoff, along with 85% (`r final_sample$new_sample[2]`), 90% (`r final_sample$new_sample[2]`), and 95% (`r final_sample$new_sample[3]`). Again, we adjusted for data loss given that participants are expected to incorrectly answer items, resulting in a suggested sample of `r final_sample$data_loss_sample[1]`, `r final_sample$data_loss_sample[2]`, and `r final_sample$data_loss_sample[3]`. One other possible consideration for this study is potential fatigue in showing participants 1000 target items. Therefore, we could designate in our research design that each participant will only receive 500 of the target items. We would need to double our sample sizes to account for splitting of the items across multiple sets of participants. Our minimum sample size for the entire study could be `r final_sample$data_loss_sample[1]*2`, stopping rule of `r round(cutoff, digits = 3)`, and maximum sample size of `r final_sample$data_loss_sample[3]*2`. This study would benefit from an adaptive design, where smaller sets items are randomly sampled for participants until they reach the minimum sample size or the cutoff criteria. At this point, items are probabilistically sampled (e.g., higher selection probability for items that have not reached a minimum or stopping rule) until all items have reached criteria. 
+
+## Additional Materials
+
+While the examples in this manuscript are traditionally cognitive linguistics focused, any research using repeated items can benefit from newer sampling techniques. Therefore, we provide XX example vignettes on our OSF page/GitHub site for this manuscript across a range of examples of data types provided by the authors of this manuscript. Examples include ... ADD HERE AFTER DONE WITH VIGNETTES. 
+
 # Discussion
 
+To be added once people say this idea doesn't suck. 
 
 \newpage
 

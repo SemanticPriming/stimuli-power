@@ -104,7 +104,7 @@ Note that the data is already in long format (each item has one row), and theref
 
 #### Stopping Rule
 
-In this example, we have multiple variables to choose from for our analysis. We could include several to find the sample size rules for further study. In this example, I'll use the variables with the least and most variability and take the average. This choice is somewhat arbitrary - in a real study, you could chose to use only the variables you were interested in and pick the most conservative values or simply average together estimates from all variables. 
+In this example, we have multiple variables to choose from for our analysis. We could include several to find the sample size rules for further study. In this example, I'll use the variables with the least and most variability and take the average of the 50% decile as suggested in our manuscript. This choice is somewhat arbitrary - in a real study, you could chose to use only the variables you were interested in and pick the most conservative values or simply average together estimates from all variables. 
 
 ```{r}
 apply(DF[ , -c(1,2)], 2, sd)
@@ -119,24 +119,29 @@ What the usual standard error for the data that could be considered for our stop
 SE1 <- tapply(DF$`How surprising`, DF$`Cue no`, function (x) { sd(x)/sqrt(length(x)) })
 
 SE1
-mean(SE1)
+cutoff1 <- quantile(SE1, probs = .50)
+cutoff1
 
 # individual SEs for personal nature
 SE2 <- tapply(DF$`Personal nature`, DF$`Cue no`, function (x) { sd(x)/sqrt(length(x)) })
 
 SE2
-mean(SE2)
+cutoff2 <- quantile(SE2, probs = .50)
+cutoff2
+
+cutoff <- mean(c(cutoff1, cutoff2))
+cutoff
 ```
 
-The average SE across both variables is `r mean(c(SE1, SE2))`. 
+The average SE across both variables is `r round(cutoff, digits = 3)`. 
 
 #### Minimum Sample Size
 
-How large does the sample have to be for 80% of the items to be below our stopping SE rule? 
+How large does the sample have to be for 80% to 95% of the items to be below our stopping SE rule? 
 
 ```{r}
 # sequence of sample sizes to try
-samplesize_values <- seq(25, 60, 5)
+samplesize_values <- seq(25, 100, 5)
 
 # create a blank table for us to save the values in 
 sim_table <- matrix(NA, 
@@ -182,17 +187,35 @@ final_sample <-
   pivot_longer(cols = -c(sample_size, var)) %>% 
   rename(item = name, se = value) %>% 
   group_by(sample_size, var) %>% 
-  summarize(Percent_Below = sum(se <= mean(c(SE1, SE2)))/length(unique(DF$`Cue no`))) %>% 
-  filter(Percent_Below >= .80) %>% 
-  arrange(Percent_Below)
-
-flextable(final_sample) %>% autofit()
+  summarize(Percent_Below = sum(se <= cutoff)/length(unique(DF$`Cue no`))) 
 ```
 
-In this scenario, we could go with the point in which they both meet the 80% criterion, which is `r (final_sample %>% filter(var == "personal") %>% pull(sample_size))[1]` for the personal variable and `r (final_sample %>% filter(var == "surprising") %>% pull(sample_size))[1]` for the surprising variable. Because these are close, we could use the minimum, be more conservative and use the the mean, or be most conservative and use the maximum. 
+As shown in our manuscript, we need to correct for the overestimation of sample sizes based on the original pilot data size. 
+
+$N_{Corrected Projected} = 39.269 + 0.700 \times X_{N_{Projected}} + 0.003 \times X_{SD Items} - 0.694 \times X_{N_{Pilot}}$
+
+```{r}
+# calculate the SD of the item's SD 
+sd_items1 <- sd(tapply(DF$`How surprising`, DF$`Cue no`, sd))
+sd_items1
+
+sd_items2 <- sd(tapply(DF$`Personal nature`, DF$`Cue no`, sd))
+sd_items2
+                   
+final_sample$new_sample <- round(39.369 + 0.700*final_sample$sample_size + 0.003*mean(c(sd_items1, sd_items2)) - 0.694*length(unique(DF$`Participant's ID`)))
+
+flextable(final_sample %>% 
+            filter(Percent_Below >= .80) %>% 
+            arrange(Percent_Below, new_sample)) %>% 
+  autofit()
+```
+
+In this scenario, we could go with the point in which they both meet the 80% criterion, which is *n* = 47 for the personal variable and *n* = 36 for the surprising variable. In these scenarios, it is likely better to estimate a larger sample. 
 
 #### Maximum Sample Size
 
-The maximum sample size can be found using any higher number of item cut off (i.e., 90%, 100%). In this case, we could use `r (final_sample %>% filter(var == "personal") %>% filter(Percent_Below >= .9) %>% pull(sample_size))[1]` for personal or `r (final_sample %>% filter(var == "surprising") %>% filter(Percent_Below >= .9) %>% pull(sample_size))[1]` for surprising. Given that we are estimating a maximum sample size, we could suggest the maximum value here for personal. 
+If you decide to use the 95% power as your criterion, you would see that items need somewhere between 43 and 54 participants for both variables. In this case, you could choose to make 54 participants your maximum sample size to ensure both variables reach criterion. 
 
+#### Final Sample Size
 
+You should also consider any potential for missing data and/or unusable data given the requirements for your study. Given that participants are likely to see all items in this study, we could use the minimum, stopping rule, and maximum defined above. 

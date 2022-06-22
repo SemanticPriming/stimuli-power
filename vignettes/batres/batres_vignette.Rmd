@@ -83,7 +83,7 @@ flextable(head(DF_long)) %>% autofit()
 
 #### Stopping Rule
 
-What the usual standard error for the data that could be considered for our stopping rule?
+What the usual standard error for the data that could be considered for our stopping rule using the 50% decile? 
 
 ```{r}
 # individual SEs
@@ -91,20 +91,21 @@ SE <- tapply(DF_long$score, DF_long$item, function (x) { sd(x)/sqrt(length(x)) }
 
 SE
 
-min(SE)
-mean(SE)
-max(SE)
+cutoff <- quantile(SE, probs = .50)
+cutoff
 ```
 
-We see that the items have a range of `r min(SE)` to `r max(SE)`. Given we have `r nrow(DF)` participants in this study, we could use the mean SE = `r mean(SE)` as our critical value for our stopping rule. We could decide to be more conservative if the pilot data was smaller by using the third quartile or the 90th percentile SE. (Note: you could use smaller values of SE as well, but in general, it may pay off to be more conservative on the sample size estimates). We could also have a set SE to a specific target if we do not believe we have representative pilot data in this example. You should also consider the scale when estimating these values (i.e., 1-7 scales will have smaller estimates than 1-100 scales). 
+Using our 50% decile as a guide, we find that `r round(cutoff, digits = 3)` is our target standard error for an accurately measured item. 
 
 #### Minimum Sample Size
 
-To estimate minimum sample size, we should figure out what number of participants it would take to achieve 80% of the SEs for items below our critical score of `r mean(SE)`?
+To estimate minimum sample size, we should figure out what number of participants it would take to achieve 80%, 85%, 90%, and 95% of the SEs for items below our critical score of `r round(cutoff, digits = 3)`?
+
+Please note that you will always need to simulate larger than the pilot data sample size to get the starting numbers. We will correct them below. 
 
 ```{r}
 # sequence of sample sizes to try
-samplesize_values <- seq(100, 300, 5)
+samplesize_values <- seq(20, 300, 5)
 
 # create a blank table for us to save the values in 
 sim_table <- matrix(NA, 
@@ -137,21 +138,33 @@ final_sample <-
   pivot_longer(cols = -c(sample_size)) %>% 
   rename(item = name, se = value) %>% 
   group_by(sample_size) %>% 
-  summarize(Percent_Below = sum(se <= mean(SE))/length(unique(DF_long$item))) %>% 
-  filter(Percent_Below >= .80)
-
-flextable(final_sample) %>% autofit()
+  summarize(Percent_Below = sum(se <= cutoff)/length(unique(DF_long$item))) 
 ```
 
-Based on these simulations, we can decide our minimum sample size is likely close to `r min(final_sample$sample_size)`. 
+As shown in our manuscript, we need to correct for the overestimation of sample sizes based on the original pilot data size. Given that the pilot data is large: `r nrow(DF)`, this correction is especially useful. 
+
+$N_{Corrected Projected} = 39.269 + 0.700 \times X_{N_{Projected}} + 0.003 \times X_{SD Items} - 0.694 \times X_{N_{Pilot}}$
+
+```{r}
+# calculate the SD of the item's SD 
+sd_items <- sd(tapply(DF_long$score, DF_long$item, sd))
+sd_items
+                   
+final_sample$new_sample <- round(39.369 + 0.700*final_sample$sample_size + 0.003*sd_items - 0.694*nrow(DF))
+
+flextable(final_sample %>% 
+            filter(Percent_Below >= .80) %>% 
+            arrange(Percent_Below, new_sample)) %>% 
+  autofit()
+```
+
+Our minimum suggested sample size does not exist at exactly 80% of the items, but instead we can use 85% (*n* = 62 as the minimum). In this example, 90% actually hits below 85% at the minimum (*n* = 58). For 95% of items hitting criterion, the minimum sample size would be approximately 83. In this case, the researcher could decide that 62 would be their minimum sample size. 
 
 #### Maximum Sample Size
 
-In this example, we could set our maximum sample size for 90% power, which would equate to `r final_sample %>% filter(Percent_Below >= .90) %>% pull(sample_size) %>% min()` participants. 
+While there are many considerations for maximum sample size (time, effort, resources), the simulation suggests that 83 people would ensure nearly all items achieve cutoff criterions. 
 
 #### Final Sample Size
 
-In any estimate for sample size, you should also consider the potential for missing data and/or unusable data due to any other exclusion criteria in your study (i.e., attention checks, speeding, getting the answer right, etc.). In this study, we likely expect all participants to see all items and therefore, we could expect to use the minimum sample size as our final sample size, the point at which all items reach our SE criterion, or the maximum sample size. Note that maximum sample sizes can also be defined by time, money, or other means. 
-
-
+In any estimate for sample size, you should also consider the potential for missing data and/or unusable data due to any other exclusion criteria in your study (i.e., attention checks, speeding, getting the answer right, etc.). In this study, we likely expect all participants to see all items and therefore, we could expect to use the minimum sample size as our final sample size, the point at which all items reach our SE criterion, or the maximum sample size. 
 

@@ -1,0 +1,24 @@
+\begin{table*}[hbt]
+\ifnextchar[{\eatarg}{}
+[tbp]
+
+\begin{center}
+\begin{threeparttable}
+
+\caption{\label{tab:table-correction}Parameters for All Decile Cutoff Scores}
+
+\begin{tabular}{lllll}
+\toprule
+Term & Estimate & $SD$ & $t$ & $p$\\
+\midrule
+Intercept & 39.269 & 0.437 & 89.843 & < .001\\
+Projected Sample Size & 0.700 & 0.002 & 366.669 & < .001\\
+Item SD & 0.003 & 0.003 & 0.952 & .341\\
+Pilot Sample Size & -0.695 & 0.007 & -97.621 & < .001\\
+\bottomrule
+\end{tabular}
+
+\end{threeparttable}
+\end{center}
+
+\end{table*}
