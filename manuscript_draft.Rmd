@@ -62,6 +62,8 @@ library(tidyr)
 library(broom)
 library(papaja)
 library(rio)
+library(nlme)
+library(MuMIn)
 ```
 
 This part we will put in a real introduction. Things we need to discuss:
@@ -616,6 +618,24 @@ user_print3 <- apa_print(user_model3)
 change_table <- tidy(anova(user_model, user_model2, user_model3))
 ```
 
+```{r test-assume, include = F, echo = F}
+resid_model <- scale(residuals(user_model3))
+fit_model <- scale(fitted.values(user_model3))
+hist(resid_model)
+qqnorm(resid_model); abline(0,1)
+plot(fit_model, resid_model); abline(v = 0); abline(h = 0)
+
+# user_model_lme <- lme(new_sample ~ sample_size + sd_item + original_n, 
+#                       data = summary_long, 
+#                       random = list(~1|scale2, ~scale2|power, ~scale2|name))
+# r.squaredGLMM(user_model_lme)
+# resid_model <- scale(residuals(user_model_lme))
+# fit_model <- scale(fitted.values(user_model_lme))
+# hist(resid_model)
+# qqnorm(resid_model); abline(0,1)
+# plot(fit_model, resid_model); abline(v = 0); abline(h = 0)
+```
+
 The first model using pilot sample size to predict new sample size was significant, *F*(`r user_sum$fstatistic[2]`, `r user_sum$fstatistic[3]`) = `r round(user_sum$fstatistic[1], digits = 2)`, *p* < .001, `r user_print$estimate$modelfit$r2`, capturing nearly 90% of the variance, `r user_print$estimate$sample_size`. The second model with item standard deviation was better than the first model *F*(`r change_table$df[2]`, `r format(change_table$res.df[2], big.mark = "")`) = `r round(change_table$statistic[2], digits = 2)`, *p* < .001, `r user_print2$estimate$modelfit$r2`. The item standard deviation predictor was significant, `r user_print2$full_result$sd_item`. The addition of the original pilot sample size was also significant, *F*(`r change_table$df[3]`, `r format(change_table$res.df[3], big.mark = "")`) = `r round(change_table$statistic[3], digits = 2)`, *p* < .001, `r user_print3$estimate$modelfit$r2`.
 
 As shown in the final model Table \@ref(tab:table-correction), the new suggested sample size is proportional to the original suggested sample size (i.e., *b* < 1), which reduces the sample size suggestion. As variability increases, the suggested sample size also increases to capture differences in heterogeneity shown above; however, this predictor is not significant in the final model, and only contributes a small portion of overall variance. Last, in order to correct for large pilot data, the original pilot sample size decreases the new suggested sample size. This formula approximation captures 96% of the variance in sample size scores and should allow a researcher to estimate based on their own data. 
@@ -644,6 +664,39 @@ for (cutoff in unique(summary_long$name)){
   by_cutoff[[cutoff]] <- lm(new_sample ~ sample_size + sd_item + original_n, data = summary_long  %>% filter(name == cutoff))
   R2[cutoff] <- summary(by_cutoff[[cutoff]])$r.squared
 }
+```
+
+```{r test-decile, include = F, echo = F}
+resid_model <- scale(residuals(by_cutoff[["Decile 50"]]))
+fit_model <- scale(fitted.values(by_cutoff[["Decile 50"]]))
+hist(resid_model)
+qqnorm(resid_model); abline(0,1)
+plot(fit_model, resid_model); abline(v = 0); abline(h = 0)
+
+# by scale, power, source
+separate_lms <- list()
+R2_lms <- list()
+
+for (scale_loop in unique(summary_long$scale)){
+  for (power_loop in unique(summary_long$power)){
+    for (source_loop in unique(summary_long$source)){
+      temp <- summary_long %>% 
+        filter(scale == scale_loop) %>% 
+        filter(power == power_loop) %>% 
+        filter(source == source_loop) %>% 
+        filter(name == "Decile 50")
+      
+      separate_lms[[paste(scale_loop, power_loop, source_loop, sep = "_")]] <- lm(new_sample ~ sample_size + sd_item + original_n, data = temp)
+      R2_lms[[paste(scale_loop, power_loop, source_loop, sep = "_")]] <- summary(separate_lms[[paste(scale_loop, power_loop, source_loop, sep = "_")]])$r.squared
+    }
+  }
+}
+
+# resid_model <- scale(residuals(separate_lms[[10]]))
+# fit_model <- scale(fitted.values(separate_lms[[10]]))
+# hist(resid_model)
+# qqnorm(resid_model); abline(0,1)
+# plot(fit_model, resid_model); abline(v = 0); abline(h = 0)
 ```
 
 Last, we examine the question of an appropriate SE decile. All graphs for power, heterogeneity, scale, and correction are presented online. First, the 0%, 10%, and 20% deciles are likely too restrictive, providing very large estimates that do not always find a reasonable sample size in proportion to the pilot sample size, scale, and heterogeneity. If we examine the $R^2$ values for each decile of our regression equation separately, we find that the 50% (`r round(R2[["Decile 50"]], digits = 3)`) represents the best match to our corrected sample size suggestions. The 50% decile, in the corrected format, appears to meet all goals: 1) increases with heterogeneity and scale of data, and 2) higher suggested values for small original samples and a leveling effect at larger pilot data. Figure \@ref(fig:decile-figure) illustrates the corrected scores for simulations at the 50% decile recommended cutoff for item standard errors. 
