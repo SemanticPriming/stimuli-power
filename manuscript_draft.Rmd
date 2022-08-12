@@ -101,444 +101,24 @@ First, the scale of the data was manipulated by creating three sets of scales. T
 
 Next, item variance heterogeneity was included by manipulating the potential $\sigma$ for each individual item. For small scales, the $\sigma$ = 2 points with a variability of .2, .4, and .8 for low, medium, and high heterogeneity in the variances between items. For the medium scale of data, $\sigma$ = 25 with a variance of 4, 8, and 16. Last, for the large scale of data, $\sigma$ = 400 with a variance of 50, 100, and 200 for heterogeneity. 
 
-```{r sim_pop, include = F, echo = F}
-# small potential variability overall, sort of 1-7ish scale
-mu1 <- rnorm(30, 4, .25)
-sigma1.1 <- rnorm(30, 2, .2)
-sigma2.1 <- rnorm(30, 2, .4)
-sigma3.1 <- rnorm(30, 2, .8)
-
-# medium potential variability 0 to 100 scale
-mu2 <- rnorm(30, 50, 10)
-sigma1.2 <- rnorm(30, 25, 4)
-sigma2.2 <- rnorm(30, 25, 8)
-sigma3.2 <- rnorm(30, 25, 16)
-
-while(sum(sigma3.2 < 0) > 0){
-  sigma3.2 <- rnorm(30, 25, 16)
-}
-
-# large potential variability in the 1000s scale
-mu3 <- rnorm(30, 1000, 150)
-sigma1.3 <- rnorm(30, 400, 50)
-sigma2.3 <- rnorm(30, 400, 100)
-sigma3.3 <- rnorm(30, 400, 200)
-
-while(sum(sigma3.3 < 0) > 0){
-  sigma3.3 <- rnorm(30, 400, 200)
-}
-
-population1 <- data.frame(
-  item = rep(1:30, 1000*3),
-  scale = rep(1:3, each = 1000*30),
-  score = c(rnorm(1000*30, mean = mu1, sd = sigma1.1),
-            rnorm(1000*30, mean = mu2, sd = sigma1.2),
-            rnorm(1000*30, mean = mu3, sd = sigma1.3))
-  )
-
-population2 <- data.frame(
-  item = rep(1:30, 1000*3),
-  scale = rep(1:3, each = 1000*30),
-  score = c(rnorm(1000*30, mean = mu1, sd = sigma2.1),
-            rnorm(1000*30, mean = mu2, sd = sigma2.2),
-            rnorm(1000*30, mean = mu3, sd = sigma2.3))
-  )
-
-population3 <- data.frame(
-  item = rep(1:30, 1000*3),
-  scale = rep(1:3, each = 1000*30),
-  score = c(rnorm(1000*30, mean = mu1, sd = sigma3.1),
-            rnorm(1000*30, mean = mu2, sd = sigma3.2),
-            rnorm(1000*30, mean = mu3, sd = sigma3.3))
-  )
-```
-
 *Samples*. Each population was then sampled as if a researcher was conducting a pilot study. The sample sizes started at 20 participants per item increasing in units of 5 up to 100 participants. 
-
-```{r sim_sample, include = F, echo = F}
-# create pilot samples from 20 to 100
-samples1 <- samples2 <- samples3 <- list() 
-sizes <- c(20, 25, 30, 35, 40, 45, 50, 55, 60, 65, 70, 75, 80, 85, 90, 95, 100)
-for (i in 1:length(sizes)){
-  samples1[[i]] <- population1 %>% 
-    group_by(item, scale) %>% 
-    slice_sample(n = sizes[i])
-  
-  samples2[[i]] <- population2 %>% 
-    group_by(item, scale) %>% 
-    slice_sample(n = sizes[i])
-    
-  samples3[[i]] <- population3 %>% 
-    group_by(item, scale) %>% 
-    slice_sample(n = sizes[i])
-}
-```
 
 *Cutoff Score Criterions*. The standard errors of each item were calculated to mimic the AIPE procedure of finding an appropriately small confidence interval, as standard error functions as the main component in the formula for normal distribution confidence intervals. Standard errors were calculated at each decile of the items up to 90% (i.e., 0% smallest SE, 10% ..., 90% largest SE). The lower deciles would represent a strict criterion for accurate measurement, as many items would need smaller SEs to meet cutoff scores, while the higher deciles would represent less strict criterions for cutoff scores. 
 
-```{r calc_SE, include = F, echo = F}
-# calculate the SEs and the cutoff scores 
-SES1 <- SES2 <- SES3 <- list()
-cutoffs1 <- cutoffs2 <- cutoffs3 <- list()
-sd_items1 <- sd_items2 <- sd_items3 <- list()
-for (i in 1:length(samples1)){
-  sd_items1[[i]] <- samples1[[i]] %>% group_by(item, scale) %>% 
-    summarize(sd = sd(score), .groups = "keep") %>% 
-    ungroup() %>% group_by(scale) %>% summarize(sd_item = sd(sd))
-  sd_items2[[i]] <- samples2[[i]] %>% group_by(item, scale) %>% 
-    summarize(sd = sd(score), .groups = "keep") %>% 
-    ungroup() %>% group_by(scale) %>% summarize(sd_item = sd(sd))
-  sd_items3[[i]] <- samples3[[i]] %>% group_by(item, scale) %>% 
-    summarize(sd = sd(score), .groups = "keep") %>% 
-    ungroup() %>% group_by(scale) %>% summarize(sd_item = sd(sd))
-  
-  SES1[[i]] <- tapply(samples1[[i]]$score,
-                     list(samples1[[i]]$item,
-                          samples1[[i]]$scale),
-                     function (x){ sd(x)/sqrt(length(x))})
-  SES2[[i]] <- tapply(samples2[[i]]$score,
-                   list(samples2[[i]]$item,
-                        samples2[[i]]$scale),
-                   function (x){ sd(x)/sqrt(length(x))})
-  SES3[[i]] <- tapply(samples3[[i]]$score,
-                 list(samples2[[i]]$item,
-                      samples2[[i]]$scale),
-                 function (x){ sd(x)/sqrt(length(x))})
-
-  cutoffs1[[i]] <- apply(as.data.frame(SES1[[i]]), 2, 
-                         quantile, 
-                         probs = seq(0, .9, by = .1))
-  cutoffs2[[i]] <- apply(as.data.frame(SES2[[i]]), 2, 
-                         quantile, 
-                         probs = seq(0, .9, by = .1))
-  cutoffs3[[i]] <- apply(as.data.frame(SES3[[i]]), 2, 
-                         quantile, 
-                         probs = seq(0, .9, by = .1))
-}
-```
-
 ## Researcher Sample Simulation 
 
-In this section, we simulate what a researcher might do if they follow our suggested application of AIPE to sample size planning based on well measured items. Assuming each pilot sample represents a dataset a researcher has collected, we will simulate samples of 20 to 500 to determine what the new sample size suggestion would be. We assume that samples over 500 may be considered too large for many researchers who do not work in teams or have participant funds. The standard error of each item was calculated for each suggested sample size by pilot sample size by population type.
-
-```{r sim_sim, include = F, echo = F}
-# sequence of sample sizes to try
-samplesize_values <- seq(20, 500, 5)
-
-# place to store everything
-sampled_values1 <- sampled_values2 <- sampled_values3 <- list()
-
-# loop over the samples
-for (i in 1:length(samples1)){
-  
-  # create a blank table for us to save the values in 
-  sim_table1 <- matrix(NA, 
-                      nrow = length(samplesize_values), 
-                      ncol = 30*3)
-  
-  # make it a data frame
-  sim_table1 <- sim_table2 <- sim_table3 <- as.data.frame(sim_table1)
-  
-  # add a place for sample size values 
-  sim_table1$sample_size <- sim_table2$sample_size <- sim_table3$sample_size <- NA
-  
-  # loop over pilot sample sizes
-  for (q in 1:length(samplesize_values)){
-      
-    # temp dataframe that samples and summarizes
-    temp <- samples1[[i]] %>% 
-      group_by(item, scale) %>% 
-      slice_sample(n = samplesize_values[q], replace = T) %>% 
-      summarize(se = sd(score)/sqrt(length(score)),
-                .groups = "keep")
-    
-    sim_table1[q, 1:90] <- temp$se
-    sim_table1[q, 91] <- samplesize_values[q]
-    
-    temp <- samples2[[i]] %>% 
-      group_by(item, scale) %>% 
-      slice_sample(n = samplesize_values[q], replace = T) %>% 
-      summarize(se = sd(score)/sqrt(length(score)),
-                .groups = "keep")
-    
-    sim_table2[q, 1:90] <- temp$se
-    sim_table2[q, 91] <- samplesize_values[q]
-    
-    temp <- samples3[[i]] %>% 
-      group_by(item, scale) %>% 
-      slice_sample(n = samplesize_values[q], replace = T) %>% 
-      summarize(se = sd(score)/sqrt(length(score)),
-                .groups = "keep")
-    
-    sim_table3[q, 1:90] <- temp$se
-    sim_table3[q, 91] <- samplesize_values[q]
-    
-    } # end pilot sample loop 
-  
-  sampled_values1[[i]] <- sim_table1
-  sampled_values2[[i]] <- sim_table2
-  sampled_values3[[i]] <- sim_table3
-
-} # end all sample loop 
-```
+In this section, we simulate what a researcher might do if they follow our suggested application of AIPE to sample size planning based on well measured items. Assuming each pilot sample represents a dataset a researcher has collected, we will simulate samples of 20 to 2000 to determine what the new sample size suggestion would be. We assume that samples over 500 may be considered too large for many researchers who do not work in teams or have participant funds; however, the sample size simulations were estimated over this amount to determine the pattern of suggested sample sizes (i.e., the function between original sample size and proposed sample size). The standard error of each item was calculated for each suggested sample size by pilot sample size by population type.
 
 Next, the percent of items that fall below the cutoff scores, and thus, would be considered "well-measured" were calculated for each decile by sample. From this data, we pinpoint the smallest suggested sample size at which 80%, 85%, 90%, and 95% of the items fall below the cutoff criterion. These values were chosen as popular measures of "power" in which one could determine the minimum suggested sample size (potentially 80% of items) and the maximum suggested sample size (potentially 90%). 
 
-```{r calc_percent, include = F, echo = F}
-summary_list1 <- summary_list2 <- summary_list3 <- list()
-for (i in 1:length(sampled_values1)){
-  
-  # summary list 1 ----
-  summary_list1[[i]] <- sampled_values1[[i]] %>% 
-    pivot_longer(cols = -c(sample_size)) %>% 
-    rename(item = name, se = value) %>% 
-    mutate(scale = rep(1:3, 30*length(samplesize_values))) %>% 
-    mutate(item = rep(rep(1:30, each = 3), length(samplesize_values))) 
-    
-  # cut offs for 1
-  temp1.1 <- summary_list1[[i]] %>% 
-    filter(scale == "1") %>% 
-    group_by(sample_size, scale) %>% 
-    summarize(Percent_Below0 = sum(se <= cutoffs1[[i]][1, 1])/30,
-           Percent_Below10 = sum(se <= cutoffs1[[i]][2, 1])/30,
-           Percent_Below20 = sum(se <= cutoffs1[[i]][3, 1])/30,
-           Percent_Below30 = sum(se <= cutoffs1[[i]][4, 1])/30,
-           Percent_Below40 = sum(se <= cutoffs1[[i]][5, 1])/30,
-           Percent_Below50 = sum(se <= cutoffs1[[i]][6, 1])/30, 
-           Percent_Below60 = sum(se <= cutoffs1[[i]][7, 1])/30, 
-           Percent_Below70 = sum(se <= cutoffs1[[i]][8, 1])/30, 
-           Percent_Below80 = sum(se <= cutoffs1[[i]][9, 1])/30, 
-           Percent_Below90 = sum(se <= cutoffs1[[i]][10, 1])/30, 
-           .groups = "keep") %>% 
-    mutate(original_n = sizes[i], 
-           source = "low")
-    
-  temp1.2 <- summary_list1[[i]] %>% 
-    filter(scale == "2") %>% 
-    group_by(sample_size, scale) %>% 
-    summarize(Percent_Below0 = sum(se <= cutoffs1[[i]][1, 2])/30,
-           Percent_Below10 = sum(se <= cutoffs1[[i]][2, 2])/30,
-           Percent_Below20 = sum(se <= cutoffs1[[i]][3, 2])/30,
-           Percent_Below30 = sum(se <= cutoffs1[[i]][4, 2])/30,
-           Percent_Below40 = sum(se <= cutoffs1[[i]][5, 2])/30,
-           Percent_Below50 = sum(se <= cutoffs1[[i]][6, 2])/30, 
-           Percent_Below60 = sum(se <= cutoffs1[[i]][7, 2])/30, 
-           Percent_Below70 = sum(se <= cutoffs1[[i]][8, 2])/30, 
-           Percent_Below80 = sum(se <= cutoffs1[[i]][9, 2])/30, 
-           Percent_Below90 = sum(se <= cutoffs1[[i]][10, 2])/30, 
-           .groups = "keep") %>% 
-    mutate(original_n = sizes[i],
-           source = "low")
-  
-  temp1.3 <- summary_list1[[i]] %>% 
-    filter(scale == "3") %>% 
-    group_by(sample_size, scale) %>% 
-    summarize(Percent_Below0 = sum(se <= cutoffs1[[i]][1, 3])/30,
-           Percent_Below10 = sum(se <= cutoffs1[[i]][2, 3])/30,
-           Percent_Below20 = sum(se <= cutoffs1[[i]][3, 3])/30,
-           Percent_Below30 = sum(se <= cutoffs1[[i]][4, 3])/30,
-           Percent_Below40 = sum(se <= cutoffs1[[i]][5, 3])/30,
-           Percent_Below50 = sum(se <= cutoffs1[[i]][6, 3])/30, 
-           Percent_Below60 = sum(se <= cutoffs1[[i]][7, 3])/30, 
-           Percent_Below70 = sum(se <= cutoffs1[[i]][8, 3])/30, 
-           Percent_Below80 = sum(se <= cutoffs1[[i]][9, 3])/30, 
-           Percent_Below90 = sum(se <= cutoffs1[[i]][10, 3])/30, 
-           .groups = "keep") %>% 
-    mutate(original_n = sizes[i], 
-           source = "low")
-  
-  #rejoin 
-  summary_list1[[i]] <- bind_rows(temp1.1, temp1.2, temp1.3)
-  
-  # summary list 2 ----
-  summary_list2[[i]] <- sampled_values2[[i]] %>% 
-    pivot_longer(cols = -c(sample_size)) %>% 
-    rename(item = name, se = value) %>% 
-    mutate(scale = rep(1:3, 30*length(samplesize_values))) %>% 
-    mutate(item = rep(rep(1:30, each = 3), length(samplesize_values)))
-  
-  # cut offs for 2
-  temp2.1 <- summary_list2[[i]] %>% 
-    filter(scale == "1") %>% 
-    group_by(sample_size, scale) %>% 
-    summarize(Percent_Below0 = sum(se <= cutoffs2[[i]][1, 1])/30,
-           Percent_Below10 = sum(se <= cutoffs2[[i]][2, 1])/30,
-           Percent_Below20 = sum(se <= cutoffs2[[i]][3, 1])/30,
-           Percent_Below30 = sum(se <= cutoffs2[[i]][4, 1])/30,
-           Percent_Below40 = sum(se <= cutoffs2[[i]][5, 1])/30,
-           Percent_Below50 = sum(se <= cutoffs2[[i]][6, 1])/30, 
-           Percent_Below60 = sum(se <= cutoffs2[[i]][7, 1])/30, 
-           Percent_Below70 = sum(se <= cutoffs2[[i]][8, 1])/30, 
-           Percent_Below80 = sum(se <= cutoffs2[[i]][9, 1])/30, 
-           Percent_Below90 = sum(se <= cutoffs2[[i]][10, 1])/30, 
-           .groups = "keep") %>% 
-    mutate(original_n = sizes[i],
-           source = "med")
-    
-  temp2.2 <- summary_list2[[i]] %>% 
-    filter(scale == "2") %>% 
-    group_by(sample_size, scale) %>% 
-    summarize(Percent_Below0 = sum(se <= cutoffs2[[i]][1, 2])/30,
-           Percent_Below10 = sum(se <= cutoffs2[[i]][2, 2])/30,
-           Percent_Below20 = sum(se <= cutoffs2[[i]][3, 2])/30,
-           Percent_Below30 = sum(se <= cutoffs2[[i]][4, 2])/30,
-           Percent_Below40 = sum(se <= cutoffs2[[i]][5, 2])/30,
-           Percent_Below50 = sum(se <= cutoffs2[[i]][6, 2])/30, 
-           Percent_Below60 = sum(se <= cutoffs2[[i]][7, 2])/30, 
-           Percent_Below70 = sum(se <= cutoffs2[[i]][8, 2])/30, 
-           Percent_Below80 = sum(se <= cutoffs2[[i]][9, 2])/30, 
-           Percent_Below90 = sum(se <= cutoffs2[[i]][10, 2])/30, 
-           .groups = "keep") %>% 
-    mutate(original_n = sizes[i], 
-           source = "med")
-  
-  temp2.3 <- summary_list2[[i]] %>% 
-    filter(scale == "3") %>% 
-    group_by(sample_size, scale) %>% 
-    summarize(Percent_Below0 = sum(se <= cutoffs2[[i]][1, 3])/30,
-           Percent_Below10 = sum(se <= cutoffs2[[i]][2, 3])/30,
-           Percent_Below20 = sum(se <= cutoffs2[[i]][3, 3])/30,
-           Percent_Below30 = sum(se <= cutoffs2[[i]][4, 3])/30,
-           Percent_Below40 = sum(se <= cutoffs2[[i]][5, 3])/30,
-           Percent_Below50 = sum(se <= cutoffs2[[i]][6, 3])/30, 
-           Percent_Below60 = sum(se <= cutoffs2[[i]][7, 3])/30, 
-           Percent_Below70 = sum(se <= cutoffs2[[i]][8, 3])/30, 
-           Percent_Below80 = sum(se <= cutoffs2[[i]][9, 3])/30, 
-           Percent_Below90 = sum(se <= cutoffs2[[i]][10, 3])/30, 
-           .groups = "keep") %>% 
-    mutate(original_n = sizes[i],
-           source = "med")
-  
-  #rejoin 
-  summary_list2[[i]] <- bind_rows(temp2.1, temp2.2, temp2.3)
-  
-  # summary list 3 ----
-  summary_list3[[i]] <- sampled_values3[[i]] %>% 
-    pivot_longer(cols = -c(sample_size)) %>% 
-    rename(item = name, se = value) %>% 
-    mutate(scale = rep(1:3, 30*length(samplesize_values))) %>% 
-    mutate(item = rep(rep(1:30, each = 3), length(samplesize_values)))
-  
-  # cut offs for 3 
-  temp3.1 <- summary_list3[[i]] %>% 
-    filter(scale == "1") %>% 
-    group_by(sample_size, scale) %>% 
-    summarize(Percent_Below0 = sum(se <= cutoffs3[[i]][1, 1])/30,
-           Percent_Below10 = sum(se <= cutoffs3[[i]][2, 1])/30,
-           Percent_Below20 = sum(se <= cutoffs3[[i]][3, 1])/30,
-           Percent_Below30 = sum(se <= cutoffs3[[i]][4, 1])/30,
-           Percent_Below40 = sum(se <= cutoffs3[[i]][5, 1])/30,
-           Percent_Below50 = sum(se <= cutoffs3[[i]][6, 1])/30, 
-           Percent_Below60 = sum(se <= cutoffs3[[i]][7, 1])/30, 
-           Percent_Below70 = sum(se <= cutoffs3[[i]][8, 1])/30, 
-           Percent_Below80 = sum(se <= cutoffs3[[i]][9, 1])/30, 
-           Percent_Below90 = sum(se <= cutoffs3[[i]][10, 1])/30, 
-           .groups = "keep") %>% 
-    mutate(original_n = sizes[i],
-           source = "high")
-     
-  temp3.2 <- summary_list3[[i]] %>% 
-    filter(scale == "2") %>% 
-    group_by(sample_size, scale) %>% 
-    summarize(Percent_Below0 = sum(se <= cutoffs3[[i]][1, 2])/30,
-           Percent_Below10 = sum(se <= cutoffs3[[i]][2, 2])/30,
-           Percent_Below20 = sum(se <= cutoffs3[[i]][3, 2])/30,
-           Percent_Below30 = sum(se <= cutoffs3[[i]][4, 2])/30,
-           Percent_Below40 = sum(se <= cutoffs3[[i]][5, 2])/30,
-           Percent_Below50 = sum(se <= cutoffs3[[i]][6, 2])/30, 
-           Percent_Below60 = sum(se <= cutoffs3[[i]][7, 2])/30, 
-           Percent_Below70 = sum(se <= cutoffs3[[i]][8, 2])/30, 
-           Percent_Below80 = sum(se <= cutoffs3[[i]][9, 2])/30, 
-           Percent_Below90 = sum(se <= cutoffs3[[i]][10, 2])/30, 
-           .groups = "keep") %>% 
-    mutate(original_n = sizes[i],
-           source = "high")
-  
-  temp3.3 <- summary_list3[[i]] %>% 
-    filter(scale == "3") %>% 
-    group_by(sample_size, scale) %>% 
-    summarize(Percent_Below0 = sum(se <= cutoffs3[[i]][1, 3])/30,
-           Percent_Below10 = sum(se <= cutoffs3[[i]][2, 3])/30,
-           Percent_Below20 = sum(se <= cutoffs3[[i]][3, 3])/30,
-           Percent_Below30 = sum(se <= cutoffs3[[i]][4, 3])/30,
-           Percent_Below40 = sum(se <= cutoffs3[[i]][5, 3])/30,
-           Percent_Below50 = sum(se <= cutoffs3[[i]][6, 3])/30, 
-           Percent_Below60 = sum(se <= cutoffs3[[i]][7, 3])/30, 
-           Percent_Below70 = sum(se <= cutoffs3[[i]][8, 3])/30, 
-           Percent_Below80 = sum(se <= cutoffs3[[i]][9, 3])/30, 
-           Percent_Below90 = sum(se <= cutoffs3[[i]][10, 3])/30, 
-           .groups = "keep") %>% 
-    mutate(original_n = sizes[i],
-           source = "high")
-  
-  #rejoin 
-  summary_list3[[i]] <- bind_rows(temp3.1, temp3.2, temp3.3)
-
-  }
-
-summary_DF <- bind_rows(summary_list1, 
-                        summary_list2, 
-                        summary_list3)
-```
-
-```{r calc_percent_combine, include = F, echo = F}
-summary_long_80 <- summary_DF %>% 
-  pivot_longer(cols = -c(sample_size, original_n, source, scale)) %>% 
-  filter(value >= .80) %>% 
-  arrange(sample_size, original_n, source, scale, name) %>% 
-  group_by(original_n, name, source, scale) %>% 
-  slice_head(n = 1) %>% 
-  mutate(power = 80)
-
-summary_long_85 <- summary_DF %>% 
-  pivot_longer(cols = -c(sample_size, original_n, source, scale)) %>% 
-  filter(value >= .85) %>% 
-  arrange(sample_size, original_n, source, scale, name) %>% 
-  group_by(original_n, name, source, scale) %>% 
-  slice_head(n = 1) %>% 
-  mutate(power = 85)
-  
-summary_long_90 <- summary_DF %>% 
-  pivot_longer(cols = -c(sample_size, original_n, source, scale)) %>% 
-  filter(value >= .90) %>% 
-  arrange(sample_size, original_n, source, scale, name) %>% 
-  group_by(original_n, name, source, scale) %>% 
-  slice_head(n = 1) %>% 
-  mutate(power = 90)
-
-summary_long_95 <- summary_DF %>% 
-  pivot_longer(cols = -c(sample_size, original_n, source, scale)) %>% 
-  filter(value >= .95) %>% 
-  arrange(sample_size, original_n, source, scale, name) %>% 
-  group_by(original_n, name, source, scale) %>% 
-  slice_head(n = 1) %>% 
-  mutate(power = 95)
-
-summary_long <- rbind(summary_long_80, 
-                      summary_long_85,
-                      summary_long_90,
-                      summary_long_95)
-
-summary_long$source <- factor(summary_long$source, 
-                              levels = c("low", "med", "high"),
-                              labels = c("Low Variance", "Medium Variance", "High Variance"))
-
-summary_long$scale2 <- factor(summary_long$scale, 
-                              levels = c(1:3),
-                              labels = c("Small Scale", "Medium Scale", "Large Scale"))
-
-sd_items <- bind_rows(sd_items1, sd_items2, sd_items3)
-sd_items$original_n <- rep(rep(sizes, each = 3), 3)
-sd_items$source <- rep(c("Low Variance", "Medium Variance", "High Variance"), each = 3*length(sizes))
-summary_long <- summary_long %>% 
-  full_join(sd_items, 
-            by = c("original_n" = "original_n", "scale" = "scale", 
-                   "source" = "source"))
-
-summary_long$name <- gsub("Percent_Below", "Decile ", summary_long$name)
-```
+In this procedure, we identified three points of simulation: the population, the samples from those populations, and the researcher sample simulation. In order to minimize any potentially random quirks, we ran each of these samples 100 times for a total of 1000000 simulations. The average of these simulations is presented in the results. 
 
 # Results
+
+```{r import-data}
+
+```
+
 
 ## Differences in Item Variance
 
@@ -656,7 +236,7 @@ apa_table(table_correct,
 
 ## Choosing an Appropriate Cutoff
 
-```{r R2_cutoff, include = F, echo = F}
+```{r R2-cutoff, include = F, echo = F}
 by_cutoff <- list()
 R2 <- list()
 
@@ -720,7 +300,7 @@ The formula for finding the corrected sample size using a 50% decile is: $N_{Cor
 
 # Examples 
 
-```{r import_data, include = F, echo = F}
+```{r import-data-example, include = F, echo = F}
 conDF <- import("./data/concreteness_trial.rda")
 elpDF <- import("./data/ELPDecisionData.zip")
 ```
@@ -729,7 +309,7 @@ In this section, we provide two examples of the suggested procedure. The first e
 
 ## Concreteness Ratings
 
-```{r con_estimate, echo = F, include = F}
+```{r con-estimate, echo = F, include = F}
 # sample the data
 con_words <- sample(unique(conDF$Word), size = 100, replace = F)
 con_small <- conDF %>% filter(Word %in% con_words)
@@ -752,7 +332,7 @@ cutoff <- quantile(SE, probs = .50)
 
 The concreteness ratings data includes `r length(unique(conDF$Word))` concepts that were rated for their concreteness. In our fictional study for this example, we selected 100 random words to show participants. In the original study, not every participant rated every word, which created uneven sample sizes for each word. In our random sample of 100 words, the average pilot sample size was `r round(mean(tapply(con_small$Rating, con_small$Word, length)), digits = 2)` (*SD* = `r round(sd(tapply(con_small$Rating, con_small$Word, length)), digits = 2)`), and we will use `r pilot_size` as our pilot sample size for this example. All "do not know" ratings were set as missing data. The 50% decile for items standard error was `r round(cutoff, digits = 3)` for our cutoff criterion. 
 
-```{r con_sample, include = F, echo = F}
+```{r con-sample, include = F, echo = F}
 # sequence of sample sizes to try
 samplesize_values <- seq(20, 300, 5)
 
@@ -804,7 +384,7 @@ The pilot data was then simulated, with replacement, with samples from 20 to 300
 
 ## Response Latencies 
 
-```{r elp_estimate, echo = F, include = F}
+```{r elp-estimate, echo = F, include = F}
 # sample the data
 elp_fake <- sample(unique(elpDF$Stimulus[elpDF$Type == 0]), size = 500, replace = F)
 elp_real <- sample(unique(elpDF$Stimulus[elpDF$Type == 1]), size = 500, replace = F)
@@ -831,7 +411,7 @@ cutoff_nw <- quantile(SE_nw, probs = .50, na.rm = T)
 
 The ELP response latency data includes `r length(unique(elpDF$Stimulus))` word-forms, `r length(unique(elpDF$Stimulus[elpDF$Type == 0]))` that are listed as non-words, and `r length(unique(elpDF$Stimulus[elpDF$Type == 1]))` real words. For our example study, we will randomly select 500 real words and 500 non-words to show participants. The average pilot sample size for this random sample was `r format(round(mean(tapply(elp_small$RT, elp_small$Stimulus, length)), digits = 2), nsmall = 2)` (*SD* = `r round(sd(tapply(elp_small$RT, elp_small$Stimulus, length)), digits = 2)`), and *n* = `r pilot_size` will be our pilot size for this example. Again, participants are expected to make mistakes, and we calculated percent correct as `r round(mean(data_loss$percent_correct), digits = 2)`, which was roughly even in the two stimulus categories: $M_{word}$ = `r round(mean(data_loss$percent_correct[data_loss$Type == 1]), digits = 2)` and $M_{non-word}$ = `r round(mean(data_loss$percent_correct[data_loss$Type == 0]), digits = 2)`. The 50% decile for items standard error was `r round(cutoff, digits = 3)` for our cutoff criterion. We additionally checked to ensure that the two stimulus types did not have very different cutoff criterions: 50% decile $SE_{words}$ = `r round(cutoff_word, digits = 3)`, 50% decile $SE_{nonwords}$ = `r round(cutoff_nw, digits =3)`. In this scenario, we could choose to go with the lower SE to be more conservative (i.e., higher projected sample size). Given the values were close for large scale data, we used the 50% decile of all stimuli taken together. 
 
-```{r elp_sample, include = F, echo = F}
+```{r elp-sample, include = F, echo = F}
 # sequence of sample sizes to try
 samplesize_values <- seq(20, 300, 5)
 
