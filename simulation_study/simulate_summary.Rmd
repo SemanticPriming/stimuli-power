@@ -571,66 +571,64 @@ calculate_proposed <- function(summary_DF){
 ```{r simulation_pipeline, include = T, echo = T}
 # a list to save this in 
 full_simulation <- list()
-
-
-for (i in 1:10){
+populations <- simulate_population(x)
+    
+for (p in 1:100){
   
-  # simulate population 
-  populations <- simulate_population(x)
+  # simulate samples from population
+  samples <- simulate_samples(start = 20, stop = 100, increase = 10, 
+                          population1 = populations$population1,
+                          population2 = populations$population2, 
+                          population3 = populations$population3)
   
-  for (p in 1:10){
-    
-    # simulate samples from population
-    samples <- simulate_samples(start = 20, stop = 100, increase = 5, 
-                            population1 = populations$population1,
-                            population2 = populations$population2, 
-                            population3 = populations$population3)
-    
-    # calculate deciles 
-    deciles <- calculate_deciles(samples1 = samples$samples1, 
-                             samples2 = samples$samples2,
-                             samples3 = samples$samples3)
-    
-    # reset this with each new sample 
-    researcher_summary <- list()
-    
-    for (q in 1:10){
-      
-      # simulate researcher
-      researcher_data <- simulate_researcher(samples1 = samples$samples1, 
-                                       samples2 = samples$samples2,
-                                       samples3 = samples$samples3, 
-                                       start = 20, stop = 30, 
-                                       increase = 5)
-      
-      # calculate percent under each decile
-      percent_items <- calculate_percent(
-        sampled_values1 = researcher_data$sampled_values1, 
-        sampled_values2 = researcher_data$sampled_values2, 
-        sampled_values3 = researcher_data$sampled_values3, 
-        cutoffs1 = deciles$cutoffs1, 
-        cutoffs2 = deciles$cutoffs2, 
-        cutoffs3 = deciles$cutoffs3, 
-        samplesize_values = researcher_data$samplesize_values,
-        sizes = samples$sizes)
-    
-      # calculate final summary data 
-      researcher_summary[[q]] <- calculate_proposed(summary_DF = percent_items)
-      
-    } # tell the researcher to do it 1000 times for normal simulation numbers 
-    
-    # after the researcher summary, summarize and stick in dataframe 
-    # so we have a dataframe of each population by sample 
-    full_simulation[[paste(i, "_", q, sep = "")]] <- 
-      bind_rows(researcher_summary) %>% 
-      group_by(scale, original_n, source, name, power) %>% 
-      summarize(sample_size = mean(sample_size),
-                value = mean(value), .groups = "keep")
-    
-  } # simulate the sample 100 times for each population 
+  # calculate deciles 
+  deciles <- calculate_deciles(samples1 = samples$samples1, 
+                           samples2 = samples$samples2,
+                           samples3 = samples$samples3)
   
-} # simulate the population 100 times 
+  cat(paste(p, Sys.time(), "\n"))
+  
+  # reset this with each new sample 
+  researcher_summary <- list()
+  
+  for (q in 1:100){
+    
+    # simulate researcher
+    researcher_data <- simulate_researcher(samples1 = samples$samples1, 
+                                     samples2 = samples$samples2,
+                                     samples3 = samples$samples3, 
+                                     start = 20, stop = 2000, 
+                                     increase = 20)
+    
+    # calculate percent under each decile
+    percent_items <- calculate_percent(
+      sampled_values1 = researcher_data$sampled_values1, 
+      sampled_values2 = researcher_data$sampled_values2, 
+      sampled_values3 = researcher_data$sampled_values3, 
+      cutoffs1 = deciles$cutoffs1, 
+      cutoffs2 = deciles$cutoffs2, 
+      cutoffs3 = deciles$cutoffs3, 
+      samplesize_values = researcher_data$samplesize_values,
+      sizes = samples$sizes)
+  
+    # calculate final summary data 
+    researcher_summary[[q]] <- calculate_proposed(summary_DF = percent_items)
+    
+  } # researcher 100 simulations 
+  
+  # after the researcher summary, summarize and stick in dataframe 
+  # so we have a dataframe of each population by sample 
+  full_simulation[[paste(p, Sys.time(), sep = "_")]] <-
+   bind_rows(researcher_summary) %>%
+   group_by(scale, original_n, source, name, power) %>%
+   summarize(sample_size = mean(sample_size),
+             value = mean(value), .groups = "keep")
+  
+  # writing out takes time but don't want to lose 100 researcher sims
+  # ran this across computers so make clear when run 
+  saveRDS(full_simulation, file = paste("simulation_", Sys.time(), ".Rdata", sep = ""))
 
+} # simulate sampling 100 times from the population
 ```
 
 

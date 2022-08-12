@@ -101,22 +101,22 @@ First, the scale of the data was manipulated by creating three sets of scales. T
 
 Next, item variance heterogeneity was included by manipulating the potential $\sigma$ for each individual item. For small scales, the $\sigma$ = 2 points with a variability of .2, .4, and .8 for low, medium, and high heterogeneity in the variances between items. For the medium scale of data, $\sigma$ = 25 with a variance of 4, 8, and 16. Last, for the large scale of data, $\sigma$ = 400 with a variance of 50, 100, and 200 for heterogeneity. 
 
-*Samples*. Each population was then sampled as if a researcher was conducting a pilot study. The sample sizes started at 20 participants per item increasing in units of 5 up to 100 participants. 
+*Samples*. Each population was then sampled as if a researcher was conducting a pilot study. The sample sizes started at 20 participants per item increasing in units of 10 up to 100 participants. 
 
 *Cutoff Score Criterions*. The standard errors of each item were calculated to mimic the AIPE procedure of finding an appropriately small confidence interval, as standard error functions as the main component in the formula for normal distribution confidence intervals. Standard errors were calculated at each decile of the items up to 90% (i.e., 0% smallest SE, 10% ..., 90% largest SE). The lower deciles would represent a strict criterion for accurate measurement, as many items would need smaller SEs to meet cutoff scores, while the higher deciles would represent less strict criterions for cutoff scores. 
 
 ## Researcher Sample Simulation 
 
-In this section, we simulate what a researcher might do if they follow our suggested application of AIPE to sample size planning based on well measured items. Assuming each pilot sample represents a dataset a researcher has collected, we will simulate samples of 20 to 2000 to determine what the new sample size suggestion would be. We assume that samples over 500 may be considered too large for many researchers who do not work in teams or have participant funds; however, the sample size simulations were estimated over this amount to determine the pattern of suggested sample sizes (i.e., the function between original sample size and proposed sample size). The standard error of each item was calculated for each suggested sample size by pilot sample size by population type.
+In this section, we simulate what a researcher might do if they follow our suggested application of AIPE to sample size planning based on well measured items. Assuming each pilot sample represents a dataset a researcher has collected, we will simulate samples of 20 to 2000 increasing in units of 20 to determine what the new sample size suggestion would be. We assume that samples over 500 may be considered too large for many researchers who do not work in teams or have participant funds; however, the sample size simulations were estimated over this amount to determine the pattern of suggested sample sizes (i.e., the function between original sample size and proposed sample size). The standard error of each item was calculated for each suggested sample size by pilot sample size by population type.
 
 Next, the percent of items that fall below the cutoff scores, and thus, would be considered "well-measured" were calculated for each decile by sample. From this data, we pinpoint the smallest suggested sample size at which 80%, 85%, 90%, and 95% of the items fall below the cutoff criterion. These values were chosen as popular measures of "power" in which one could determine the minimum suggested sample size (potentially 80% of items) and the maximum suggested sample size (potentially 90%). 
 
-In this procedure, we identified three points of simulation: the population, the samples from those populations, and the researcher sample simulation. In order to minimize any potentially random quirks, we ran each of these samples 100 times for a total of 1000000 simulations. The average of these simulations is presented in the results. 
+In order to minimize any potentially random quirks, we simulated the sample selection from the population 100 times and the researcher simulation 100 times for each of those selections, resulting in 10000 simulations of all combinations of variables (i.e., scale of the data, heterogeneity, pilot study size, researcher simulation size). The average of these simulations is presented in the results. 
 
 # Results
 
 ```{r import-data}
-
+summary_long <- import("simulation_study/simulated_summary_data.csv")
 ```
 
 
