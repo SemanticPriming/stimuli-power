@@ -12,7 +12,7 @@ knitr::opts_chunk$set(echo = TRUE)
 ## Libraries
 
 ```{r}
-set.seed(895893)
+set.seed(895893) # 233232
 library(dplyr)
 library(ggplot2)
 library(tidyr)
@@ -564,7 +564,6 @@ calculate_proposed <- function(summary_DF){
   - Create final summary 
 
 - We will simulate multiple times at each simulation point:
-  - Populations X 100
   - Samples X 100
   - Simulate Researcher X 100
 
@@ -618,11 +617,42 @@ for (p in 1:100){
   
   # after the researcher summary, summarize and stick in dataframe 
   # so we have a dataframe of each population by sample 
-  full_simulation[[paste(p, Sys.time(), sep = "_")]] <-
+  full_simulation[[p]] <-
    bind_rows(researcher_summary) %>%
    group_by(scale, original_n, source, name, power) %>%
    summarize(sample_size = mean(sample_size),
              value = mean(value), .groups = "keep")
+  
+  # clean up the values from the summary while you have the data 
+  full_simulation[[p]]$source <- factor(full_simulation[[p]]$source, 
+                                levels = c("low", "med", "high"),
+                                labels = c("Low Variance", 
+                                           "Medium Variance", 
+                                           "High Variance"))
+  
+  full_simulation[[p]]$scale2 <- factor(full_simulation[[p]]$scale, 
+                                levels = c(1:3),
+                                labels = c("Small Scale", 
+                                           "Medium Scale", 
+                                           "Large Scale"))
+  
+  # grab the sd information from the pilot sample
+  # note this is not the researcher simulated sample 
+  sd_items <- bind_rows(deciles$sd_items1, deciles$sd_items2, deciles$sd_items3)
+  sd_items$source <- rep(c("Low Variance", 
+                           "Medium Variance", 
+                           "High Variance"), 
+                         each = 3*length(samples$sizes))
+  sd_items$original_n <- rep(rep(samples$sizes, each = 3), 3)
+  
+  # add together that information 
+  full_simulation[[p]] <- full_simulation[[p]] %>% 
+    full_join(sd_items, 
+              by = c("original_n" = "original_n", 
+                     "scale" = "scale", 
+                     "source" = "source"))
+  
+  full_simulation[[p]]$name <- gsub("Percent_Below", "Decile ", full_simulation[[p]]$name)
   
   # writing out takes time but don't want to lose 100 researcher sims
   # ran this across computers so make clear when run 
@@ -631,24 +661,23 @@ for (p in 1:100){
 } # simulate sampling 100 times from the population
 ```
 
+## Put Together Data
 
 ```{r}
-# clean up the stuff from the summary 
-  summary_long$source <- factor(summary_long$source, 
-                                levels = c("low", "med", "high"),
-                                labels = c("Low Variance", "Medium Variance", "High Variance"))
-  
-  summary_long$scale2 <- factor(summary_long$scale, 
-                                levels = c(1:3),
-                                labels = c("Small Scale", "Medium Scale", "Large Scale"))
-  
-  sd_items <- bind_rows(sd_items1, sd_items2, sd_items3)
-  sd_items$original_n <- rep(rep(sizes, each = 3), 3)
-  sd_items$source <- rep(c("Low Variance", "Medium Variance", "High Variance"), each = 3*length(sizes))
-  summary_long <- summary_long %>% 
-    full_join(sd_items, 
-              by = c("original_n" = "original_n", "scale" = "scale", 
-                     "source" = "source"))
-  
-  summary_long$name <- gsub("Percent_Below", "Decile ", summary_long$name)
+sim_mac <- readRDS("simulation_2022-08-14 12:54:44.Rdata")
+sim_win
+sim_linux
+
+all_sim <- bind_rows(sim_mac, .id = "id")
+
+summary_long <- all_sim %>% 
+  group_by(scale, original_n, source, name, power) %>% 
+  summarize(sample_size = mean(sample_size),
+             value = mean(value), .groups = "keep")
+```
+
+## Export Final Data
+
+```{r}
+
 ```

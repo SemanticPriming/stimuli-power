@@ -119,7 +119,6 @@ In order to minimize any potentially random quirks, we simulated the sample sele
 summary_long <- import("simulation_study/simulated_summary_data.csv")
 ```
 
-
 ## Differences in Item Variance
 
 We examined if this procedure is sensitive to differences in item heterogeneity, as we should expect to collect larger samples if we wish to have a large number of items reach a threshold of acceptable variance; potentially, assuring we *could* average them if a researcher did not wish to use a more complex analysis such as multilevel modeling. 
