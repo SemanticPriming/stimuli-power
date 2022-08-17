@@ -116,7 +116,16 @@ In order to minimize any potentially random quirks, we simulated the sample sele
 # Results
 
 ```{r import-data}
-summary_long <- import("simulation_study/simulated_summary_data.csv")
+summary_long <- import("simulation_study/simulated_summary_data_update.csv")
+
+# reorder for graphs
+summary_long$source <- factor(summary_long$source, 
+                              levels = c("Low Variance", "Medium Variance", "High Variance"))
+summary_long$scale2 <- factor(summary_long$scale2, 
+                              levels = c("Small Scale", "Medium Scale", "Large Scale"))
+
+# a choice to eliminate the low deciles
+summary_long <- summary_long %>% filter(name != "Decile 0" &  name != "Decile 10" & name != "Decile 20")
 ```
 
 ## Differences in Item Variance
@@ -126,9 +135,6 @@ We examined if this procedure is sensitive to differences in item heterogeneity,
 Figure \@ref(fig:item-figure) illustrates the potential minimum sample size for 80% of items to achieve a desired cutoff score. The black dots denote the original sample size against the suggested sample size. By comparing the facets, we can determine that our suggested procedure does capture the differences in heterogeneity. As heterogeneity increases in item variances, the proposed sample size also increases, especially at stricter cutoffs. Missing cutoff points where sample sizes proposed would be higher than 500. 
 
 ```{r item-figure, echo = F, fig.cap="Add a good caption here."}
-summary_long$source <- factor(summary_long$source, 
-                              levels = c("Low Variance", "Medium Variance", "High Variance"))
-
 ggplot(summary_long %>% filter(power == 80), aes(original_n, sample_size, color = name)) + 
   geom_point() +  
   geom_point(aes(original_n, original_n), color = "black") + 

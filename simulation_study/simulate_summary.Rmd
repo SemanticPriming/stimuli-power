@@ -663,21 +663,25 @@ for (p in 1:100){
 
 ## Put Together Data
 
-```{r}
-sim_mac <- readRDS("simulation_2022-08-14 12:54:44.Rdata")
-sim_win
-sim_linux
+```{r eval = F}
+sim_mac <- readRDS("simulation_2022-08-15 06:40:46.Rdata")
+sim_win <- readRDS("simulation_windows3.Rdata")
+sim_linux <- readRDS("simulation_linux4.Rdata")
 
-all_sim <- bind_rows(sim_mac, .id = "id")
+all_sim <- bind_rows(sim_mac, .id = "id") %>% 
+  bind_rows(sim_win, .id = "id") %>% 
+  bind_rows(sim_linux, .id = "id")
 
 summary_long <- all_sim %>% 
-  group_by(scale, original_n, source, name, power) %>% 
+  group_by(scale, original_n, source, name, power, scale2) %>% 
   summarize(sample_size = mean(sample_size),
-             value = mean(value), .groups = "keep")
+            value = mean(value), 
+            sd_item = mean(sd_item),
+            .groups = "keep",)
 ```
 
 ## Export Final Data
 
 ```{r}
-
+export(summary_long, "simulated_summary_data_update.csv", row.names = F)
 ```
