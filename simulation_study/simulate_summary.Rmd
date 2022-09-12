@@ -567,7 +567,7 @@ calculate_proposed <- function(summary_DF){
   - Samples X 100
   - Simulate Researcher X 100
 
-```{r simulation_pipeline, include = T, echo = T}
+```{r simulation_pipeline, include = T, echo = T, eval = F}
 # a list to save this in 
 full_simulation <- list()
 populations <- simulate_population(x)
@@ -664,20 +664,26 @@ for (p in 1:100){
 ## Put Together Data
 
 ```{r eval = F}
-sim_mac <- readRDS("simulation_2022-08-15 06:40:46.Rdata")
-sim_win <- readRDS("simulation_windows3.Rdata")
-sim_linux <- readRDS("simulation_linux4.Rdata")
-
-all_sim <- bind_rows(sim_mac, .id = "id") %>% 
-  bind_rows(sim_win, .id = "id") %>% 
-  bind_rows(sim_linux, .id = "id")
+all_sim <- bind_rows(
+  bind_rows(readRDS("simulation_linux4_0815.Rdata")), 
+  bind_rows(readRDS("simulation_linux8_0815.Rdata")), 
+  bind_rows(readRDS("simulation_linux8_0816.Rdata")),
+  bind_rows(readRDS("simulation_linux36_0819.Rdata")),
+  bind_rows(readRDS("simulation_windows3_0815.Rdata")), 
+  bind_rows(readRDS("simulation_windows39_0819.Rdata")),
+  bind_rows(readRDS("simulation_mac_0815.Rdata")), 
+  bind_rows(readRDS("simulation_mac_0817.Rdata"))
+) %>% unique()
 
 summary_long <- all_sim %>% 
   group_by(scale, original_n, source, name, power, scale2) %>% 
-  summarize(sample_size = mean(sample_size),
-            value = mean(value), 
-            sd_item = mean(sd_item),
-            .groups = "keep",)
+  summarize(
+    n = n(),
+    sample_size = mean(sample_size),
+    value = mean(value), 
+    sd_item = mean(sd_item),
+    .groups = "keep")
+
 ```
 
 ## Export Final Data
