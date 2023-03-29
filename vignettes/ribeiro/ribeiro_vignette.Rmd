@@ -1,0 +1,215 @@
+---
+title: "Seeing is Believing"
+author: "Jason Geller"
+date: "`r Sys.Date()`"
+output: word_document
+  # html_document:
+  #   toc: true
+  #   toc_depth: 4
+  #   toc_float: true
+---
+
+### Vignette Setup: 
+
+```{r setup}
+knitr::opts_chunk$set(echo = TRUE)
+
+# Libraries necessary for this vignette
+library(rio)
+library(flextable)
+library(dplyr)
+library(tidyr)
+
+# Function for simulation
+item_power <- function(data, # name of data frame
+                       dv_col, # name of DV column as a character
+                       item_col, # number of items column as a character
+                       sample_start = 20, 
+                       sample_stop = 200, 
+                       sample_increase = 5,
+                       decile = .5){
+  
+  DF <- cbind.data.frame(
+    dv = data[ , dv_col],
+    items = data[ , item_col]
+  )
+  
+  # just in case
+  colnames(DF) <- c("dv", "items")
+  
+  # figure out the "sufficiently narrow" ci value
+  SE <- tapply(DF$dv, DF$items, function (x) { sd(x)/sqrt(length(x)) })
+  cutoff <- quantile(SE, probs = decile)
+  
+  # sequence of sample sizes to try
+  samplesize_values <- seq(sample_start, sample_stop, sample_increase)
+
+  # create a blank table for us to save the values in 
+  sim_table <- matrix(NA, 
+                      nrow = length(samplesize_values), 
+                      ncol = length(unique(DF$items)))
+
+  # make it a data frame
+  sim_table <- as.data.frame(sim_table)
+
+  # add a place for sample size values 
+  sim_table$sample_size <- NA
+
+  # loop over sample sizes
+  for (i in 1:length(samplesize_values)){
+      
+    # temp that samples and summarizes
+    temp <- DF %>% 
+      group_by(items) %>% 
+      sample_n(samplesize_values[i], replace = T) %>% 
+      summarize(se = sd(dv)/sqrt(length(dv)))
+    
+    # dv on items
+    colnames(sim_table)[1:length(unique(DF$items))] <- temp$items
+    sim_table[i, 1:length(unique(DF$items))] <- temp$se
+    sim_table[i, "sample_size"] <- samplesize_values[i]
+    
+  }
+
+  # figure out cut off
+  final_sample <- sim_table %>% 
+    pivot_longer(cols = -c(sample_size)) %>% 
+    dplyr::rename(item = name, se = value) %>% 
+    group_by(sample_size) %>% 
+    summarize(Percent_Below = sum(se <= cutoff)/length(unique(DF$items))) 
+  
+  # multiply by correction 
+  final_sample$new_sample <- round(39.369 + 0.700*final_sample$sample_size + 0.003*cutoff - 0.694*length(unique(DF$items)))
+  
+  return(list(
+    SE = SE, 
+    cutoff = cutoff, 
+    DF = DF, 
+    sim_table = sim_table, 
+    final_sample = final_sample
+  ))
+
+}
+```
+
+### Project/Data Title: 
+
+Seeing Is Believing: How Media Type Effects Truth Judgements
+
+Data provided by: Gianni Ribeiro
+
+### Project/Data Description: 
+
+People have been duly concerned about how fake news influences the minds of the populous since the rise of propaganda in World War One (Lasswell, 1927). Experts are increasingly worried about the effects of false information being spread over the medium of video. Members of the deep trust alliance, a global network of scholars researching deepfakes and doctored videos, state that 'a fundamental erosion of trust is already underway' (Harrison, 2020). Newman et al (2015) discovered that the media type through which information is presented does indeed affect how true the information feels. Newman speculated that this truthiness effect could be because images provide participants with more information than text alone, thus making the source feel more informationally rich.
+
+In this experiment, we aim to test the generalisability of Newman’s truthiness effect in two ways: firstly, to see if it extends to other media types beside images, and secondly, to test if it applies to other domains. In this study, we will present individuals with both true and false claims presented through three different media types: (1) text, (2) text alongside a photo, and (3) text alongside a video. This is a direct replication of Newman’s experiment, just with the addition of the video condition. Similarly, participants will also be asked to make truth judgements about trivia claims and claims about COVID-19, to see if the truthiness effect extends to other domains besides trivia.
+
+In this within-subjects design, participants will be presented with true and false claims about trivia and COVID-19 in a counterbalanced order. These claims will be randomly assigned to appear either as text alone, text alongside an image and text alongside a video. Participants will be asked to rate how true they believe each claim is.
+
+### Methods Description: 
+
+Participants were largely sourced from the first-year participant pool at The University of Queensland. Participation was completely voluntary, and participants can choose to withdraw at any time.
+
+Thirty matched trivia claims were generated directly from Newman’s materials. These claims were selected, and a true and false version of each claim was created. Newman’s original claims are available at the following link: https://data.mendeley.com/datasets/r68dcdjrpc/1
+The second set of materials comprising of matched true and false claims was generated through information resources from the World Health Organisation, and various conspiracy websites. These claims were then fact-checked by Kirsty Short, an epidemiologist and Senior Lecturer in the School of Chemistry and Molecular Sciences at The University of Queensland.
+
+The claims were also pilot tested to ensure none of them were performing at floor or ceiling. This pilot test comprised of 56 participants, and subsequently, four claims were dropped. The data from this pilot test was also used to accurately conduct a power analysis. After generating the means from the pilot test, we found that to acquire power of 0.8 or greater, a mean difference of 0.4 must exist between each media type. This mean difference is quite conservative, as we are planning on measuring truth ratings on a six-point scale and is easily achievable with 100 participants.
+
+Videos were largely sourced from the stock image website Envato Elements and Screenflow's Royalty Free Stock Media Library.
+
+### Data Location: 
+
+Data can be found here: https://osf.io/zu9pg/
+ 
+```{r}
+DF <- import("ribeiro_data.csv")
+  
+str(DF)
+```
+
+### Date Published: 
+
+No official publication, see citation below.  
+
+### Dataset Citation: 
+
+Moat, K., Tangen, J., & Newman, E. (2021). Seeing Is Believing: How Media Type Effects Truth Judgements.
+
+### Keywords: 
+
+covid, trivia games, claims, interpretation
+
+### Use License: 
+
+Open access with reference to original paper (Attribution-NonCommercial-ShareAlike CC BY-NC-SA)
+
+### Geographic Description - City/State/Country of Participants:
+
+Brisbane, Queensland, Australia
+
+### Column Metadata:
+
+```{r}
+metadata <- tibble::tribble(
+             ~Variable.Name,                                                                                                       ~Variable.Description, ~`Type.(numeric,.character,.logical,.etc.)`,
+                      "Id",                                                                                                            "Participant ID",                                   "numeric",
+                   "Domain",                                                    "Whether the trial is a claim about COVID ('covid') or TRIVIA ('trivia)",                                 "character",
+                   "Medium", "Whether the trial appears as text alone ('claim'), text alongside an image ('photo'), or text alongside a video ('video')",                                 "character",
+               "Trial_type",                                        "Whether the trial presents a claim that is TRUE ('target') or FALSE ('distractor')",                                 "character",
+                   "Rating",                           "Paritcipant’s truth rating of the claim ranging from 1 (definitely false) to 6 (definitely tue)",                                   "numeric"
+             )
+
+flextable(metadata) %>% autofit()
+```
+
+### AIPE Analysis:
+
+```{r}
+# Function for simulation
+var1 <- item_power(data = DF, # name of data frame
+            dv_col = "rating", # name of DV column as a character
+            item_col = "question_type", # number of items column as a character
+            sample_start = 20, 
+            sample_stop = 300, 
+            sample_increase = 5,
+            decile = .5)
+```
+
+#### Stopping Rule
+
+What is the usual standard error for the data that could be considered for our stopping rule?
+
+
+```{r}
+var1$SE
+var1$cutoff
+
+cutoff <- var1$cutoff
+```
+
+Using our 50% decile as a guide, we find that `r round(cutoff, digits = 3)` is our target standard error for an accurately measured item. 
+
+#### Minimum Sample Size
+
+To estimate minimum sample size, we should figure out what number of participants it would take to achieve 80%, 85%, 90%, and 95% of the SEs for items below our critical score of `r round(cutoff, digits = 3)`?
+
+How large does the sample have to be for 80% of the items to be below our stopping SE rule? 
+
+```{r}
+flextable(var1$final_sample %>% 
+            filter(Percent_Below >= .80) %>% 
+            arrange(Percent_Below, new_sample)) %>% 
+  autofit()
+```
+
+In this scenario, we could go with the point in which they both meet the 80% criterion, which is *n* = `r var1$final_sample %>% filter(Percent_Below >= .80) %>% arrange(Percent_Below, new_sample) %>%  slice_head() %>% pull(new_sample)`.
+
+#### Maximum Sample Size
+
+If you decide to use the 95% power as your criterion, you would see that items need approximately *n* = `r var1$final_sample %>% filter(Percent_Below >= .95) %>% arrange(Percent_Below, new_sample) %>% slice_head() %>% pull(new_sample)`. 
+
+#### Final Sample Size
+
+You should also consider any potential for missing data and/or unusable data given the requirements for your study. Given that participants are likely to see all items in this study, we could use the minimum, stopping rule, and maximum defined above. 
+
+

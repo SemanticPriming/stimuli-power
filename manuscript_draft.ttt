@@ -11,10 +11,10 @@
 \toprule
 Term & Estimate & $SD$ & $t$ & $p$\\
 \midrule
-Intercept & 39.269 & 0.437 & 89.843 & < .001\\
-Projected Sample Size & 0.700 & 0.002 & 366.669 & < .001\\
-Item SD & 0.003 & 0.003 & 0.952 & .341\\
-Pilot Sample Size & -0.695 & 0.007 & -97.621 & < .001\\
+Intercept & 34.549 & 0.425 & 81.264 & < .001\\
+Projected Sample Size & 0.621 & 0.003 & 247.039 & < .001\\
+Item SD & 0.000 & 0.003 & 0.014 & .989\\
+Pilot Sample Size & -0.483 & 0.008 & -64.040 & < .001\\
 \bottomrule
 \end{tabular}
 

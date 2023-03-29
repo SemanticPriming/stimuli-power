@@ -2,13 +2,19 @@
 title: "Attractiveness Ratings Example"
 author: "Erin M. Buchanan"
 date: "`r Sys.Date()`"
-output: html_document
+output: word_document
+  # html_document:
+  #   toc: true
+  #   toc_depth: 4
+  #   toc_float: true
 ---
 
-```{r setup, include=FALSE}
+### Vignette Setup:
+
+```{r setup}
 knitr::opts_chunk$set(echo = TRUE)
 
-# Set a random see
+# Set a random seed
 set.seed(5989320)
 
 # Libraries necessary for this vignette
@@ -17,6 +23,77 @@ library(flextable)
 library(dplyr)
 library(tidyr)
 library(psych)
+
+# Function for simulation
+item_power <- function(data, # name of data frame
+                       dv_col, # name of DV column as a character
+                       item_col, # number of items column as a character
+                       sample_start = 20, 
+                       sample_stop = 200, 
+                       sample_increase = 5,
+                       decile = .5){
+  
+  DF <- cbind.data.frame(
+    "dv" = data[ , dv_col],
+    "items" = data[ , item_col]
+  )
+  
+  # just in case
+  colnames(DF) <- c("dv", "items")
+  
+  # figure out the "sufficiently narrow" ci value
+  SE <- tapply(DF$dv, DF$items, function (x) { sd(x)/sqrt(length(x)) })
+  cutoff <- quantile(SE, probs = decile)
+  
+  # sequence of sample sizes to try
+  samplesize_values <- seq(sample_start, sample_stop, sample_increase)
+
+  # create a blank table for us to save the values in 
+  sim_table <- matrix(NA, 
+                      nrow = length(samplesize_values), 
+                      ncol = length(unique(DF$items)))
+
+  # make it a data frame
+  sim_table <- as.data.frame(sim_table)
+
+  # add a place for sample size values 
+  sim_table$sample_size <- NA
+
+  # loop over sample sizes
+  for (i in 1:length(samplesize_values)){
+      
+    # temp that samples and summarizes
+    temp <- DF %>% 
+      group_by(items) %>% 
+      sample_n(samplesize_values[i], replace = T) %>% 
+      summarize(se = sd(dv)/sqrt(length(dv)))
+    
+    # dv on items
+    colnames(sim_table)[1:length(unique(DF$items))] <- temp$items
+    sim_table[i, 1:length(unique(DF$items))] <- temp$se
+    sim_table[i, "sample_size"] <- samplesize_values[i]
+    
+  }
+
+  # figure out cut off
+  final_sample <- sim_table %>% 
+    pivot_longer(cols = -c(sample_size)) %>% 
+    rename(item = name, se = value) %>% 
+    group_by(sample_size) %>% 
+    summarize(Percent_Below = sum(se <= cutoff)/length(unique(DF$items))) 
+  
+  # multiply by correction 
+  final_sample$new_sample <- round(39.369 + 0.700*final_sample$sample_size + 0.003*cutoff - 0.694*length(unique(DF$items)))
+  
+  return(list(
+    SE = SE, 
+    cutoff = cutoff, 
+    DF = DF, 
+    sim_table = sim_table, 
+    final_sample = final_sample
+  ))
+
+}
 ```
 
 ### Project/Data Title: 
@@ -71,7 +148,9 @@ metadata <- import("batres_metadata.xlsx")
 flextable(metadata) %>% autofit()
 ```
 
-### AIPE Analysis 
+### AIPE Analysis:
+
+The data should be in long format with each rating on one row of data. 
 
 ```{r}
 # Reformat the data
@@ -83,86 +162,47 @@ flextable(head(DF_long)) %>% autofit()
 
 #### Stopping Rule
 
+```{r}
+# Function for simulation
+var1 <- item_power(data = DF_long, # name of data frame
+            dv_col = "score", # name of DV column as a character
+            item_col = "item", # number of items column as a character
+            sample_start = 20, 
+            sample_stop = 300, 
+            sample_increase = 5,
+            decile = .5)
+```
+
+
 What the usual standard error for the data that could be considered for our stopping rule using the 50% decile? 
 
 ```{r}
 # individual SEs
-SE <- tapply(DF_long$score, DF_long$item, function (x) { sd(x)/sqrt(length(x)) })
+var1$SE
 
-SE
-
-cutoff <- quantile(SE, probs = .50)
-cutoff
+var1$cutoff
 ```
 
-Using our 50% decile as a guide, we find that `r round(cutoff, digits = 3)` is our target standard error for an accurately measured item. 
+Using our 50% decile as a guide, we find that `r round(var1$cutoff, digits = 3)` is our target standard error for an accurately measured item. 
 
 #### Minimum Sample Size
 
-To estimate minimum sample size, we should figure out what number of participants it would take to achieve 80%, 85%, 90%, and 95% of the SEs for items below our critical score of `r round(cutoff, digits = 3)`?
+To estimate minimum sample size, we should figure out what number of participants it would take to achieve 80%, 85%, 90%, and 95% of the SEs for items below our critical score of `r round(var1$cutoff, digits = 3)`?
 
-Please note that you will always need to simulate larger than the pilot data sample size to get the starting numbers. We will correct them below. 
-
-```{r}
-# sequence of sample sizes to try
-samplesize_values <- seq(20, 300, 5)
-
-# create a blank table for us to save the values in 
-sim_table <- matrix(NA, 
-                    nrow = length(samplesize_values), 
-                    ncol = length(unique(DF_long$item)))
-
-# make it a data frame
-sim_table <- as.data.frame(sim_table)
-
-# add a place for sample size values 
-sim_table$sample_size <- NA
-
-# loop over sample sizes
-for (i in 1:length(samplesize_values)){
-    
-  # temp dataframe that samples and summarizes
-  temp <- DF_long %>% 
-    group_by(item) %>% 
-    sample_n(samplesize_values[i], replace = T) %>% 
-    summarize(se = sd(score)/sqrt(length(score))) 
-  
-  colnames(sim_table)[1:length(unique(DF_long$item))] <- temp$item
-  sim_table[i, 1:length(unique(DF_long$item))] <- temp$se
-  sim_table[i, "sample_size"] <- samplesize_values[i]
-  }
-
-# figure out cut off
-final_sample <- 
-  sim_table %>% 
-  pivot_longer(cols = -c(sample_size)) %>% 
-  rename(item = name, se = value) %>% 
-  group_by(sample_size) %>% 
-  summarize(Percent_Below = sum(se <= cutoff)/length(unique(DF_long$item))) 
-```
-
-As shown in our manuscript, we need to correct for the overestimation of sample sizes based on the original pilot data size. Given that the pilot data is large: `r nrow(DF)`, this correction is especially useful. 
-
-$N_{Corrected Projected} = 39.269 + 0.700 \times X_{N_{Projected}} + 0.003 \times X_{SD Items} - 0.694 \times X_{N_{Pilot}}$
+Please note that you will always need to simulate larger than the pilot data sample size to get the starting numbers. We will correct them below. As shown in our manuscript, we need to correct for the overestimation of sample sizes based on the original pilot data size. Given that the pilot data is large: `r nrow(DF)`, this correction is especially useful. This correction is built into our function. 
 
 ```{r}
-# calculate the SD of the item's SD 
-sd_items <- sd(tapply(DF_long$score, DF_long$item, sd))
-sd_items
-                   
-final_sample$new_sample <- round(39.369 + 0.700*final_sample$sample_size + 0.003*sd_items - 0.694*nrow(DF))
-
-flextable(final_sample %>% 
+flextable(var1$final_sample %>% 
             filter(Percent_Below >= .80) %>% 
             arrange(Percent_Below, new_sample)) %>% 
   autofit()
 ```
 
-Our minimum suggested sample size does not exist at exactly 80% of the items, but instead we can use 85% (*n* = 62 as the minimum). In this example, 90% actually hits below 85% at the minimum (*n* = 58). For 95% of items hitting criterion, the minimum sample size would be approximately 83. In this case, the researcher could decide that 62 would be their minimum sample size. 
+Our minimum suggested sample size does not exist at exactly 80% of the items, but instead we can use 85% (*n* = `r var1$final_sample %>% filter(Percent_Below >= .80) %>% arrange(Percent_Below, new_sample) %>% slice_head() %>%  pull(new_sample)` as the minimum). In this example, 90% actually hits below 85% at the minimum (*n* = `r var1$final_sample %>% filter(Percent_Below >= .90) %>% arrange(Percent_Below, new_sample) %>% slice_head() %>%  pull(new_sample)`). For 95% of items hitting criterion, the minimum sample size would be approximately `r var1$final_sample %>% filter(Percent_Below >= .95) %>% arrange(Percent_Below, new_sample) %>% slice_head() %>%  pull(new_sample)`. In this case, the researcher could decide that smallest number would be their minimum sample size. 
 
 #### Maximum Sample Size
 
-While there are many considerations for maximum sample size (time, effort, resources), the simulation suggests that 83 people would ensure nearly all items achieve cutoff criterions. 
+While there are many considerations for maximum sample size (time, effort, resources), the simulation suggests that `r var1$final_sample %>% filter(Percent_Below >= .95) %>% arrange(Percent_Below, new_sample) %>% slice_head() %>%  pull(new_sample)` people would ensure nearly all items achieve cutoff criterions. 
 
 #### Final Sample Size
 

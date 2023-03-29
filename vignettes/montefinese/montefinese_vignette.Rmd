@@ -1,0 +1,249 @@
+---
+title: Online search trends and word-related emotional response during COVID-19
+  lockdown in Italy
+author: "Mahmoud M.Elsherif"
+date: "`r Sys.Date()`"
+output: word_document
+  # html_document:
+  #   toc: true
+  #   toc_depth: 4
+  #   toc_float: true
+---
+
+### Vignette Setup:
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+# Libraries necessary for this vignette
+library(rio)
+library(flextable)
+library(dplyr)
+library(tidyr)
+library(psych)
+library(reshape)
+```
+
+### Project/Data Title: 
+
+Online search trends and word-related emotional response during COVID-19 lockdown in Italy
+
+Data provided by: Maria Montefinese
+
+### Project/Data Description: 
+
+The strong and long lockdown adopted by the Italian government to limit COVID-19 spreading represents the first threat-related mass isolation in history that can be studied in depth by scientists to understand individuals’ emotional response to a pandemic. The perception of a pandemic threat through invasive media communication, such as that related to COVID-19, can induce fear-related emotions (Van Bavel et al., 2020). The dimension theory of emotions (Osgood & Suci, 1955) assumes that emotive space is defined along three dimensions: valence (indicating the way an individual judges a stimulus; from unpleasant to pleasant), arousal (indicating the degree of activation an individual feels towards a stimulus; from calm to excited) and dominance (indicating the degree of control an individual feels over a given stimulus; from out of control to in control). Fear is characterized as a negatively valenced emotion, accompanied by a high level of arousal (Witte, 1992; Witte, 1998) and a low dominance (Stevenson, Mikel & James, 2007). This is generally in line with previous results showing that participants judged stimuli related to the most feared medical conditions as the most negative, the most anxiety-provoking and the least controllable (Warriner, Kuperman & Brysbaert, 2013). Fear is also characterized by extreme levels of emotional avoidance of specific stimuli (Perin et al., 2015) and may be considered a unidirectional precursor to psychopathological responses within the current context (Ahorsu et al., 2020). dealing with fear in a pandemic situation could be easier for some people than others. Indeed, individual differences have been associated with behavioral responses to the pandemic status (Carvalho Pianowski & Gonçalves, 2020).
+
+To mitigate the COVID-19 effects on individuals’ mental health, it is compelling to evaluate their emotional response to this emergency. Internet searches is a direct tool to address this issue. Indeed, it has been reported that COVID-19 affected the content that people explored online (Effenberger et al., 2020), and online media and platforms offer essential channels where people convey their feelings and emotions and seek health-related information (Kalichman et al., 2003; Reeves, 2001). In particular, Google Trends is an available data source of real-time internet search pattern, which has been demonstrated to be a valid indicator of people’s desires and intentions (Payne, Brown-Iannuzzi & Hannay, 2017; Pelham et al., 2018). Thus, the amounts of COVID-19-related internet searches revealed by Google Trends are an indicator of how people feel about concepts related to the COVID-19 pandemic. A shift in online search trends reflects a change in participants’ interests and attitudes towards a specific topic. Based on the topic, the context (i.e., the reasons causing this change), and this mutated interest per se, it is possible to predict people’s behavior and affective response towards the topic in question. In this study, we aim to understand how emotional reaction and online search behavior has changed in response to the COVID-19 lockdown in the Italian population.
+
+### Methods Description: 
+
+Data were collected in the period from May 4th to May 17th, 2020, the last day of full lockdown in Italy, from 71 adult native Italian speakers (56 females and 13 males; mean (SD) age = 26.2 (7.9) years; mean (SD) education = 15.3 (3.2) years). There were no other specific eligibility criteria. An online survey was conducted using Google Forms to collect affective ratings during the lockdown caused by the COVID-19 epidemic in Italy. In particular, we asked participants to complete the Positive and Negative Affect Schedule (PANAS, Terraciano, McCrae & Costa, 2003) and Fear of COVID-19 Scale (FCV-19S, Ahorsu et al., 2020) and judged valence, arousal, and dominance (on a 9-point self-assessment manikin, Montefinese et al., 2014) of words either related or unrelated to COVID-19, as identified by Google search trends. The word stimuli consisted in 3 groups of 20 words each. The first group (REL+) consisted in the words showing the largest positive relation between their search trends and the search trend for the COVID-related terms. By contrast, the second group (REL-) consisted in the words showing the largest negative relation between their search trends and the search trend for the COVID-related terms. In other words, the COVID-19 epidemic in Italy, and the consequent increase in interest for the COVID-related terms, was related to a similar increase of interest for the REL+ words and a decrease of interest for the REL- words. The third group (UNREL) consisted in the words for which the search trend was unrelated to the search trend for the COVID-related terms.
+
+### Data Location: 
+
+https://osf.io/we9r4/ 
+
+```{r}
+DF <- import("montefinese_data.csv")
+
+names(DF) <- make.names(names(DF),unique = TRUE)
+
+names(DF)[names(DF) == 'ITEM..ITA.'] <- "item"
+
+DF <- DF %>%
+  arrange(item) %>% #orders the rows of the data by the target_name column
+  group_by(item) %>% #group by the target name
+  transform(items = as.numeric(factor(item)))%>% #transform target name into a item
+  select(items, item, everything()
+         ) #select all variables from items and target_name 
+
+head(DF)
+```
+
+### Date Published: 
+
+2021-08-10
+
+### Dataset Citation: 
+
+Montefinese M, Ambrosini E, Angrilli A. 2021. Online search trends and word-related emotional response during COVID-19 lockdown in Italy: a cross-sectional online study. PeerJ 9:e11858 https://doi.org/10.7717/peerj.11858
+ 
+### Keywords: 
+
+Covid-19; Emotional response; Online search; Lockdown; Coping
+
+### Use License: 
+
+CC-By Attribution 4.0 International
+
+### Geographic Description - City/State/Country of Participants:
+
+Italy
+
+### Column Metadata: 
+
+```{r}
+metadata <- import("montefinese_metadata.xlsx")
+
+flextable(metadata) %>% autofit()
+```
+
+### AIPE Analysis:
+
+In this dataset, there are REL+ and REL- variable. In REL+ condition, words showing largest positive relation between their search trends and the search trend for the COVID-related terms. In REL- condition, words showed the largest negative relation between their search trends and the search trends for the COVID-related terms.
+
+#### Stopping Rule
+
+What the usual standard error for the data that could be considered for our stopping rule using the 50% decile? 
+
+```{r sd analysis}
+
+# individual SEs for how surprising 
+SE_full <- tapply(DF$Response, DF$StimType,  function (x) { sd(x)/sqrt(length(x)) })
+SE_full
+quantile(SE_full, probs = .5)
+```
+
+Given the differences in conditions, we subset the data to each condition to estimate separately. 
+
+```{r subset and restructure}
+### create  subset for REL+
+DF_RELpos <- subset(DF, StimType == "REL+")
+DF_RELpos_re <- cast(DF_RELpos, ssID + item ~ StimType, value = "Response")
+
+### create  subset for REL-
+DF_RELneg <- subset(DF, StimType == "REL-")
+DF_RELneg_re <- cast(DF_RELneg, ssID + item ~ StimType, value = "Response")
+
+### create  subset for UNREL
+DF_UNREL <- subset(DF, StimType == "UNREL")
+DF_UNREL_re <- cast(DF_UNREL, ssID + item ~ StimType, value = "Response")
+```
+
+```{r compute se for REL+ and REL-}
+
+# individual SEs for REL+ condition 
+SE1 <- tapply(DF_RELpos$Response, DF_RELpos$item, function (x) { sd(x)/sqrt(length(x)) })
+
+SE1
+quantile(SE1, probs = .5)
+
+# individual SEs for REL- condition
+SE2 <- tapply(DF_RELneg$Response, DF_RELneg$item, function (x) { sd(x)/sqrt(length(x)) })
+
+SE2
+quantile(SE2, probs = .5)
+
+# individual SEs for UNREL condition
+SE3 <- tapply(DF_UNREL$Response, DF_UNREL$item, function (x) { sd(x)/sqrt(length(x)) })
+
+SE3
+quantile(SE3, probs = .5)
+
+```
+
+```{r power Two different conditions}
+# sequence of sample sizes to try
+samplesize_values <- seq(25, 300, 5)
+
+# create a blank table for us to save the values in 
+sim_table <- matrix(NA, 
+                    nrow = length(samplesize_values), 
+                    ncol = length(unique(DF_RELpos$item)))
+# make it a data frame
+sim_table <- as.data.frame(sim_table)
+
+# add a place for sample size values 
+sim_table$sample_size <- NA
+sim_table$var <- "Response"
+
+# make a second table for the second variable
+sim_table2 <- matrix(NA, 
+                    nrow = length(samplesize_values), 
+                    ncol = length(unique(DF_RELpos$item)))
+
+
+# make it a data frame
+sim_table2 <- as.data.frame(sim_table2)
+
+# add a place for sample size values 
+sim_table2$sample_size <- NA
+sim_table2$var <- "Response"
+
+# loop over sample size
+for (i in 1:length(samplesize_values)){
+    
+  # temp dataframe for age trait that samples and summarizes
+  temp_RELpos <- DF_RELpos %>% 
+    dplyr::group_by(item) %>% 
+    dplyr::sample_n(samplesize_values[i], replace = T) %>% 
+    dplyr::summarize(se1 = sd(Response)/sqrt(length(Response))) 
+  
+  # 
+  colnames(sim_table)[1:length(unique(DF_RELpos$item))] <- temp_RELpos$item
+  sim_table[i, 1:length(unique(DF_RELpos$item))] <- temp_RELpos$se1
+  sim_table[i, "sample_size"] <- samplesize_values[i]
+  
+  # temp dataframe for  that samples and summarizes
+  
+  temp_RELneg <-DF_RELneg %>% 
+    dplyr::group_by(item) %>% 
+    dplyr::sample_n(samplesize_values[i], replace = T) %>% 
+    dplyr::summarize(se2 = sd(Response)/sqrt(length(Response))) 
+
+  # 
+  colnames(sim_table)[1:length(unique(DF_RELneg$item))] <- temp_RELneg$item
+  sim_table2[i, 1:length(unique(DF_RELneg$item))] <- temp_RELneg$se2
+  sim_table2[i, "sample_size"] <- samplesize_values[i]
+}
+
+```
+
+Suggestions for REL+ Condition: 
+
+```{r summary analysis part1}
+# multiply by correction 
+cutoff <- quantile(SE1, probs = .5)
+
+final_sample <- 
+  sim_table %>%
+  pivot_longer(cols = -c(sample_size, var))  %>% 
+  dplyr::rename(item = name, se = value)   %>% 
+  dplyr::group_by(sample_size, var)  %>% 
+  dplyr::summarize(Percent_Below = sum(se <= cutoff)/length(unique(DF_RELpos$item)))  %>% 
+  dplyr::filter(Percent_Below >= .80) %>% 
+  dplyr::arrange(Percent_Below) %>% 
+  mutate(new_sample = round(39.369 + 0.700*sample_size + 0.003*cutoff - 0.694*length(unique(DF_RELpos$items))))
+
+flextable(final_sample) %>% autofit()
+```
+
+```{r summary analysis part2}
+cutoff <- quantile(SE2, probs = .5)
+final_sample2 <- 
+  sim_table2 %>%
+  pivot_longer(cols = -c(sample_size, var)) %>% 
+  dplyr::rename(item = name, se = value)  %>% 
+  dplyr::group_by(sample_size, var) %>% 
+  dplyr::summarize(Percent_Below = sum(se <= cutoff)/length(unique(DF_RELneg$item))) %>% 
+  dplyr::filter(Percent_Below >= .80) %>% 
+  dplyr::arrange(Percent_Below) %>% 
+  mutate(new_sample = round(39.369 + 0.700*sample_size + 0.003*cutoff - 0.694*length(unique(DF_RELpos$items))))
+
+flextable(final_sample2) %>% autofit()
+```
+
+#### Minimum Sample Size
+
+Based on these simulations, we can decide our minimum sample size is likely close to `r min(final_sample$new_sample)` or `r min(final_sample2$new_sample)`. 
+
+#### Maximum Sample Size
+
+In this example, we could set our maximum sample size for 90% power, which would equate to `r final_sample %>% filter(Percent_Below >= .90) %>% pull(new_sample) %>% min()` or `r final_sample2 %>% filter(Percent_Below >= .90) %>% pull(new_sample) %>% min()` participants.
+
+#### Final Sample Size
+
+In any estimate for sample size for this study, the dataset has a large variance in ratings. This dataset need to more sample for items in each conditions. Each condition showed slighty different sample size suggestions, which we should account for. 
+
+

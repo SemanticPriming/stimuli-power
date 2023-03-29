@@ -2,10 +2,16 @@
 title: "Cue Word Valence Data Example"
 author: "Erin M. Buchanan"
 date: "`r Sys.Date()`"
-output: html_document
+output: word_document 
+  # html_document:
+  #   toc: true
+  #   toc_depth: 4
+  #   toc_float: true
 ---
 
-```{r setup, include=FALSE}
+### Vignette Setup:
+
+```{r setup}
 knitr::opts_chunk$set(echo = TRUE)
 
 # Libraries necessary for this vignette
@@ -13,6 +19,77 @@ library(rio)
 library(flextable)
 library(dplyr)
 library(tidyr)
+
+# Function for simulation
+item_power <- function(data, # name of data frame
+                       dv_col, # name of DV column as a character
+                       item_col, # number of items column as a character
+                       sample_start = 20, 
+                       sample_stop = 200, 
+                       sample_increase = 5,
+                       decile = .5){
+  
+  DF <- cbind.data.frame(
+    dv = data[ , dv_col],
+    items = data[ , item_col]
+  )
+  
+  # just in case
+  colnames(DF) <- c("dv", "items")
+  
+  # figure out the "sufficiently narrow" ci value
+  SE <- tapply(DF$dv, DF$items, function (x) { sd(x)/sqrt(length(x)) })
+  cutoff <- quantile(SE, probs = decile)
+  
+  # sequence of sample sizes to try
+  samplesize_values <- seq(sample_start, sample_stop, sample_increase)
+
+  # create a blank table for us to save the values in 
+  sim_table <- matrix(NA, 
+                      nrow = length(samplesize_values), 
+                      ncol = length(unique(DF$items)))
+
+  # make it a data frame
+  sim_table <- as.data.frame(sim_table)
+
+  # add a place for sample size values 
+  sim_table$sample_size <- NA
+
+  # loop over sample sizes
+  for (i in 1:length(samplesize_values)){
+      
+    # temp that samples and summarizes
+    temp <- DF %>% 
+      group_by(items) %>% 
+      sample_n(samplesize_values[i], replace = T) %>% 
+      summarize(se = sd(dv)/sqrt(length(dv)))
+    
+    # dv on items
+    colnames(sim_table)[1:length(unique(DF$items))] <- temp$items
+    sim_table[i, 1:length(unique(DF$items))] <- temp$se
+    sim_table[i, "sample_size"] <- samplesize_values[i]
+    
+  }
+
+  # figure out cut off
+  final_sample <- sim_table %>% 
+    pivot_longer(cols = -c(sample_size)) %>% 
+    rename(item = name, se = value) %>% 
+    group_by(sample_size) %>% 
+    summarize(Percent_Below = sum(se <= cutoff)/length(unique(DF$items))) 
+  
+  # multiply by correction 
+  final_sample$new_sample <- round(39.369 + 0.700*final_sample$sample_size + 0.003*cutoff - 0.694*length(unique(DF$items)))
+  
+  return(list(
+    SE = SE, 
+    cutoff = cutoff, 
+    DF = DF, 
+    sim_table = sim_table, 
+    final_sample = final_sample
+  ))
+
+}
 ```
 
 ### Project/Data Title: 
@@ -98,7 +175,7 @@ metadata <- import("barzykowski_metadata.xlsx")
 flextable(metadata) %>% autofit()
 ```
 
-### AIPE Analysis 
+### AIPE Analysis: 
 
 Note that the data is already in long format (each item has one row), and therefore, we do not need to restructure the data. 
 
@@ -112,97 +189,61 @@ apply(DF[ , -c(1,2)], 2, sd)
 
 These are Likert type items. The variance within them appears roughly equal. The lowest variance appears to be `r names(which.min(apply(DF[ , -c(1,2)], 2, sd)))`, and the max appears to be `r names(which.max(apply(DF[ , -c(1,2)], 2, sd)))`.
 
+Run the function proposed by the manuscript:
+
+```{r}
+# set seed
+set.seed(8548)
+# Function for simulation
+var1 <- item_power(data = DF, # name of data frame
+            dv_col = "How surprising", # name of DV column as a character
+            item_col = "Cue no", # number of items column as a character
+            sample_start = 20, 
+            sample_stop = 100, 
+            sample_increase = 5,
+            decile = .5)
+
+var2 <- item_power(DF, # name of data frame
+            "Personal nature", # name of DV column as a character
+            item_col = "Cue no", # number of items column as a character
+            sample_start = 20, 
+            sample_stop = 100, 
+            sample_increase = 5,
+            decile = .5)
+```
+
+
 What the usual standard error for the data that could be considered for our stopping rule?
 
 ```{r}
 # individual SEs for how surprising 
-SE1 <- tapply(DF$`How surprising`, DF$`Cue no`, function (x) { sd(x)/sqrt(length(x)) })
-
-SE1
-cutoff1 <- quantile(SE1, probs = .50)
-cutoff1
+var1$SE
+# var 1 cut off
+var1$cutoff
 
 # individual SEs for personal nature
-SE2 <- tapply(DF$`Personal nature`, DF$`Cue no`, function (x) { sd(x)/sqrt(length(x)) })
+var2$SE
+# var 2 cut off
+var2$cutoff
 
-SE2
-cutoff2 <- quantile(SE2, probs = .50)
-cutoff2
-
-cutoff <- mean(c(cutoff1, cutoff2))
+# overall cutoff
+cutoff <- mean(var1$cutoff, var2$cutoff)
 cutoff
 ```
 
-The average SE across both variables is `r round(cutoff, digits = 3)`. 
+The average SE cutoff across both variables is `r round(cutoff, digits = 3)`. 
 
 #### Minimum Sample Size
 
 How large does the sample have to be for 80% to 95% of the items to be below our stopping SE rule? 
 
 ```{r}
-# sequence of sample sizes to try
-samplesize_values <- seq(25, 100, 5)
-
-# create a blank table for us to save the values in 
-sim_table <- matrix(NA, 
-                    nrow = length(samplesize_values), 
-                    ncol = length(unique(DF$`Cue no`)))
-
-# make it a data frame
-sim_table <- as.data.frame(sim_table)
-
-# add a place for sample size values 
-sim_table$sample_size <- NA
-sim_table$var <- "surprising"
-
-# make a second table for the second variable
-sim_table2 <- sim_table
-sim_table2$var <- "personal"
-
-# loop over sample sizes
-for (i in 1:length(samplesize_values)){
-    
-  # temp dataframe that samples and summarizes
-  temp <- DF %>% 
-    group_by(`Cue no`) %>% 
-    sample_n(samplesize_values[i], replace = T) %>% 
-    summarize(se1 = sd(`How surprising`)/sqrt(length(`How surprising`)), 
-              se2 = sd(`Personal nature`)/sqrt(length(`Personal nature`))) 
-  
-  # variable 1
-  colnames(sim_table)[1:length(unique(DF$`Cue no`))] <- temp$`Cue no`
-  sim_table[i, 1:length(unique(DF$`Cue no`))] <- temp$se1
-  sim_table[i, "sample_size"] <- samplesize_values[i]
-  
-  # variable 2
-  colnames(sim_table2)[1:length(unique(DF$`Cue no`))] <- temp$`Cue no`
-  sim_table2[i, 1:length(unique(DF$`Cue no`))] <- temp$se2
-  sim_table2[i, "sample_size"] <- samplesize_values[i]
-  
-}
-
-# figure out cut off
-final_sample <- 
-  bind_rows(sim_table, sim_table2) %>%
-  pivot_longer(cols = -c(sample_size, var)) %>% 
-  rename(item = name, se = value) %>% 
-  group_by(sample_size, var) %>% 
-  summarize(Percent_Below = sum(se <= cutoff)/length(unique(DF$`Cue no`))) 
-```
-
-As shown in our manuscript, we need to correct for the overestimation of sample sizes based on the original pilot data size. 
-
-$N_{Corrected Projected} = 39.269 + 0.700 \times X_{N_{Projected}} + 0.003 \times X_{SD Items} - 0.694 \times X_{N_{Pilot}}$
-
-```{r}
-# calculate the SD of the item's SD 
-sd_items1 <- sd(tapply(DF$`How surprising`, DF$`Cue no`, sd))
-sd_items1
-
-sd_items2 <- sd(tapply(DF$`Personal nature`, DF$`Cue no`, sd))
-sd_items2
-                   
-final_sample$new_sample <- round(39.369 + 0.700*final_sample$sample_size + 0.003*mean(c(sd_items1, sd_items2)) - 0.694*length(unique(DF$`Participant's ID`)))
+final_sample <- bind_rows(
+  var1$final_sample %>% 
+    mutate(variable = "How surprising"), 
+  var2$final_sample %>% 
+    mutate(variable = "Personal nature")
+)
 
 flextable(final_sample %>% 
             filter(Percent_Below >= .80) %>% 
@@ -210,11 +251,11 @@ flextable(final_sample %>%
   autofit()
 ```
 
-In this scenario, we could go with the point in which they both meet the 80% criterion, which is *n* = 47 for the personal variable and *n* = 36 for the surprising variable. In these scenarios, it is likely better to estimate a larger sample. 
+In this scenario, we could go with the point in which they both meet the 80% criterion, which is *n* = `r final_sample %>% filter(Percent_Below >= .80) %>% arrange(Percent_Below, new_sample) %>% filter(variable == "How surprising") %>% slice_head() %>% pull(new_sample)` for the personal variable and *n* = `r final_sample %>% filter(Percent_Below >= .80) %>% arrange(Percent_Below, new_sample) %>% filter(variable == "Personal nature") %>% slice_head() %>% pull(new_sample)` for the surprising variable. In these scenarios, it is likely better to estimate a larger sample. 
 
 #### Maximum Sample Size
 
-If you decide to use the 95% power as your criterion, you would see that items need somewhere between 43 and 54 participants for both variables. In this case, you could choose to make 54 participants your maximum sample size to ensure both variables reach criterion. 
+If you decide to use the 95% power as your criterion, you would see that items need somewhere between `r final_sample %>% filter(Percent_Below >= .95) %>% arrange(Percent_Below, new_sample) %>% filter(variable == "How surprising") %>% slice_head() %>% pull(new_sample)` and `r final_sample %>% filter(Percent_Below >= .95) %>% arrange(Percent_Below, new_sample) %>% filter(variable == "Personal nature") %>% slice_head() %>% pull(new_sample)` participants for both variables. In this case, you could choose to make the larger value for participants your maximum sample size to ensure both variables reach criterion. 
 
 #### Final Sample Size
 

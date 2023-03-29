@@ -1,0 +1,214 @@
+---
+title: "Liking effect induced by gaze"
+author: "Necdet Gürkan & Yangyang Yu"
+date: "`r Sys.Date()`"
+output: word_document
+  # html_document:
+  #   toc: true
+  #   toc_depth: 4
+  #   toc_float: true
+---
+
+### Vignette Setup:
+  
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+# Libraries necessary for this vignette
+library(rio)
+library(flextable)
+library(dplyr)
+library(tidyr)
+library(psych)
+library(reshape)
+library(reshape2)
+```
+
+### Project/Data Title: 
+
+Liking effect induced by gaze
+
+Data provided by: José Luis Ulloa, Clara Marchetti, Marine Taffou & Nathalie George
+
+### Project/Data Description: 
+
+This dataset resulted from a study aiming at investigating how gaze perception can influence preferences. Previous studies suggest that we like more the objects that are looked-at by others than non-looked-at objects (a so-called liking effect). We extended previous studies to investigate both abstract and manipulable objects. Participants performed a categorization task (for items that were cued or not by gaze). Next, participants evaluated how much they liked the items. We tested if the liking effect could be observed for non-manipulable (alphanumeric characters) as well as for manipulable items (common tools).
+
+### Methods Description: 
+
+Participants were students at Heinrich-Heine-Universität Düsseldorf, Germany that were paid for participating or received course credit. Their ages ranged from 18 to 55 years. The words to-be-rated consisted of 30 typical members of 30 categories drawn from the updated Battig and Montague norms (Van Overschelde, Rawson, & Dunlosky, 2004).
+
+### Data Location: 
+
+Data included within this vignette.
+
+```{r}
+DF <- import("ulloa.csv")
+drops <- c("RT", "side", "aff-ness")
+DF <- DF[ , !(names(DF) %in% drops)]
+DF
+```
+
+### Date Published: 
+
+No official publication, see citation below.  
+
+### Dataset Citation: 
+
+José Luis Ulloa, Clara Marchetti, Marine Taffou & Nathalie George (2014): Only your eyes tell me what you like: Exploring the liking effect induced by other's gaze, Cognition & Emotion, DOI: 10.1080/02699931.2014.919899
+
+### Keywords: 
+
+Social attention; Gaze; Pointing gesture; Liking; Cueing.
+
+### Use License: 
+
+CC-BY
+
+### Geographic Description - City/State/Country of Participants:
+
+Paris, France
+
+### Column Metadata:
+
+```{r}
+metadata <- import("ulloa_metadata.xlsx")
+
+flextable(metadata) %>% autofit()
+```
+
+### AIPE Analysis 
+
+In this dataset, there are valid and invalid cue-targeting variable. In valid cue-targeting condition, stimulus is on the same side of the gaze. In invalid cue-targeting condition, stimulus was on the opposite side of the gaze. We consider these two different conditions separately. 
+
+#### Stopping Rule
+
+What the usual standard error for the data that could be considered for our stopping rule using the 50% decile? 
+
+```{r subset and restructure}
+### create  subset for valid cue-targeting
+DF_valid <- subset(DF, congr == "valid") %>% 
+  group_by(suj, item) %>% 
+  summarize(liking = mean(liking, na.rm = T))
+
+### create  subset for invalid cue-targeting
+DF_invalid <- subset(DF, congr == "invalid") %>% 
+  group_by(suj, item) %>% 
+  summarize(liking = mean(liking, na.rm = T))
+```
+
+```{r compute se for separate}
+# individual SEs for valid cue-targeting condition 
+SE1 <- tapply(DF_valid$liking, DF_valid$item, function (x) { sd(x)/sqrt(length(x)) })
+
+SE1
+cutoff1 <- quantile(SE1, probs = .5)
+cutoff1
+
+# individual SEs for invalid cue-targeting condition
+SE2 <- tapply(DF_invalid$liking, DF_invalid$item, function (x) { sd(x)/sqrt(length(x)) })
+
+SE2
+cutoff2 <- quantile(SE2, probs = .5)
+cutoff2
+```
+
+```{r power Two different conditions}
+# sequence of sample sizes to try
+samplesize_values <- seq(25, 400, 5)
+
+# create a blank table for us to save the values in 
+sim_table <- matrix(NA, 
+                    nrow = length(samplesize_values), 
+                    ncol = length(unique(DF_valid$item)))
+# make it a data frame
+sim_table <- as.data.frame(sim_table)
+
+# add a place for sample size values 
+sim_table$sample_size <- NA
+sim_table$var <- "liking"
+
+# make a second table for the second variable
+sim_table2 <- matrix(NA, 
+                    nrow = length(samplesize_values), 
+                    ncol = length(unique(DF_valid$item)))
+
+# make it a data frame
+sim_table2 <- as.data.frame(sim_table2)
+
+# add a place for sample size values 
+sim_table2$sample_size <- NA
+sim_table2$var <- "liking"
+
+# loop over sample sizes for age and outdoor trait
+for (i in 1:length(samplesize_values)){
+    
+  # temp dataframe for age trait that samples and summarizes
+  temp_valid <- DF_valid %>% 
+    dplyr::group_by(item) %>% 
+    dplyr::sample_n(samplesize_values[i], replace = T) %>% 
+    dplyr::summarize(se1 = sd(liking)/sqrt(length(liking))) 
+  
+  # 
+  colnames(sim_table)[1:length(unique(DF_valid$item))] <- temp_valid$item
+  sim_table[i, 1:length(unique(DF_valid$item))] <- temp_valid$se1
+  sim_table[i, "sample_size"] <- samplesize_values[i]
+  
+  # temp dataframe for outdoor trait that samples and summarizes
+  
+  temp_invalid <-DF_invalid %>% 
+    dplyr::group_by(item) %>% 
+    dplyr::sample_n(samplesize_values[i], replace = T) %>% 
+    dplyr::summarize(se2 = sd(liking)/sqrt(length(liking))) 
+
+  # 
+  colnames(sim_table)[1:length(unique(DF_invalid$item))] <- temp_invalid$item
+  sim_table2[i, 1:length(unique(DF_invalid$item))] <- temp_invalid$se2
+  sim_table2[i, "sample_size"] <- samplesize_values[i]
+}
+
+```
+
+
+```{r summary analysis part1}
+### for valid cue-targeting condition
+final_sample <- 
+  sim_table %>%
+  pivot_longer(cols = -c(sample_size, var))  %>% 
+  dplyr::rename(item = name, se = value)   %>% 
+  dplyr::group_by(sample_size, var)  %>% 
+  dplyr::summarize(Percent_Below = sum(se <= cutoff1)/length(unique(DF_valid$item)))  %>% 
+  dplyr::filter(Percent_Below >= .80) %>% 
+  dplyr::arrange(Percent_Below) %>% 
+  mutate(new_sample = round(39.369 + 0.700*sample_size + 0.003*cutoff1 - 0.694*length(unique(DF_valid$item))))
+
+flextable(final_sample) %>% autofit()
+```
+
+```{r summary analysis part2}
+### for invalid cue-targeting
+final_sample2 <- 
+  sim_table2 %>%
+  pivot_longer(cols = -c(sample_size, var)) %>% 
+  dplyr::rename(item = name, se = value)  %>% 
+  dplyr::group_by(sample_size, var) %>% 
+  dplyr::summarize(Percent_Below = sum(se <= cutoff2)/length(unique(DF_invalid$item))) %>% 
+  dplyr::filter(Percent_Below >= .80) %>% 
+  dplyr::arrange(Percent_Below) %>% 
+  mutate(new_sample = round(39.369 + 0.700*sample_size + 0.003*cutoff2 - 0.694*length(unique(DF_invalid$item))))
+
+flextable(final_sample2) %>% autofit()
+```
+#### Minimum Sample Size
+
+Based on these simulations, we can decide our minimum sample size is likely close to `r min(final_sample$new_sample)` for the valid trials or `r min(final_sample2$new_sample)` for the invalid trials. 
+
+#### Maximum Sample Size
+
+In this example, we could set our maximum sample size for 90% power, which would equate to `r final_sample %>% filter(Percent_Below >= .90) %>% pull(new_sample) %>% min()` for the valid trials to `r final_sample2 %>% filter(Percent_Below >= .90) %>% pull(new_sample) %>% min()` for the invalid trials.
+
+#### Final Sample Size
+
+In any estimate for sample size for this study, the dataset has a large variance in ratings. This dataset need to more sample for items in each conditions. In fact, we experimented combining two conditions (valid & invalid cue-targeting) which did not result in any difference.
+
+
