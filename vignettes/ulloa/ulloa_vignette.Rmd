@@ -2,11 +2,11 @@
 title: "Liking effect induced by gaze"
 author: "Necdet Gürkan & Yangyang Yu"
 date: "`r Sys.Date()`"
-output: word_document
-  # html_document:
-  #   toc: true
-  #   toc_depth: 4
-  #   toc_float: true
+output: 
+  html_document:
+    toc: true
+    toc_depth: 4
+    toc_float: true
 ---
 
 ### Vignette Setup:
@@ -43,7 +43,7 @@ Participants were students at Heinrich-Heine-Universität Düsseldorf, Germany t
 Data included within this vignette.
 
 ```{r}
-DF <- import("ulloa.csv")
+DF <- import("ulloa_data.csv")
 drops <- c("RT", "side", "aff-ness")
 DF <- DF[ , !(names(DF) %in% drops)]
 DF
