@@ -66,7 +66,30 @@ library(nlme)
 library(MuMIn)
 ```
 
-Statistical power and power analyses are arguably one of the most important components in planning a research study [@cohen1990]. However, if reviews of transparency and openness in research publications are any clue, the social sciences have failed to fully implement power analyses as part of their common efforts [@hardwicke2020; @doi:10.1177/1745691620979806]. The replication \"crisis\" and credibility revolution have shown that published studies in psychology are underpowered [@opensciencecollaboration2015; @vazire2018]. Pre-registration of a study involves outlining the study and hypotheses before data collection begins [@stewart2020; @d.chambers2014; @nosek2014], and details of a power analyses or other limitations on resources are often used to provide justification for the pre-registered sample quota. Given the combined issues of publish-or-perish and that most non-significant results do not result in published manuscripts, one may expect that power analysis would be especially critical for early career researchers [@rosenthal1979; @simmons2011]. At best, an underpowered study provides limited insight [@halpern2002], and it can be difficult to know if a poorly implemented power analysis is better than no power analysis.
+```{r trackdown, eval = F}
+library(trackdown)
+# initial set up 
+# upload_file(file = "manuscript_draft.Rmd",
+#             gfile = "power2stim_V2_trackdown",
+#             gpath = "Studies/PSA007 SPAM-L/Manuscripts/Power",
+#             shared_drive = "Psychological Science Accelerator")
+
+# from google 
+download_file(file = "manuscript_draft.Rmd", 
+            gfile = "power2stim_V2_trackdown",
+            gpath = "Studies/PSA007 SPAM-L/Manuscripts/Power",
+            shared_drive = "Psychological Science Accelerator")
+
+# to google
+update_file(file = "manuscript_draft.Rmd", 
+            gfile = "power2stim_V2_trackdown",
+            gpath = "Studies/PSA007 SPAM-L/Manuscripts/Power",
+            shared_drive = "Psychological Science Accelerator",
+            rich_text = TRUE,
+            hide_code = TRUE)
+```
+
+Statistical power and power analyses are arguably one of the most important components in planning a research study [@cohen1990]. However, if reviews of transparency and openness in research publications are any clue, the social sciences have failed to fully implement power analyses as part of their common efforts [@hardwicke2020; @doi:10.1177/1745691620979806]. The replication "crisis" and credibility revolution have shown that published studies in psychology are underpowered [@opensciencecollaboration2015; @vazire2018]. Pre-registration of a study involves outlining the study and hypotheses before data collection begins [@stewart2020; @d.chambers2014; @nosek2014], and details of a power analyses or other limitations on resources are often used to provide justification for the pre-registered sample quota. Given the combined issues of publish-or-perish and that most non-significant results do not result in published manuscripts, one may expect that power analysis would be especially critical for early career researchers [@rosenthal1979; @simmons2011]. At best, an underpowered study provides limited insight [@halpern2002], and it can be difficult to know if a poorly implemented power analysis is better than no power analysis.
 
 A recent review of power analyses found - across psychology journal articles - researchers did not provide enough information to understand their power analyses and often chose effect sizes that were unjustified [@beribisky2019]. One solution to this power analysis problem is the plethora of tools made available for researchers to make power computations accessible to non-statisticians with the caveat that a solid education in power is necessary to use these tools. G\*Power is one of the most popular free power software options [@faul2007; @erdfelder1996] that provides a simple point and click graphical user interface for power calculations [however, see @brysbaert]. Web-based tools have also sprung up for overall and statistical test specific sample size planning including <https://powerandsamplesize.com> and <https://designingexperiments.com> [@anderson2017]. *R*-coding based packages, such as *pwr* [@champely2017], *faux* [@debruine2021], and *SimDesign* [@chalmers2020], can be used to examine power and sample size planning usually with simulation. Researchers must be careful using any toolkit, as errors can occur with the over-reliance on software [e.g., it should not be a substitute for critical thinking, @nuijten2016]. When computing sample size estimates, it is important to remember that these values are estimations, not exact calculations guaranteed to produce a specific result [@batterham2005]. For example, if any parameter estimated by the researcher was not found in the study (i.e., a smaller effect size than used for the power analysis), then the sample size estimate tied to that specific level of power may be incorrect.
 
