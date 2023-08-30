@@ -1,0 +1,758 @@
+---
+title: "Methods Power Study - Ceiling Simulations"
+author: "Erin M. Buchanan"
+date: "Last Knitted: `r Sys.Date()`"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Libraries
+
+```{r}
+set.seed(548902) # 233232
+library(dplyr)
+library(ggplot2)
+library(tidyr)
+library(broom)
+library(papaja)
+library(rio)
+```
+
+This document includes the informal write up for the method for the manuscript. We exported the simulations to this document in order to run the simulations separately from the manuscript for speed reasons (i.e., it's really slow to run the simulations along with the manuscript markdown). At the end of this document, a `simulated_summary_data.csv` file is created that is imported into the manuscript for plotting and other analyses. Please see the manuscript for formal write up. 
+
+# Method
+
+## Data Simulation 
+
+*Population*. 
+
+- Simulate the data with `rnorm` assuming a normal distribution for 30 scale items
+- Population is created with 1000 data points 
+- We will run this part 100 times, so create a function that does this for you. 
+
+```{r sim_pop, include = T, echo = T}
+simulate_population <- function (x = 1){
+  
+  # small potential variability overall, sort of 1-7ish scale
+  mu.small <- rnorm(30, 6, .25)
+  sigma.small.s <- rnorm(30, 2, .2)
+  sigma.small.m <- rnorm(30, 2, .4)
+  sigma.small.l <- rnorm(30, 2, .8)
+  
+  while(sum(sigma.small.s < .02) > 0){
+    sigma.small.s <- rnorm(30, 2, .2)
+  }
+  while(sum(sigma.small.m < .04) > 0){
+    sigma.small.m <- rnorm(30, 2, .4)
+  }
+  while(sum(sigma.small.l < .08) > 0){
+    sigma.small.l <- rnorm(30, 2, .8)
+  }
+  
+  # medium potential variability 0 to 100 scale
+  mu.medium <- rnorm(30, 85, 10)
+  sigma.medium.s <- rnorm(30, 25, 4)
+  sigma.medium.m <- rnorm(30, 25, 8)
+  sigma.medium.l <- rnorm(30, 25, 16)
+  
+  while(sum(sigma.medium.s < 0.4) > 0){
+    sigma.medium.s <- rnorm(30, 25, 4)
+  }
+  while(sum(sigma.medium.m < 0.8) > 0){
+    sigma.medium.m <- rnorm(30, 25, 8)
+  }
+  while(sum(sigma.medium.l < 1.6) > 0){
+    sigma.medium.l <- rnorm(30, 25, 16)
+  }
+  
+  # large potential variability in the 1000s scale
+  mu.large <- rnorm(30, 2500, 150)
+  sigma.large.s <- rnorm(30, 400, 50)
+  sigma.large.m <- rnorm(30, 400, 100)
+  sigma.large.l <- rnorm(30, 400, 200)
+  
+  while(sum(sigma.large.s < 5) > 0){
+    sigma.large.s <- rnorm(30, 400, 50)
+  }
+  while(sum(sigma.large.m < 10) > 0){
+    sigma.large.m <- rnorm(30, 400, 100)
+  }
+  while(sum(sigma.large.l < 20) > 0){
+    sigma.large.l <- rnorm(30, 400, 200)
+  }
+  
+  population.small <- data.frame(
+    item = rep(1:30, 1000*3),
+    variability = rep(c("small", "medium", "large"), each = 1000*30),
+    score = c(round(rnorm(1000*30, mean = mu.small, sd = sigma.small.s), digits = 0),
+              round(rnorm(1000*30, mean = mu.small, sd = sigma.small.m), digits = 0),
+              round(rnorm(1000*30, mean = mu.small, sd = sigma.small.l), digits = 0))
+    )
+  
+  population.medium <- data.frame(
+    item = rep(1:30, 1000*3),
+    variability = rep(c("small", "medium", "large"), each = 1000*30),
+    score = c(round(rnorm(1000*30, mean = mu.medium, sd = sigma.medium.s), digits = 0),
+              round(rnorm(1000*30, mean = mu.medium, sd = sigma.medium.m), digits = 0),
+              round(rnorm(1000*30, mean = mu.medium, sd = sigma.medium.l), digits = 0))
+    )
+  
+  population.large <- data.frame(
+    item = rep(1:30, 1000*3),
+    variability = rep(c("small", "medium", "large"), each = 1000*30),
+    score = c(round(rnorm(1000*30, mean = mu.large, sd = sigma.large.s), digits = 0),
+              round(rnorm(1000*30, mean = mu.large, sd = sigma.large.m), digits = 0),
+              round(rnorm(1000*30, mean = mu.large, sd = sigma.large.l), digits = 0))
+    )
+  
+  # truncate scores
+  population.small$score <- ifelse(
+    population.small$score > 7, 7, ifelse(
+      population.small$score < 1, 1, population.small$score
+    )
+  )
+  
+  population.medium$score <- ifelse(
+    population.medium$score > 100, 100, ifelse(
+      population.medium$score < 0, 0, population.medium$score
+    )
+  )
+  
+  population.large$score <- ifelse(
+    population.large$score > 3000, 3000, ifelse(
+      population.large$score < 0, 0, population.large$score
+    )
+  )
+  
+  # check means
+  tapply(population.small$score, population.small$variability, mean)
+  # check var on var
+  apply(tapply(population.small$score, list(population.small$item, population.small$variability), sd), 2, sd)
+  
+  tapply(population.medium$score, population.medium$variability, mean)
+  # check var on var
+  apply(tapply(population.medium$score, list(population.medium$item, population.medium$variability), sd), 2, sd)
+  
+  tapply(population.large$score, population.large$variability, mean)
+  # check var on var
+  apply(tapply(population.large$score, list(population.large$item, population.large$variability), sd), 2, sd)
+  
+  
+  # return populations 
+  return(list(population.small = population.small, 
+              population.medium = population.medium, 
+              population.large = population.large))
+}
+```
+
+- Within that function, create the scale size variable: 
+  - Small scale data 1-7, mean 6, sd of mean .25
+  - Medium scale data 0-100, mean 85, sd of mean 10
+  - Large scale data no range, mean 2500, sd of mean 150
+  - These choices are meant to mimic popular scale choices that have skewed effects 
+- Additionally, create the scale heterogeneity variable:
+  - Small scale heterogeneity, sd 2, sd of sd .2 .4 .8
+  - Medium scale heterogeneity, sd 25, sd of sd 4, 8, 16
+  - Large scale heterogeneity, sd 400, sd of sd 50, 100, 200
+  
+*Samples*. 
+
+- Create a function that does the samples that a researcher might do
+- Includes a start and stop of the number of participants you might consider 
+- Includes an increasing value between samples
+- We will also run this part 100 times 
+
+```{r sim_sample, include = T, echo = T}
+simulate_samples <- function(start = 20, stop = 100, increase = 5,
+                             population.small, population.medium, population.large){
+  
+  # save those samples for small medium large 
+  samples.small <- samples.medium <- samples.large <- list() 
+  
+  # create the list of sizes 
+  sizes <- seq(from = start, to = stop, by = increase)
+  
+  # loop over sizes and create those samples 
+  for (i in 1:length(sizes)){
+    samples.small[[i]] <- population.small %>% 
+      group_by(item, variability) %>% 
+      slice_sample(n = sizes[i])
+
+    samples.medium[[i]] <- population.medium %>%
+      group_by(item, variability) %>%
+      slice_sample(n = sizes[i])
+
+    samples.large[[i]] <- population.large %>%
+      group_by(item, variability) %>%
+      slice_sample(n = sizes[i])
+  }
+  
+  # return your values
+  return(list(samples.small = samples.small, 
+              samples.medium = samples.medium, 
+              samples.large = samples.large,
+              sizes = sizes))
+  
+}
+```
+
+*Cutoff Score Criterions*. 
+
+- Calculate the SEs for the items at each decile 
+- Save as a function for later 
+
+```{r calc_SE, include = T, echo = T}
+calculate_deciles <- function(samples.small, samples.medium, samples.large){
+  # calculate the SEs and the cutoff scores 
+  SES.small <- SES.medium <- SES.large <- list()
+  cutoffs.small <- cutoffs.medium <- cutoffs.large <- list()
+  sd_items.small <- sd_items.medium <- sd_items.large <- list()
+  
+  # loop and calculate for each sample size 
+  for (i in 1:length(samples.small)){
+    
+  sd_items.small[[i]] <- samples.small[[i]] %>% group_by(item, variability) %>% 
+    summarize(sd = sd(score), .groups = "keep") %>% 
+    ungroup() %>% group_by(variability) %>% summarize(sd_item = sd(sd))
+  
+  sd_items.medium[[i]] <- samples.medium[[i]] %>% group_by(item, variability) %>% 
+    summarize(sd = sd(score), .groups = "keep") %>% 
+    ungroup() %>% group_by(variability) %>% summarize(sd_item = sd(sd))
+  
+  sd_items.large[[i]] <- samples.large[[i]] %>% group_by(item, variability) %>% 
+    summarize(sd = sd(score), .groups = "keep") %>% 
+    ungroup() %>% group_by(variability) %>% summarize(sd_item = sd(sd))
+  
+  SES.small[[i]] <- tapply(samples.small[[i]]$score,
+                     list(samples.small[[i]]$item,
+                          samples.small[[i]]$variability),
+                     function (x){ sd(x)/sqrt(length(x))})
+  
+  SES.medium[[i]] <- tapply(samples.medium[[i]]$score,
+                   list(samples.medium[[i]]$item,
+                        samples.medium[[i]]$variability),
+                   function (x){ sd(x)/sqrt(length(x))})
+  
+  SES.large[[i]] <- tapply(samples.large[[i]]$score,
+                 list(samples.medium[[i]]$item,
+                      samples.medium[[i]]$variability),
+                 function (x){ sd(x)/sqrt(length(x))})
+
+  cutoffs.small[[i]] <- apply(as.data.frame(SES.small[[i]]), 2, 
+                         quantile, 
+                         probs = seq(0, .9, by = .1),
+                         na.rm = T)
+  
+  cutoffs.medium[[i]] <- apply(as.data.frame(SES.medium[[i]]), 2, 
+                         quantile, 
+                         probs = seq(0, .9, by = .1),
+                         na.rm = T)
+  
+  cutoffs.large[[i]] <- apply(as.data.frame(SES.large[[i]]), 2, 
+                         quantile, 
+                         probs = seq(0, .9, by = .1),
+                         na.rm = T)
+  
+  }
+  
+  # return information
+  return(list(SES.small = SES.small, SES.medium = SES.medium, SES.large = SES.large, 
+              cutoffs.small = cutoffs.small, cutoffs.medium = cutoffs.medium, cutoffs.large = cutoffs.large, 
+              sd_items.small = sd_items.small, sd_items.medium = sd_items.medium, sd_items.large = sd_items.large))
+
+}
+```
+
+## Researcher Sample Simulation 
+
+- Here we are simulating the researcher side of the equation assuming they have a sample pulled from population (which we simulated above)
+- We will simulate samples from 20 to 2000 ... mostly only to see the leveling out effect of the simulation procedure, as we likely believe that over 2000 is not reasonable for most researchers. 
+- Calculate the SEs here, to see if it matches our cutoff 
+- Save this as a function to run within our pipeline (100 populations and 100 samples)
+
+```{r sim_sim, include = T, echo = T}
+simulate_researcher <- function(samples.small, samples.medium, samples.large, 
+                                start = 20, stop = 2000, 
+                                increase = 5){
+  
+  # sequence of sample sizes to try
+  samplesize_values <- seq(from = start, to = stop, by = increase)
+
+  # place to store everything
+  sampled_values.small <- sampled_values.medium <- sampled_values.large <- list()
+
+  # loop over the samples
+  for (i in 1:length(samples.small)){
+    
+    # create a blank table for us to save the values in 
+    sim_table.small <- matrix(NA, 
+                        nrow = length(samplesize_values), 
+                        ncol = 30*3)
+    
+    # make it a data frame
+    sim_table.small <- sim_table.medium <- sim_table.large <- as.data.frame(sim_table.small)
+    
+    # add a place for sample size values 
+    sim_table.small$sample_size <- sim_table.medium$sample_size <- sim_table.large$sample_size <- NA
+    
+    # loop over pilot sample sizes
+    for (q in 1:length(samplesize_values)){
+        
+      # temp dataframe that samples and summarizes
+      temp <- samples.small[[i]] %>% 
+        group_by(item, variability) %>% 
+        slice_sample(n = samplesize_values[q], replace = T) %>% 
+        summarize(se = sd(score)/sqrt(length(score)),
+                  .groups = "keep")
+      
+      sim_table.small[q, 1:90] <- temp$se
+      sim_table.small[q, 91] <- samplesize_values[q]
+      
+      temp <- samples.medium[[i]] %>% 
+        group_by(item, variability) %>% 
+        slice_sample(n = samplesize_values[q], replace = T) %>% 
+        summarize(se = sd(score)/sqrt(length(score)),
+                  .groups = "keep")
+      
+      sim_table.medium[q, 1:90] <- temp$se
+      sim_table.medium[q, 91] <- samplesize_values[q]
+      
+      temp <- samples.large[[i]] %>% 
+        group_by(item, variability) %>% 
+        slice_sample(n = samplesize_values[q], replace = T) %>% 
+        summarize(se = sd(score)/sqrt(length(score)),
+                  .groups = "keep")
+      
+      sim_table.large[q, 1:90] <- temp$se
+      sim_table.large[q, 91] <- samplesize_values[q]
+      
+      } # end pilot sample loop 
+    
+    sampled_values.small[[i]] <- sim_table.small
+    sampled_values.medium[[i]] <- sim_table.medium
+    sampled_values.large[[i]] <- sim_table.large
+
+  } # end all sample loop
+  
+  # return sampled values 
+  return(list(sampled_values.small = sampled_values.small, 
+              sampled_values.medium = sampled_values.medium, 
+              sampled_values.large = sampled_values.large,
+              samplesize_values = samplesize_values))
+  
+}
+```
+
+- Next, calculate the percent of items falling below the decile scores 
+- Pick up 80, 85, 90, and 95% of items to mimic power 
+- Save a function for our pipeline 
+
+```{r calc_percent, include = T, echo = T}
+calculate_percent <- function(sampled_values.small, sampled_values.medium, sampled_values.large,
+                              cutoffs.small, cutoffs.medium, cutoffs.large, 
+                              samplesize_values, sizes){
+  
+  # create temporary storage
+  summary_list.small <- summary_list.medium <- summary_list.large <- list()
+  
+  # loop and calculate
+  for (i in 1:length(sampled_values.small)){
+  
+    # summary list 1 ----
+    summary_list.small[[i]] <- sampled_values.small[[i]] %>% 
+      pivot_longer(cols = -c(sample_size)) %>% 
+      rename(item = name, se = value) %>% 
+      mutate(variability = rep(c("large", "medium", "small"), 
+                               30*length(samplesize_values))) %>% 
+      mutate(item = rep(rep(1:30, each = 3), length(samplesize_values))) 
+      
+    # cut offs for 1
+    temp.small.s <- summary_list.small[[i]] %>% 
+      filter(variability == "small") %>% 
+      group_by(sample_size, variability) %>% 
+      summarize(Percent_Below0 = sum(se <= cutoffs.small[[i]]["0%", "small"])/30,
+             Percent_Below10 = sum(se <= cutoffs.small[[i]]["10%", "small"])/30,
+             Percent_Below20 = sum(se <= cutoffs.small[[i]]["20%", "small"])/30,
+             Percent_Below30 = sum(se <= cutoffs.small[[i]]["30%", "small"])/30,
+             Percent_Below40 = sum(se <= cutoffs.small[[i]]["40%", "small"])/30,
+             Percent_Below50 = sum(se <= cutoffs.small[[i]]["50%", "small"])/30, 
+             Percent_Below60 = sum(se <= cutoffs.small[[i]]["60%", "small"])/30, 
+             Percent_Below70 = sum(se <= cutoffs.small[[i]]["70%", "small"])/30, 
+             Percent_Below80 = sum(se <= cutoffs.small[[i]]["80%", "small"])/30, 
+             Percent_Below90 = sum(se <= cutoffs.small[[i]]["90%", "small"])/30, 
+             .groups = "keep") %>% 
+      mutate(original_n = sizes[i], 
+             scale_size = "likert")
+      
+    temp.small.m <- summary_list.small[[i]] %>% 
+      filter(variability == "medium") %>% 
+      group_by(sample_size, variability) %>% 
+      summarize(Percent_Below0 = sum(se <= cutoffs.small[[i]]["0%", "medium"])/30,
+             Percent_Below10 = sum(se <= cutoffs.small[[i]]["10%", "medium"])/30,
+             Percent_Below20 = sum(se <= cutoffs.small[[i]]["20%", "medium"])/30,
+             Percent_Below30 = sum(se <= cutoffs.small[[i]]["30%", "medium"])/30,
+             Percent_Below40 = sum(se <= cutoffs.small[[i]]["40%", "medium"])/30,
+             Percent_Below50 = sum(se <= cutoffs.small[[i]]["50%", "medium"])/30, 
+             Percent_Below60 = sum(se <= cutoffs.small[[i]]["60%", "medium"])/30, 
+             Percent_Below70 = sum(se <= cutoffs.small[[i]]["70%", "medium"])/30, 
+             Percent_Below80 = sum(se <= cutoffs.small[[i]]["80%", "medium"])/30, 
+             Percent_Below90 = sum(se <= cutoffs.small[[i]]["90%", "medium"])/30, 
+             .groups = "keep") %>% 
+      mutate(original_n = sizes[i],
+             scale_size = "likert")
+    
+    temp.small.l <- summary_list.small[[i]] %>% 
+      filter(variability == "large") %>% 
+      group_by(sample_size, variability) %>% 
+      summarize(Percent_Below0 = sum(se <= cutoffs.small[[i]]["0%", "large"])/30,
+             Percent_Below10 = sum(se <= cutoffs.small[[i]]["10%", "large"])/30,
+             Percent_Below20 = sum(se <= cutoffs.small[[i]]["20%", "large"])/30,
+             Percent_Below30 = sum(se <= cutoffs.small[[i]]["30%", "large"])/30,
+             Percent_Below40 = sum(se <= cutoffs.small[[i]]["40%", "large"])/30,
+             Percent_Below50 = sum(se <= cutoffs.small[[i]]["50%", "large"])/30, 
+             Percent_Below60 = sum(se <= cutoffs.small[[i]]["60%", "large"])/30, 
+             Percent_Below70 = sum(se <= cutoffs.small[[i]]["70%", "large"])/30, 
+             Percent_Below80 = sum(se <= cutoffs.small[[i]]["80%", "large"])/30, 
+             Percent_Below90 = sum(se <= cutoffs.small[[i]]["90%", "large"])/30, 
+             .groups = "keep") %>% 
+      mutate(original_n = sizes[i], 
+             scale_size = "likert")
+    
+    #rejoin 
+    summary_list.small[[i]] <- bind_rows(temp.small.s, temp.small.m, temp.small.l)
+    
+    # summary list 2 ----
+    summary_list.medium[[i]] <- sampled_values.medium[[i]] %>% 
+      pivot_longer(cols = -c(sample_size)) %>% 
+      rename(item = name, se = value) %>% 
+      mutate(variability = rep(c("large", "medium", "small"), 
+                               30*length(samplesize_values))) %>% 
+      mutate(item = rep(rep(1:30, each = 3), length(samplesize_values)))
+    
+    # cut offs for 2
+    temp.medium.s <- summary_list.medium[[i]] %>% 
+      filter(variability == "small") %>% 
+      group_by(sample_size, variability) %>% 
+      summarize(Percent_Below0 = sum(se <= cutoffs.medium[[i]]["0%", "small"])/30,
+             Percent_Below10 = sum(se <= cutoffs.medium[[i]]["10%", "small"])/30,
+             Percent_Below20 = sum(se <= cutoffs.medium[[i]]["20%", "small"])/30,
+             Percent_Below30 = sum(se <= cutoffs.medium[[i]]["30%", "small"])/30,
+             Percent_Below40 = sum(se <= cutoffs.medium[[i]]["40%", "small"])/30,
+             Percent_Below50 = sum(se <= cutoffs.medium[[i]]["50%", "small"])/30, 
+             Percent_Below60 = sum(se <= cutoffs.medium[[i]]["60%", "small"])/30, 
+             Percent_Below70 = sum(se <= cutoffs.medium[[i]]["70%", "small"])/30, 
+             Percent_Below80 = sum(se <= cutoffs.medium[[i]]["80%", "small"])/30, 
+             Percent_Below90 = sum(se <= cutoffs.medium[[i]]["90%", "small"])/30, 
+             .groups = "keep") %>% 
+      mutate(original_n = sizes[i], 
+             scale_size = "percent")
+      
+    temp.medium.m <- summary_list.medium[[i]] %>% 
+      filter(variability == "medium") %>% 
+      group_by(sample_size, variability) %>% 
+      summarize(Percent_Below0 = sum(se <= cutoffs.medium[[i]]["0%", "medium"])/30,
+             Percent_Below10 = sum(se <= cutoffs.medium[[i]]["10%", "medium"])/30,
+             Percent_Below20 = sum(se <= cutoffs.medium[[i]]["20%", "medium"])/30,
+             Percent_Below30 = sum(se <= cutoffs.medium[[i]]["30%", "medium"])/30,
+             Percent_Below40 = sum(se <= cutoffs.medium[[i]]["40%", "medium"])/30,
+             Percent_Below50 = sum(se <= cutoffs.medium[[i]]["50%", "medium"])/30, 
+             Percent_Below60 = sum(se <= cutoffs.medium[[i]]["60%", "medium"])/30, 
+             Percent_Below70 = sum(se <= cutoffs.medium[[i]]["70%", "medium"])/30, 
+             Percent_Below80 = sum(se <= cutoffs.medium[[i]]["80%", "medium"])/30, 
+             Percent_Below90 = sum(se <= cutoffs.medium[[i]]["90%", "medium"])/30, 
+             .groups = "keep") %>% 
+      mutate(original_n = sizes[i],
+             scale_size = "percent")
+    
+    temp.medium.l <- summary_list.medium[[i]] %>% 
+      filter(variability == "large") %>% 
+      group_by(sample_size, variability) %>% 
+      summarize(Percent_Below0 = sum(se <= cutoffs.medium[[i]]["0%", "large"])/30,
+             Percent_Below10 = sum(se <= cutoffs.medium[[i]]["10%", "large"])/30,
+             Percent_Below20 = sum(se <= cutoffs.medium[[i]]["20%", "large"])/30,
+             Percent_Below30 = sum(se <= cutoffs.medium[[i]]["30%", "large"])/30,
+             Percent_Below40 = sum(se <= cutoffs.medium[[i]]["40%", "large"])/30,
+             Percent_Below50 = sum(se <= cutoffs.medium[[i]]["50%", "large"])/30, 
+             Percent_Below60 = sum(se <= cutoffs.medium[[i]]["60%", "large"])/30, 
+             Percent_Below70 = sum(se <= cutoffs.medium[[i]]["70%", "large"])/30, 
+             Percent_Below80 = sum(se <= cutoffs.medium[[i]]["80%", "large"])/30, 
+             Percent_Below90 = sum(se <= cutoffs.medium[[i]]["90%", "large"])/30, 
+             .groups = "keep") %>% 
+      mutate(original_n = sizes[i], 
+             scale_size = "percent")
+    
+    #rejoin 
+    summary_list.medium[[i]] <- bind_rows(temp.medium.s, temp.medium.m, temp.medium.l)
+    
+    # summary list 3 ----
+    summary_list.large[[i]] <- sampled_values.large[[i]] %>% 
+      pivot_longer(cols = -c(sample_size)) %>% 
+      rename(item = name, se = value) %>% 
+      mutate(variability = rep(c("large", "medium", "small"), 
+                               30*length(samplesize_values))) %>% 
+      mutate(item = rep(rep(1:30, each = 3), length(samplesize_values)))
+    
+    # cut offs for 3 
+    temp.large.s <- summary_list.large[[i]] %>% 
+      filter(variability == "small") %>% 
+      group_by(sample_size, variability) %>% 
+      summarize(Percent_Below0 = sum(se <= cutoffs.large[[i]]["0%", "small"])/30,
+             Percent_Below10 = sum(se <= cutoffs.large[[i]]["10%", "small"])/30,
+             Percent_Below20 = sum(se <= cutoffs.large[[i]]["20%", "small"])/30,
+             Percent_Below30 = sum(se <= cutoffs.large[[i]]["30%", "small"])/30,
+             Percent_Below40 = sum(se <= cutoffs.large[[i]]["40%", "small"])/30,
+             Percent_Below50 = sum(se <= cutoffs.large[[i]]["50%", "small"])/30, 
+             Percent_Below60 = sum(se <= cutoffs.large[[i]]["60%", "small"])/30, 
+             Percent_Below70 = sum(se <= cutoffs.large[[i]]["70%", "small"])/30, 
+             Percent_Below80 = sum(se <= cutoffs.large[[i]]["80%", "small"])/30, 
+             Percent_Below90 = sum(se <= cutoffs.large[[i]]["90%", "small"])/30, 
+             .groups = "keep") %>% 
+      mutate(original_n = sizes[i], 
+             scale_size = "milliseconds")
+      
+    temp.large.m <- summary_list.large[[i]] %>% 
+      filter(variability == "medium") %>% 
+      group_by(sample_size, variability) %>% 
+      summarize(Percent_Below0 = sum(se <= cutoffs.large[[i]]["0%", "medium"])/30,
+             Percent_Below10 = sum(se <= cutoffs.large[[i]]["10%", "medium"])/30,
+             Percent_Below20 = sum(se <= cutoffs.large[[i]]["20%", "medium"])/30,
+             Percent_Below30 = sum(se <= cutoffs.large[[i]]["30%", "medium"])/30,
+             Percent_Below40 = sum(se <= cutoffs.large[[i]]["40%", "medium"])/30,
+             Percent_Below50 = sum(se <= cutoffs.large[[i]]["50%", "medium"])/30, 
+             Percent_Below60 = sum(se <= cutoffs.large[[i]]["60%", "medium"])/30, 
+             Percent_Below70 = sum(se <= cutoffs.large[[i]]["70%", "medium"])/30, 
+             Percent_Below80 = sum(se <= cutoffs.large[[i]]["80%", "medium"])/30, 
+             Percent_Below90 = sum(se <= cutoffs.large[[i]]["90%", "medium"])/30, 
+             .groups = "keep") %>% 
+      mutate(original_n = sizes[i],
+             scale_size = "milliseconds")
+    
+    temp.large.l <- summary_list.large[[i]] %>% 
+      filter(variability == "large") %>% 
+      group_by(sample_size, variability) %>% 
+      summarize(Percent_Below0 = sum(se <= cutoffs.large[[i]]["0%", "large"])/30,
+             Percent_Below10 = sum(se <= cutoffs.large[[i]]["10%", "large"])/30,
+             Percent_Below20 = sum(se <= cutoffs.large[[i]]["20%", "large"])/30,
+             Percent_Below30 = sum(se <= cutoffs.large[[i]]["30%", "large"])/30,
+             Percent_Below40 = sum(se <= cutoffs.large[[i]]["40%", "large"])/30,
+             Percent_Below50 = sum(se <= cutoffs.large[[i]]["50%", "large"])/30, 
+             Percent_Below60 = sum(se <= cutoffs.large[[i]]["60%", "large"])/30, 
+             Percent_Below70 = sum(se <= cutoffs.large[[i]]["70%", "large"])/30, 
+             Percent_Below80 = sum(se <= cutoffs.large[[i]]["80%", "large"])/30, 
+             Percent_Below90 = sum(se <= cutoffs.large[[i]]["90%", "large"])/30, 
+             .groups = "keep") %>% 
+      mutate(original_n = sizes[i], 
+             scale_size = "milliseconds")
+    
+    #rejoin 
+    summary_list.large[[i]] <- bind_rows(temp.large.s, temp.large.m, temp.large.l)
+  
+    } # end loop and calculate 
+  
+  # create end summary 
+  summary_DF <- bind_rows(summary_list.small, 
+                        summary_list.medium, 
+                        summary_list.large)
+  
+  # return values 
+  return(summary_DF)
+  
+}
+```
+
+- Last combine everything together grabbing the proposed sample at each decile given the 80, 85, 90, and 95 scores 
+- Create a function for our pipeline 
+
+```{r calc_percent_combine, include = T, echo = T}
+calculate_proposed <- function(summary_DF){
+  
+  # 80% summary 
+  summary_long_80 <- summary_DF %>% 
+    pivot_longer(cols = -c(sample_size, original_n, scale_size, variability)) %>% 
+    filter(value >= .80) %>% 
+    arrange(sample_size, original_n, scale_size, variability, name) %>% 
+    group_by(original_n, name, scale_size, variability) %>% 
+    slice_head(n = 1) %>% 
+    mutate(power = 80)
+  
+  # 85% summary
+  summary_long_85 <- summary_DF %>% 
+    pivot_longer(cols = -c(sample_size, original_n, scale_size, variability)) %>% 
+    filter(value >= .85) %>% 
+    arrange(sample_size, original_n, scale_size, variability, name) %>% 
+    group_by(original_n, name, scale_size, variability) %>% 
+    slice_head(n = 1) %>% 
+    mutate(power = 85)
+  
+  # 90% summary  
+  summary_long_90 <- summary_DF %>% 
+    pivot_longer(cols = -c(sample_size, original_n, scale_size, variability)) %>% 
+    filter(value >= .90) %>% 
+    arrange(sample_size, original_n, scale_size, variability, name) %>% 
+    group_by(original_n, name, scale_size, variability) %>% 
+    slice_head(n = 1) %>% 
+    mutate(power = 90)
+  
+  # 95% summary
+  summary_long_95 <- summary_DF %>% 
+    pivot_longer(cols = -c(sample_size, original_n, scale_size, variability)) %>% 
+    filter(value >= .95) %>% 
+    arrange(sample_size, original_n, scale_size, variability, name) %>% 
+    group_by(original_n, name, scale_size, variability) %>% 
+    slice_head(n = 1) %>% 
+    mutate(power = 95)
+  
+  # combine the summary together
+  summary_long <- rbind(summary_long_80, 
+                        summary_long_85,
+                        summary_long_90,
+                        summary_long_95)
+  
+  # return values
+  return(summary_long)
+  
+}
+```
+
+## Simulation Pipeline
+
+- Put together all the simulation pieces 
+  - Simulate the population 
+  - Simulate samples within that population 
+  - Calculate the cutoffs and deciles 
+  - Simulate like the researcher would 
+  - Calculate the percent under the decile
+  - Create final summary 
+
+- We will simulate multiple times at each simulation point:
+  - Samples X 100
+  - Simulate Researcher X 100
+
+```{r simulation_pipeline, include = T, echo = T, eval = F}
+# a list to save this in 
+full_simulation <- list()
+populations <- simulate_population(x)
+    
+for (p in 1:100){
+  
+  # simulate samples from population what pilot data they may have
+  samples <- simulate_samples(start = 20, stop = 100, increase = 10, 
+                          population.small = populations$population.small,
+                          population.medium = populations$population.medium, 
+                          population.large = populations$population.large)
+  
+  
+  deciles <- calculate_deciles(samples.small = samples$samples.small, 
+                           samples.medium = samples$samples.medium,
+                           samples.large = samples$samples.large)
+  
+  cat(paste(p, Sys.time(), "\n"))
+  
+  # reset this with each new sample 
+  researcher_summary <- list()
+  
+  for (q in 1:100){
+    
+    # simulate researcher but work in big steps because this is slow
+    researcher_data <- simulate_researcher(samples.small = samples$samples.small, 
+                                     samples.medium = samples$samples.medium,
+                                     samples.large = samples$samples.large, 
+                                     start = 20, stop = 2000, 
+                                     increase = 20)
+    
+    # calculate percent under each decile
+    percent_items <- calculate_percent(
+      sampled_values.small = researcher_data$sampled_values.small, 
+      sampled_values.medium = researcher_data$sampled_values.medium, 
+      sampled_values.large = researcher_data$sampled_values.large, 
+      cutoffs.small = deciles$cutoffs.small, 
+      cutoffs.medium = deciles$cutoffs.medium, 
+      cutoffs.large = deciles$cutoffs.large, 
+      samplesize_values = researcher_data$samplesize_values,
+      sizes = samples$sizes)
+  
+    # calculate final summary data 
+    researcher_summary[[q]] <- calculate_proposed(summary_DF = percent_items)
+    
+  } # researcher 100 simulations 
+  
+  # after the researcher summary, summarize and stick in dataframe 
+  # so we have a dataframe of each population by sample 
+  full_simulation[[p]] <-
+   bind_rows(researcher_summary) %>%
+   group_by(variability, original_n, scale_size, name, power) %>%
+   summarize(sample_size = mean(sample_size),
+             value = mean(value), .groups = "keep")
+  
+  # clean up the values from the summary while you have the data 
+  full_simulation[[p]]$scale_size <- factor(full_simulation[[p]]$scale_size, 
+                                levels = c("likert", "percent", "milliseconds"),
+                                labels = c("Likert", 
+                                           "Percent", 
+                                           "Milliseconds"))
+  
+  full_simulation[[p]]$variability <- factor(full_simulation[[p]]$variability, 
+                                levels = c("small", "medium", "large"),
+                                labels = c("Small Heterogeneity", 
+                                           "Medium Heterogeneity", 
+                                           "Large Heterogeneity"))
+  
+  # grab the sd information from the pilot sample
+  # note this is not the researcher simulated sample 
+  sd_items <- bind_rows(deciles$sd_items.small, deciles$sd_items.medium, deciles$sd_items.large)
+  sd_items$scale_size <- rep(c("Likert", 
+                           "Percent", 
+                           "Milliseconds"), 
+                         each = 3*length(samples$sizes))
+  sd_items$variability <- factor(sd_items$variability, 
+                                levels = c("small", "medium", "large"),
+                                labels = c("Small Heterogeneity", 
+                                           "Medium Heterogeneity", 
+                                           "Large Heterogeneity"))
+  sd_items$original_n <- rep(rep(samples$sizes, each = 3), 3)
+  
+  # add together that information 
+  full_simulation[[p]] <- full_simulation[[p]] %>% 
+    full_join(sd_items, 
+              by = c("original_n" = "original_n", 
+                     "variability" = "variability", 
+                     "scale_size" = "scale_size"))
+  
+  full_simulation[[p]]$name <- gsub("Percent_Below", "Decile ", full_simulation[[p]]$name)
+  
+  # writing out takes time but don't want to lose 100 researcher sims
+  # ran this across computers so make clear when run 
+  saveRDS(full_simulation, file = paste("simulation_", Sys.time(), ".Rdata", sep = ""))
+
+} # simulate sampling 100 times from the population
+```
+
+## Put Together Data
+
+```{r eval = F}
+all_sim <- bind_rows(readRDS("simulation_study/simulation_ceiling/simulation_2023-08-30_rstudio_ceiling.Rdata"),
+                     bind_rows(readRDS("simulation_study/simulation_ceiling/simulation_2023-08-30_windows_ceiling.Rdata")),
+                     bind_rows(readRDS("simulation_study/simulation_ceiling/simulation_2023-08-30_server_ceiling.Rdata"))) %>% unique()
+
+# View(table(all_sim$original_n, all_sim$variability, all_sim$scale_size, all_sim$power, all_sim$name))
+
+summary_long <- all_sim %>% 
+  group_by(variability, original_n, scale_size, name, power) %>% 
+  summarize(
+    n = n(),
+    sample_size = mean(sample_size),
+    value = mean(value), 
+    sd_item = mean(sd_item),
+    .groups = "keep") 
+
+# 100
+```
+
+## Export Final Data
+
+```{r}
+export(summary_long, "simulation_study/simulation_ceiling/simulated_summary_data_ceiling.csv", row.names = F)
+```

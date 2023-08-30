@@ -40,3 +40,5 @@ vignettes/*.pdf
 .DS_Store
 /docs
 .trackdown
+simulation_study/.DS_Store
+vignettes/.DS_Store
