@@ -1,0 +1,187 @@
+\begin{table*}[hbt]
+\ifnextchar[{\eatarg}{}
+[tbp]
+
+\begin{center}
+\begin{threeparttable}
+
+\caption{\label{tab:table-summary}Proposed Procedure for Powering Studies with Multiple Items}
+
+\footnotesize{
+
+\begin{tabular}{m{1cm}m{6cm}m{6cm}}
+\toprule
+Step & Proposed Steps & Updated Steps\\
+\midrule
+1 & Use representative pilot data. & Use representative pilot data.\\
+2 & Calculate standard error of each of the items in the pilot data. Determine the appropriate SE for the stopping rule. & Calculate standard error of each of the items in the pilot data. Using the 40\%, determine the cutoff and stopping rule for the standard error of the items.\\
+3 & Create bootstrapped samples of your pilot data starting with at least 20 participants up to a maximum number of participants. & Create bootstrapped samples of your pilot data starting with at least 20 participants up to a maximum number of participants.\\
+4 & Calculate the standard error of each of the items in the bootstrapped data. From these scores, calculate the percent of items below the cutoff score from Step 2. & Calculate the standard error of each of the items in the bootstrapped data. From these scores, calculate the percent of items below the cutoff score from Step 2.\\
+5 & Determine the sample size at which 80\%, 85\%, 90\%, 95\% of items are below the cutoff score. & Determine the sample size at which 80\%, 85\%, 90\%, 95\% of items are below the cutoff score. Use the correction formula to adjust your proposed sample size based on pilot data size, power, and percent variability.\\
+6 & Report all values. Designate one as the minimum sample size, the cutoff score as the stopping rule for adaptive designs, and the maximum sample size. & Report all values. Designate one as the minimum sample size, the cutoff score as the stopping rule for adaptive designs, and the maximum sample size.\\
+\bottomrule
+\end{tabular}
+
+}
+
+\end{threeparttable}
+\end{center}
+
+\end{table*}
+\efloatseparator
+ 
+\begin{table*}[hbt]
+\ifnextchar[{\eatarg}{}
+[tbp]
+
+\begin{center}
+\begin{threeparttable}
+
+\caption{\label{tab:table-example}Sample Size Estimates by Decile for Concreteness Example}
+
+\begin{tabular}{lllllllllll}
+\toprule
+Deciles & \multicolumn{1}{c}{C Decile SE} & \multicolumn{1}{c}{C 80} & \multicolumn{1}{c}{C 85} & \multicolumn{1}{c}{C 90} & \multicolumn{1}{c}{C 95} & \multicolumn{1}{c}{L Decile SE} & \multicolumn{1}{c}{L 80} & \multicolumn{1}{c}{L 85} & \multicolumn{1}{c}{L 90} & \multicolumn{1}{c}{L 95}\\
+\midrule
+Decile 10 & 0.13 & 85 & 85 & 95 & 100 & 39.64 & 115 & 135 & 135 & 175\\
+Decile 20 & 0.14 & 70 & 75 & 80 & 90 & 45.67 & 85 & 90 & 110 & 125\\
+Decile 30 & 0.16 & 50 & 55 & 60 & 65 & 46.76 & 85 & 90 & 105 & 115\\
+Decile 40 & 0.18 & 45 & 50 & 50 & 65 & 51.32 & 75 & 75 & 90 & 105\\
+Decile 50 & 0.19 & 35 & 35 & 45 & 50 & 71.17 & 40 & 45 & 45 & 50\\
+Decile 60 & 0.20 & 30 & 35 & 35 & 45 & 78.95 & 35 & 35 & 45 & 50\\
+Decile 70 & 0.21 & 30 & 30 & 35 & 45 & 87.85 & 25 & 35 & 35 & 35\\
+Decile 80 & 0.23 & 25 & 30 & 30 & 40 & 100.45 & 20 & 25 & 25 & 35\\
+Decile 90 & 0.25 & 20 & 20 & 25 & 40 & 121.11 & 20 & 20 & 20 & 20\\
+\bottomrule
+\addlinespace
+\end{tabular}
+
+\begin{tablenotes}[para]
+\normalsize{\textit{Note.} Esimates are based on meeting at least the minimum percent of items (e.g., 80\%) but may be estimated over that amount (e.g., 82.5\%).}
+\end{tablenotes}
+
+\end{threeparttable}
+\end{center}
+
+\end{table*}
+\efloatseparator
+ 
+\begin{table*}[hbt]
+\ifnextchar[{\eatarg}{}
+[tbp]
+
+\begin{center}
+\begin{threeparttable}
+
+\caption{\label{tab:table-sim}Parameter Values for Data Simulation}
+
+\begin{tabular}{llll}
+\toprule
+Information & \multicolumn{1}{c}{Likert} & \multicolumn{1}{c}{Percent} & \multicolumn{1}{c}{Milliseconds}\\
+\midrule
+Minimum & 1.00 & 0.00 & 0.00\\
+Maximum & 7.00 & 100.00 & 3,000.00\\
+$\mu$ & 4.00 & 50.00 & 1,000.00\\
+$Skewed \mu$ & 6.00 & 85.00 & 2,500.00\\
+$\sigma_{\mu}$ & 0.25 & 10.00 & 150.00\\
+$\sigma$ & 2.00 & 25.00 & 400.00\\
+Small $\sigma_{\sigma}$ & 0.20 & 4.00 & 50.00\\
+Medium $\sigma_{\sigma}$ & 0.40 & 8.00 & 100.00\\
+Large $\sigma_{\sigma}$ & 0.80 & 16.00 & 200.00\\
+\bottomrule
+\end{tabular}
+
+\end{threeparttable}
+\end{center}
+
+\end{table*}
+\efloatseparator
+ 
+\begin{table*}[hbt]
+\ifnextchar[{\eatarg}{}
+[tbp]
+
+\begin{center}
+\begin{threeparttable}
+
+\caption{\label{tab:table-predict-largest}Prediction of Proposed Sample Size from Simulated Variables}
+
+\begin{tabular}{llllll}
+\toprule
+Term & Estimate & $SE$ & $t$ & $p$ & $pr^2$\\
+\midrule
+Intercept & -27.30 & 3.08 & -8.87 & < .001 & .335\\
+Pilot Sample Size & 1.51 & 0.03 & 54.76 & < .001 & .951\\
+Scale: Likert v Percent & 7.00 & 1.80 & 3.89 & < .001 & .088\\
+Scale: Likert v Milllisecond & 25.63 & 1.87 & 13.74 & < .001 & .548\\
+Proportion Variability & 312.44 & 19.86 & 15.73 & < .001 & .613\\
+Data: Ceiling v Normal & -7.16 & 1.41 & -5.08 & < .001 & .142\\
+\bottomrule
+\end{tabular}
+
+\end{threeparttable}
+\end{center}
+
+\end{table*}
+\efloatseparator
+ 
+\begin{table*}[hbt]
+\ifnextchar[{\eatarg}{}
+[tbp]
+
+\begin{center}
+\begin{threeparttable}
+
+\caption{\label{tab:table-correction}Parameters for All Decile Cutoff Scores}
+
+\begin{tabular}{llllll}
+\toprule
+Term & Estimate & $SE$ & $t$ & $p$ & AIC\\
+\midrule
+Intercept & 111.049 & 78.248 & 1.419 & .156 & 29,996.94\\
+Projected Sample Size & 0.429 & 0.002 & 185.360 & < .001 & 20,327.79\\
+Pilot Sample Size & -0.718 & 0.007 & -103.787 & < .001 & 14,753.61\\
+Log2 Projected Sample Size & 19.522 & 0.215 & 90.693 & < .001 & 8,668.73\\
+Log2 Pilot Sample Size & 4.655 & 0.269 & 17.296 & < .001 & 8,363.69\\
+Log2 Power & -39.367 & 15.640 & -2.517 & .012 & 8,320.82\\
+Proportion Variability & 15.434 & 3.617 & 4.267 & < .001 & 8,297.71\\
+Log2 Proportion Variability & -0.729 & 0.232 & -3.143 & .002 & 8,289.81\\
+Power & 0.606 & 0.259 & 2.343 & .019 & 8,286.31\\
+\bottomrule
+\end{tabular}
+
+\end{threeparttable}
+\end{center}
+
+\end{table*}
+\efloatseparator
+ 
+\begin{table*}[hbt]
+\ifnextchar[{\eatarg}{}
+[tbp]
+
+\begin{center}
+\begin{threeparttable}
+
+\caption{\label{tab:table-decile}Parameters for 40\% Decile Cutoff Scores}
+
+\begin{tabular}{lllll}
+\toprule
+Term & Estimate & $SE$ & $t$ & $p$\\
+\midrule
+Intercept & 206.589 & 128.861 & 1.603 & .109\\
+Projected Sample Size & 0.368 & 0.005 & 71.269 & < .001\\
+Pilot Sample Size & -0.770 & 0.013 & -59.393 & < .001\\
+Log2 Projected Sample Size & 27.541 & 0.552 & 49.883 & < .001\\
+Log2 Pilot Sample Size & 2.583 & 0.547 & 4.725 & < .001\\
+Log2 Power & -66.151 & 25.760 & -2.568 & .010\\
+Proportion Variability & 16.405 & 6.005 & 2.732 & .006\\
+Log2 Proportion Variability & -1.367 & 0.382 & -3.577 & < .001\\
+Power & 1.088 & 0.426 & 2.552 & .011\\
+\bottomrule
+\end{tabular}
+
+\end{threeparttable}
+\end{center}
+
+\end{table*}
