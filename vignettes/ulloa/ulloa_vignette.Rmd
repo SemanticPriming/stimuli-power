@@ -22,6 +22,8 @@ library(tidyr)
 library(psych)
 library(reshape)
 library(reshape2)
+#library(semanticprimeR)
+set.seed(483948)
 ```
 
 ### Project/Data Title: 
@@ -43,10 +45,10 @@ Participants were students at Heinrich-Heine-Universität Düsseldorf, Germany t
 Data included within this vignette.
 
 ```{r}
-DF <- import("ulloa_data.csv")
+DF <- import("vignettes/ulloa/ulloa_data.csv")
 drops <- c("RT", "side", "aff-ness")
 DF <- DF[ , !(names(DF) %in% drops)]
-DF
+head(DF)
 ```
 
 ### Date Published: 
@@ -72,7 +74,7 @@ Paris, France
 ### Column Metadata:
 
 ```{r}
-metadata <- import("ulloa_metadata.xlsx")
+metadata <- import("vignettes/ulloa/ulloa_metadata.xlsx")
 
 flextable(metadata) %>% autofit()
 ```
@@ -83,18 +85,20 @@ In this dataset, there are valid and invalid cue-targeting variable. In valid cu
 
 #### Stopping Rule
 
-What the usual standard error for the data that could be considered for our stopping rule using the 50% decile? 
+What the usual standard error for the data that could be considered for our stopping rule using the 40% decile? 
 
 ```{r subset and restructure}
 ### create  subset for valid cue-targeting
 DF_valid <- subset(DF, congr == "valid") %>% 
   group_by(suj, item) %>% 
-  summarize(liking = mean(liking, na.rm = T))
+  summarize(liking = mean(liking, na.rm = T)) %>% 
+  as.data.frame()
 
 ### create  subset for invalid cue-targeting
 DF_invalid <- subset(DF, congr == "invalid") %>% 
   group_by(suj, item) %>% 
-  summarize(liking = mean(liking, na.rm = T))
+  summarize(liking = mean(liking, na.rm = T)) %>% 
+  as.data.frame()
 ```
 
 ```{r compute se for separate}
@@ -115,7 +119,7 @@ cutoff2
 
 ```{r power Two different conditions}
 # sequence of sample sizes to try
-samplesize_values <- seq(25, 400, 5)
+samplesize_values <- seq(25, 200, 5)
 
 # create a blank table for us to save the values in 
 sim_table <- matrix(NA, 
@@ -166,9 +170,27 @@ for (i in 1:length(samplesize_values)){
   sim_table2[i, 1:length(unique(DF_invalid$item))] <- temp_invalid$se2
   sim_table2[i, "sample_size"] <- samplesize_values[i]
 }
-
 ```
 
+Calculate the cutoff score with information necessary for correction. 
+
+```{r cutoff}
+cutoff_valid <- calculate_cutoff(population = DF_valid, 
+                 grouping_items = "item",
+                 score_column = "liking", 
+                 minimum = min(DF_valid$liking),
+                 maximum = max(DF_valid$liking))
+
+cutoff_valid$cutoff
+
+cutoff_value <- calculate_cutoff(population = DF_valid, 
+                 grouping_items = "item",
+                 score = "liking", 
+                 minimum = min(DF_valid$liking),
+                 maximum = max(DF_valid$liking))
+
+cutoff_valid$cutoff
+```
 
 ```{r summary analysis part1}
 ### for valid cue-targeting condition
@@ -177,12 +199,20 @@ final_sample <-
   pivot_longer(cols = -c(sample_size, var))  %>% 
   dplyr::rename(item = name, se = value)   %>% 
   dplyr::group_by(sample_size, var)  %>% 
-  dplyr::summarize(Percent_Below = sum(se <= cutoff1)/length(unique(DF_valid$item)))  %>% 
-  dplyr::filter(Percent_Below >= .80) %>% 
-  dplyr::arrange(Percent_Below) %>% 
-  mutate(new_sample = round(39.369 + 0.700*sample_size + 0.003*cutoff1 - 0.694*length(unique(DF_valid$item))))
+  dplyr::summarize(percent_below = sum(se <= cutoff1)/length(unique(DF_valid$item)))  %>% 
+  dplyr::arrange(percent_below) 
 
 flextable(final_sample) %>% autofit()
+```
+
+Calculate the final corrected scores:
+
+```{r calculate correction}
+final_scores <- calculate_correction(proportion_summary = final_sample,
+                     pilot_sample_size = length(unique(DF$suj)),
+                     proportion_variability = cutoff$prop_var)
+
+flextable(final_scores) %>% autofit()
 ```
 
 ```{r summary analysis part2}
@@ -192,9 +222,9 @@ final_sample2 <-
   pivot_longer(cols = -c(sample_size, var)) %>% 
   dplyr::rename(item = name, se = value)  %>% 
   dplyr::group_by(sample_size, var) %>% 
-  dplyr::summarize(Percent_Below = sum(se <= cutoff2)/length(unique(DF_invalid$item))) %>% 
-  dplyr::filter(Percent_Below >= .80) %>% 
-  dplyr::arrange(Percent_Below) %>% 
+  dplyr::summarize(percent_below = sum(se <= cutoff2)/length(unique(DF_invalid$item))) %>% 
+  dplyr::filter(percent_below >= .80) %>% 
+  dplyr::arrange(percent_below) %>% 
   mutate(new_sample = round(39.369 + 0.700*sample_size + 0.003*cutoff2 - 0.694*length(unique(DF_invalid$item))))
 
 flextable(final_sample2) %>% autofit()
@@ -205,7 +235,7 @@ Based on these simulations, we can decide our minimum sample size is likely clos
 
 #### Maximum Sample Size
 
-In this example, we could set our maximum sample size for 90% power, which would equate to `r final_sample %>% filter(Percent_Below >= .90) %>% pull(new_sample) %>% min()` for the valid trials to `r final_sample2 %>% filter(Percent_Below >= .90) %>% pull(new_sample) %>% min()` for the invalid trials.
+In this example, we could set our maximum sample size for 90% power, which would equate to `r final_sample %>% filter(percent_below >= .90) %>% pull(new_sample) %>% min()` for the valid trials to `r final_sample2 %>% filter(percent_below >= .90) %>% pull(new_sample) %>% min()` for the invalid trials.
 
 #### Final Sample Size
 

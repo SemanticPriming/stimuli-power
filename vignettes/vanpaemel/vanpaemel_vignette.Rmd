@@ -11,7 +11,7 @@ output: word_document
 
 ### Vignette Setup:
 
-```{r package install, include=FALSE}
+```{r vignette_setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 
 # Libraries necessary for this vignette
@@ -21,6 +21,8 @@ library(dplyr)
 library(tidyr)
 library(psych)
 library(data.table)
+library(semanticprimeR)
+set.seed(48394)
 ```
 
 ### Project/Data Title: 
@@ -31,11 +33,11 @@ Data provided by: Wolf Vanpaemel
 
 ### Project/Data Description: 
 
-This data provides extensive exemplar by feature applicability matrices covering the 15 different categories, as well as two large semantic domains (that of animals and artifacts). For all exemplars of the 15 semantic categories, typicality ratings, goodness ratings, goodness rank order, generation frequency, exemplar associative strength, category associative strength, estimated age of acquisition, word frequency, familiarity ratings, imageability ratings, and pairwise similarity ratings are described as well. The structure of the dataset is not programming language friendly. Here, we only consider typicality.
+This data provides extensive exemplar by feature applicability matrices covering  15 or 16 different categories (birds, fish, insects, mammals, amphibians/reptiles, clothing, kitchen utensils, musical instruments, tools, vehicles, weapons, fruit, vegetables, professions, and sports), as well as two large semantic domains (animals and artifacts). For all exemplars of the  semantic categories, typicality ratings, goodness ratings, goodness rank order, generation frequency, exemplar associative strength, category associative strength, estimated age of acquisition, word frequency, familiarity ratings, imageability ratings, and pairwise similarity ratings are described as well. The structure of the dataset is not programming language friendly. Here, we only consider typicality.
 
 ### Methods Description: 
 
-The data collection took place in a large classroom where all the participants were present at the same time. The participants received a booklet with instructions on the first page, followed by four sheets with a semantic category label printed in bold on top. Each of the category labels was followed by a list of 5–33 items, referring to exemplars. The participants were asked to indicate, for every item in the list, how (e.g.) typical it was for the category printed on top of the page. They used a Likert-type rating scale, ranging from 1 for very atypical items to 20 for very typical items. If they encountered an exemplar they did not know, they were asked to circle it. Every participant completed (e.g.) typicality ratings for four different categories. The assignment of categories to participants was randomized. For every category, four different random permutations of the exemplars were used, and each of these permutations was distributed with an equal frequency among the participants. All the exemplars of a category were rated by 28 different participants.
+The typicality data were collected as part of a larger data collection. Here we describe the typicality data collection only. The data collection took place in a large classroom where all the participants were present at the same time. The participants received a booklet with instructions on the first page, followed by four sheets with a semantic category label printed in bold on top. Each of the category labels was followed by a list of 5–33 items belonging to that category, referring to exemplars. The participants were asked to indicate, for every item in the list, how  typical it was for the category printed on top of the page. They used a Likert-type rating scale, ranging from 1 for very atypical items to 20 for very typical items. If they encountered an exemplar they did not know, they were asked to circle it. Every participant completed  typicality ratings for four different categories. The assignment of categories to participants was randomized. For every category, four different random permutations of the exemplars were used, and each of these permutations was distributed with an equal frequency among the participants. All the exemplars of a category were rated by 28 different participants.
 
 ### Data Location: 
 
@@ -93,7 +95,7 @@ University of Leuven, Belgium
 ### Column Metadata: 
 
 ```{r}
-metadata <- import("vanpaemelwolf_metadata.xlsx")
+metadata <- import("vanpaemel_metadata.xlsx")
 
 flextable(metadata) %>% autofit()
 ```
@@ -126,7 +128,7 @@ SE1
 
 ```{r power Two different comparison types}
 # sequence of sample sizes to try
-samplesize_values <- seq(5, 110, 5)
+samplesize_values <- seq(5, 200, 5)
 
 # create a blank table for us to save the values in 
 sim_table <- matrix(NA, 
@@ -156,8 +158,19 @@ for (i in 1:length(samplesize_values)){
 }
 ```
 
+Calculate the cutoff score with information necessary for correction. 
+
+```{r cutoff}
+cutoff <- calculate_cutoff(population = typicality_data_gp1_sub, 
+                 grouping_items = "comp_group",
+                 score = "score", 
+                 minimum = min(typicality_data_gp1_sub$score),
+                 maximum = max(typicality_data_gp1_sub$score))
+
+cutoff$cutoff
+```
+
 ```{r summary analysis part1  comparison type 10}
-cutoff <- quantile(SE1, probs = .5)
 ### for response outputs 
 # figure out cut off
 final_sample <- 
@@ -165,24 +178,28 @@ final_sample <-
   pivot_longer(cols = -c(sample_size, var))  %>% 
   dplyr::rename(item = name, se = value)   %>% 
   dplyr::group_by(sample_size, var)  %>% 
-  dplyr::summarize(Percent_Below = sum(se <= cutoff)/length(unique(typicality_data_gp1_sub$comp_group)))  %>% 
-  dplyr::filter(Percent_Below >= .80) %>% 
-  dplyr::arrange(Percent_Below) %>% 
-  mutate(new_sample = round(39.369 + 0.700*sample_size + 0.003*cutoff - 0.694*length(unique(typicality_data_gp1_sub$comp_group))))
+  dplyr::summarize(percent_below = sum(se <= cutoff$cutoff)/length(unique(typicality_data_gp1_sub$comp_group)))  %>% 
+  # dplyr::filter(percent_below >= .80) %>% 
+  dplyr::arrange(percent_below) %>% 
+  ungroup()
 
 flextable(final_sample) %>% autofit()
 ```
+
+Calculate the final corrected scores:
+
+```{r calculate correction}
+final_scores <- calculate_correction(proportion_summary = final_sample,
+                     pilot_sample_size = length(unique(typicality_data_gp1_sub$participant)),
+                     proportion_variability = cutoff$prop_var)
+
+flextable(final_scores) %>% autofit()
+```
+
 #### Minimum Sample Size
 
-Based on these simulations, we can decide our minimum sample size is likely close to `r min(final_sample$new_sample)`.
+Based on these simulations, we can decide our minimum sample size is likely close to `r round(min(final_scores$corrected_sample_size))`.
 
 #### Maximum Sample Size
 
-In this example, we could set our maximum sample size for 90% power, which would equate to `r final_sample %>% filter(Percent_Below >= .90) %>% pull(new_sample) %>% min()` participants. 
-
-#### Final Sample Size
-
-Notice in this case, because of the smaller number of items, we do find some variability in our estimates, so we selected the min overall for the smallest sample size and the minimum overall above 90% which were the same estimation. 
-
-
-
+In this example, we could set our maximum sample size for 90% power, which would equate to `r final_scores %>% filter(percent_below >= 90) %>% pull(corrected_sample_size) %>% min() %>% round()` participants. 
