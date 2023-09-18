@@ -11,7 +11,7 @@ output: word_document
 
 ### Vignette Setup:
 
-```{r setup}
+```{r vignette_setup, include = FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 
 # Libraries necessary for this vignette
@@ -19,6 +19,7 @@ library(rio)
 library(flextable)
 library(dplyr)
 library(tidyr)
+library(semanticprimeR)
 
 # Function for simulation
 item_power <- function(data, # name of data frame
@@ -76,10 +77,7 @@ item_power <- function(data, # name of data frame
     pivot_longer(cols = -c(sample_size)) %>% 
     rename(item = name, se = value) %>% 
     group_by(sample_size) %>% 
-    summarize(Percent_Below = sum(se <= cutoff)/length(unique(DF$items))) 
-  
-  # multiply by correction 
-  final_sample$new_sample <- round(39.369 + 0.700*final_sample$sample_size + 0.003*cutoff - 0.694*length(unique(DF$items)))
+    summarize(percent_below = sum(se <= cutoff)/length(unique(DF$items))) 
   
   return(list(
     SE = SE, 
@@ -181,7 +179,7 @@ Note that the data is already in long format (each item has one row), and theref
 
 #### Stopping Rule
 
-In this example, we have multiple variables to choose from for our analysis. We could include several to find the sample size rules for further study. In this example, I'll use the variables with the least and most variability and take the average of the 50% decile as suggested in our manuscript. This choice is somewhat arbitrary - in a real study, you could chose to use only the variables you were interested in and pick the most conservative values or simply average together estimates from all variables. 
+In this example, we have multiple variables to choose from for our analysis. We could include several to find the sample size rules for further study. In this example, I'll use the variables with the least and most variability and take the average of the 40% decile as suggested in our manuscript. This choice is somewhat arbitrary - in a real study, you could chose to use only the variables you were interested in and pick the most conservative values or simply average together estimates from all variables. 
 
 ```{r}
 apply(DF[ , -c(1,2)], 2, sd)
@@ -201,7 +199,7 @@ var1 <- item_power(data = DF, # name of data frame
             sample_start = 20, 
             sample_stop = 100, 
             sample_increase = 5,
-            decile = .5)
+            decile = .4)
 
 var2 <- item_power(DF, # name of data frame
             "Personal nature", # name of DV column as a character
@@ -209,9 +207,8 @@ var2 <- item_power(DF, # name of data frame
             sample_start = 20, 
             sample_stop = 100, 
             sample_increase = 5,
-            decile = .5)
+            decile = .4)
 ```
-
 
 What the usual standard error for the data that could be considered for our stopping rule?
 
@@ -238,25 +235,52 @@ The average SE cutoff across both variables is `r round(cutoff, digits = 3)`.
 How large does the sample have to be for 80% to 95% of the items to be below our stopping SE rule? 
 
 ```{r}
-final_sample <- bind_rows(
-  var1$final_sample %>% 
-    mutate(variable = "How surprising"), 
-  var2$final_sample %>% 
-    mutate(variable = "Personal nature")
-)
+cutoff_personal <- calculate_cutoff(population = DF, 
+                           grouping_items = "items",
+                           score = "Rating",
+                           minimum = as.numeric(min(DF$Rating)),
+                           maximum = as.numeric(max(DF$Rating)))
+# showing how this is the same as the person calculated version versus semanticprimeR's function
+cutoff_personal$cutoff
 
-flextable(final_sample %>% 
-            filter(Percent_Below >= .80) %>% 
-            arrange(Percent_Below, new_sample)) %>% 
+final_table <- calculate_correction(
+  proportion_summary = var1$final_sample,
+  pilot_sample_size = ,
+  proportion_variability = cutoff$prop_var
+  )
+
+flextable(final_table) %>% 
   autofit()
 ```
 
-In this scenario, we could go with the point in which they both meet the 80% criterion, which is *n* = `r final_sample %>% filter(Percent_Below >= .80) %>% arrange(Percent_Below, new_sample) %>% filter(variable == "How surprising") %>% slice_head() %>% pull(new_sample)` for the personal variable and *n* = `r final_sample %>% filter(Percent_Below >= .80) %>% arrange(Percent_Below, new_sample) %>% filter(variable == "Personal nature") %>% slice_head() %>% pull(new_sample)` for the surprising variable. In these scenarios, it is likely better to estimate a larger sample. 
+```{r}
+cutoff_surprsing <- calculate_cutoff(population = DF, 
+                           grouping_items = "items",
+                           score = "Rating",
+                           minimum = as.numeric(min(DF$Rating)),
+                           maximum = as.numeric(max(DF$Rating)))
+# showing how this is the same as the person calculated version versus semanticprimeR's function
+cutoff_surprsing$cutoff
+
+final_table <- calculate_correction(
+  proportion_summary = var1$final_sample,
+  pilot_sample_size = DF %>% group_by(items) %>% summarize(n = n()) %>% 
+    pull(n) %>% mean() %>% round(),
+  proportion_variability = cutoff$prop_var
+  )
+
+flextable(final_table) %>% 
+  autofit()
+```
+
+In this scenario, we could go with the point in which they both meet the 80% criterion, which is *n* = `r final_sample %>% filter(percent_below >= .80) %>% arrange(percent_below, new_sample) %>% filter(variable == "How surprising") %>% slice_head() %>% pull(new_sample)` for the personal variable and *n* = `r final_sample %>% filter(percent_below >= .80) %>% arrange(percent_below, new_sample) %>% filter(variable == "Personal nature") %>% slice_head() %>% pull(new_sample)` for the surprising variable. In these scenarios, it is likely better to estimate a larger sample. 
 
 #### Maximum Sample Size
 
-If you decide to use the 95% power as your criterion, you would see that items need somewhere between `r final_sample %>% filter(Percent_Below >= .95) %>% arrange(Percent_Below, new_sample) %>% filter(variable == "How surprising") %>% slice_head() %>% pull(new_sample)` and `r final_sample %>% filter(Percent_Below >= .95) %>% arrange(Percent_Below, new_sample) %>% filter(variable == "Personal nature") %>% slice_head() %>% pull(new_sample)` participants for both variables. In this case, you could choose to make the larger value for participants your maximum sample size to ensure both variables reach criterion. 
+If you decide to use the 95% power as your criterion, you would see that items need somewhere between `r final_sample %>% filter(percent_below >= .95) %>% arrange(percent_below, new_sample) %>% filter(variable == "How surprising") %>% slice_head() %>% pull(new_sample)` and `r final_sample %>% filter(percent_below >= .95) %>% arrange(percent_below, new_sample) %>% filter(variable == "Personal nature") %>% slice_head() %>% pull(new_sample)` participants for both variables. In this case, you could choose to make the larger value for participants your maximum sample size to ensure both variables reach criterion. 
 
 #### Final Sample Size
 
 You should also consider any potential for missing data and/or unusable data given the requirements for your study. Given that participants are likely to see all items in this study, we could use the minimum, stopping rule, and maximum defined above. 
+
+
