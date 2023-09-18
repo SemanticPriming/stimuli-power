@@ -1,13 +1,17 @@
 ---
 title: "Survival processing usefulness"
 author: "Necdet Gürkan & Yangyang Yu"
-date: "`r Sys.Date()`"
-output: word_document
-  # html_document:
-  #   toc: true
-  #   toc_depth: 4
-  #   toc_float: true
+date: "Last Knitted: `r Sys.Date()`"
+# output: word_document
+output:
+  html_document:
+    toc: true
+    toc_depth: 4
+    toc_float: true
+editor_options: 
+  chunk_output_type: inline
 ---
+
 ### Vignette Setup: 
 
 ```{r setup, include=FALSE}
@@ -18,6 +22,8 @@ library(rio)
 library(flextable)
 library(dplyr)
 library(tidyr)
+library(semanticprimeR)
+set.seed(84930)
 ```
 
 ### Project/Data Title: 
@@ -32,11 +38,11 @@ The data come from a conceptual replication study on the survival processing eff
 
 ### Methods Description: 
 
-Participants were students at Heinrich-Heine-Universität Düsseldorf, Germany that were paid for participating or received course credit. Their ages ranged from 18 to 55 years. The words to-be-rated consisted of 30 typical members of 30 categories drawn from the updated Battig and Montague norms (Van Overschelde, Rawson, & Dunlosky, 2004).
+Participants were students at Heinrich Heine University Düsseldorf, Germany that were paid for participating or received course credit. Their ages ranged from 18 to 55 years. The words to-be-rated consisted of 30 typical members of 30 categories drawn from the updated Battig and Montague norms (Van Overschelde, Rawson, & Dunlosky, 2004).
 
 ### Data Location: 
 
-Data included within this vignette. We drop the scenario column because the standard deviation and mean of item ratings across the scenarios identical. We also add a participant column to keep this script similar to other ones.
+Data included within this vignette. We drop the scenario column because the standard deviation and mean of item ratings across the scenarios were  identical. We also add a participant column to keep this script similar to other ones.
 
 ```{r}
 DF <- import("roer_data.xlsx")
@@ -88,27 +94,35 @@ flextable(head(DF_long)) %>% autofit()
 
 #### Stopping Rule
 
-What the usual standard error for the data that could be considered for our stopping rule using the 50% decile? 
+What is the usual standard error for the data that could be considered for our stopping rule using the 40% decile? 
 
 ```{r}
 # individual SEs
 SE <- tapply(DF_long$score, DF_long$item, function (x) { sd(x)/sqrt(length(x)) })
-
 SE
 
-cutoff <- quantile(SE, probs = .50)
+cutoff <- quantile(SE, probs = .40)
 cutoff
+
+# we could also use the cutoff score function in semanticprimeR
+cutoff_score <- calculate_cutoff(population = DF_long,
+                                 grouping_items = "item",
+                                 score = "score",
+                                 minimum = min(DF_long$score),
+                                 maximum = max(DF_long$score))
+
+cutoff_score$cutoff
 ```
 
-Using our 50% decile as a guide, we find that `r round(cutoff, digits = 3)` is our target standard error for an accurately measured item. 
+Using our 40% decile as a guide, we find that `r round(cutoff, digits = 3)` is our target standard error for an accurately measured item. 
 
 #### Minimum Sample Size
 
-To estimate minimum sample size, we should figure out what number of participants it would take to achieve 80%, 85%, 90%, and 95% of the SEs for items below our critical score of `r round(cutoff, digits = 3)`?
+To estimate the minimum sample size, we should figure out what number of participants it would take to achieve 80%, 85%, 90%, and 95% of the SEs for items below our critical score of `r round(cutoff, digits = 3)`.
 
 ```{r}
 # sequence of sample sizes to try
-samplesize_values <- seq(20, 300, 5)
+samplesize_values <- seq(20, 500, 5)
 
 # create a blank table for us to save the values in 
 sim_table <- matrix(NA, 
@@ -140,18 +154,31 @@ final_sample <-
   pivot_longer(cols = -c(sample_size)) %>% 
   dplyr::rename(item = name, se = value) %>% 
   group_by(sample_size) %>% 
-  summarize(Percent_Below = sum(se <= cutoff)/length(unique(DF_long$item))) %>% 
-  filter(Percent_Below >= .80) %>% 
-  mutate(new_sample = round(39.369 + 0.700*sample_size + 0.003*cutoff - 0.694*length(unique(DF_long$item))))
+  summarize(percent_below = sum(se <= cutoff)/length(unique(DF_long$item))) %>% 
+  ungroup()
 
-flextable(final_sample) %>% autofit()               
+flextable(final_sample %>% head()) %>% autofit()               
 ```
 
-Based on these simulations, we can decide our minimum sample size is likely close to `r min(final_sample$new_sample)`.
+```{r}
+final_table <- calculate_correction(
+  proportion_summary = final_sample,
+  pilot_sample_size = DF_long %>% group_by(item) %>% 
+    summarize(sample_size = n()) %>% ungroup() %>% 
+    summarize(avg_sample = mean(sample_size)) %>% pull(avg_sample),
+  proportion_variability = cutoff_score$prop_var
+  )
+
+flextable(final_table) %>% 
+  autofit()
+```
+
+
+Based on these simulations, we can decide our minimum sample size is likely close to `r final_table %>% arrange(percent_below, corrected_sample_size) %>% filter(percent_below >= 80) %>% slice_head() %>% pull(corrected_sample_size) %>% round()`.
 
 #### Maximum Sample Size
 
-In this example, we could set our maximum sample size for 90% power, which would equate to `r final_sample %>% filter(Percent_Below >= .90) %>% pull(new_sample) %>% min()` participants. 
+In this example, we could set our maximum sample size for 90% of items, which would equate to `r final_table %>% arrange(percent_below, corrected_sample_size) %>% filter(percent_below >= 90) %>% slice_head() %>% pull(corrected_sample_size) %>% round()` participants. 
 
 #### Final Sample Size
 

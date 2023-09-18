@@ -1,12 +1,15 @@
 ---
 title: "Overconfidence for picture cues in foreign language learning"
 author: "Jason Geller"
-date: "`r Sys.Date()`"
-output: word_document
-  # html_document:
-  #   toc: true
-  #   toc_depth: 4
-  #   toc_float: true
+date: "Last Knitted: `r Sys.Date()`"
+# output: word_document
+output:
+  html_document:
+    toc: true
+    toc_depth: 4
+    toc_float: true
+editor_options: 
+  chunk_output_type: inline
 ---
 
 ### Vignette Setup:
@@ -23,6 +26,7 @@ library(flextable)
 library(dplyr)
 library(tidyr)
 library(psych)
+library(semanticprimeR)
 
 # Function for simulation
 item_power <- function(data, # name of data frame
@@ -80,10 +84,7 @@ item_power <- function(data, # name of data frame
     pivot_longer(cols = -c(sample_size)) %>% 
     rename(item = name, se = value) %>% 
     group_by(sample_size) %>% 
-    summarize(Percent_Below = sum(se <= cutoff)/length(unique(DF$items))) 
-  
-  # multiply by correction 
-  final_sample$new_sample <- round(39.369 + 0.700*final_sample$sample_size + 0.003*cutoff - 0.694*length(unique(DF$items)))
+    summarize(percent_below = sum(se <= cutoff)/length(unique(DF$items))) 
   
   return(list(
     SE = SE, 
@@ -131,6 +132,16 @@ No official publication, see citation below.
 
 Carpenter, S. K., & Geller, J. (2020). Is a picture really worth a thousand words? Evaluating contributions of fluency and analytic processing in metacognitive judgements for pictures in foreign language vocabulary learning. Quarterly Journal of Experimental Psychology, 73(2), 211–224. https://doi.org/10.1177/1747021819879416
 
+### Citations:
+
+Brysbaert, M., Warriner, A. B., & Kuperman, V. (2014). Concreteness ratings for 40 thousand generally known English word lemmas. Behavior Research Methods, 46(3), 904–911. https://doi.org/10.3758/s13428-013-0403-5
+
+Brysbaert, M., & New, B. (2009). Moving beyond Kučera and Francis: A critical evaluation of current word frequency norms and the introduction of a new and improved word frequency measure for American English. Behavior Research Methods, 41(4), 977–990. https://doi.org/10.3758/BRM.41.4.977
+
+Carpenter, S. K., & Geller, J. (2020). Is a picture really worth a thousand words? Evaluating contributions of fluency and analytic processing in metacognitive judgements for pictures in foreign language vocabulary learning. Quarterly Journal of Experimental Psychology, 73(2), 211–224. https://doi.org/10.1177/1747021819879416
+
+Carpenter, S. K., & Olson, K. M. (2012). Are pictures good for learning new vocabulary in a foreign language? Only if you think they are not. Journal of Experimental Psychology: Learning, Memory, and Cognition, 38(1), 92–101. https://doi.org/10.1037/a0024828
+
 ### Keywords: 
 
 Overconfidence, metacognition, processing fluency, analytic processing, foreign language learning
@@ -174,11 +185,11 @@ var1 <- item_power(data = DF, # name of data frame
             sample_start = 20, 
             sample_stop = 100, 
             sample_increase = 5,
-            decile = .5)
+            decile = .4)
 ```
 
 
-What the usual standard error for the data that could be considered for our stopping rule using the 50% decile? 
+What the usual standard error for the data that could be considered for our stopping rule using the 40% decile? 
 
 ```{r}
 # individual SEs
@@ -187,24 +198,36 @@ var1$SE
 var1$cutoff
 ```
 
-Using our 50% decile as a guide, we find that `r round(var1$cutoff, digits = 3)` is our target standard error for an accurately measured item. 
+Using our 40% decile as a guide, we find that `r round(var1$cutoff, digits = 3)` is our target standard error for an accurately measured item. 
 
 #### Minimum Sample Size
 
 To estimate minimum sample size, we should figure out what number of participants it would take to achieve 80%, 85%, 90%, and 95% of the SEs for items below our critical score of `r round(var1$cutoff, digits = 3)`?
 
 ```{r}
-flextable(var1$final_sample %>% 
-            filter(Percent_Below >= .80) %>% 
-            arrange(Percent_Below, new_sample)) %>% 
+cutoff <- calculate_cutoff(population = DF, 
+                           grouping_items = "Stimulus",
+                           score = "EncodeJOL",
+                           minimum = as.numeric(min(DF$EncodeJOL)),
+                           maximum = as.numeric(max(DF$EncodeJOL)))
+# showing how this is the same as the person calculated version versus semanticprimeR's function
+cutoff$cutoff
+
+final_table <- calculate_correction(
+  proportion_summary = var1$final_sample,
+  pilot_sample_size = length(unique(DF$Subject)),
+  proportion_variability = cutoff$prop_var
+  )
+
+flextable(final_table) %>% 
   autofit()
 ```
 
-Our minimum sample size is (*n* = `r var1$final_sample %>% filter(Percent_Below >= .80) %>% arrange(Percent_Below, new_sample) %>% slice_head() %>%  pull(new_sample)` as the minimum at 80%). We could consider using 90% (*n* = `r var1$final_sample %>% filter(Percent_Below >= .90) %>% arrange(Percent_Below, new_sample) %>% slice_head() %>%  pull(new_sample)`) or 95% (*n* = `r var1$final_sample %>% filter(Percent_Below >= .95) %>% arrange(Percent_Below, new_sample) %>% slice_head() %>%  pull(new_sample)`). 
+Our minimum sample size is (*n* = `r final_table %>% filter(percent_below >= 80) %>% arrange(percent_below, corrected_sample_size) %>% slice_head() %>% pull(corrected_sample_size) %>% round()` as the minimum at 80%). We could consider using 90% (*n* = `r final_table %>% filter(percent_below >= 90) %>% arrange(percent_below, corrected_sample_size) %>% slice_head() %>%  pull(corrected_sample_size) %>% round()`) or 95% (*n* = `r final_table %>% filter(percent_below >= 95) %>% arrange(percent_below, corrected_sample_size) %>% slice_head() %>%  pull(corrected_sample_size) %>% round()`). 
 
 #### Maximum Sample Size
 
-While there are many considerations for maximum sample size (time, effort, resources), if we consider a higher value just for estimation sake, we could use *n* = `r var1$final_sample %>% filter(Percent_Below >= .98) %>% arrange(Percent_Below, new_sample) %>% slice_head() %>%  pull(new_sample)` at nearly 100%. 
+While there are many considerations for maximum sample size (time, effort, resources), if we consider a higher value just for estimation sake, we could use *n* = `r final_table %>% filter(percent_below >= 98) %>% arrange(percent_below, corrected_sample_size) %>% slice_head() %>% pull(corrected_sample_size) %>% round()` at nearly 100%. 
 
 #### Final Sample Size
 

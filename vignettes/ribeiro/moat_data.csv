@@ -1,4 +1,4 @@
-id,domain,gender,age,filename,medium,question_type,truth,claim,filename,rating
+id,domain,gender,age,filename,medium,question_type,truth,claim,filename_other,rating
 1,covid,Female,22,1_kaitlin_exp_v2b_97832952686.txt,claim,drinking,TRUE,COVID-19 cannot be contracted through drinking water.,NA,1
 1,covid,Female,22,1_kaitlin_exp_v2b_97832952686.txt,claim,herd,TRUE,Herd immunity against COVID-19 cannot be achieved by letting the virus spread through the population.,NA,5
 1,covid,Female,22,1_kaitlin_exp_v2b_97832952686.txt,claim,hydroxychloroquine,TRUE,Studies show hydroxychloroquine does not have clinical benefits in treating COVID-19.,NA,6

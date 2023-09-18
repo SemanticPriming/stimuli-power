@@ -1,12 +1,15 @@
 ---
 title: 'Italian Age of Acquisition Norms for a Large Set of Words (ItAoA)'
 author: "Mahmoud M.Elsherif"
-date: "`r Sys.Date()`"
-output: 
+date: "Last Knitted: `r Sys.Date()`"
+# output: word_document
+output:
   html_document:
     toc: true
     toc_depth: 4
     toc_float: true
+editor_options: 
+  chunk_output_type: inline
 ---
 
 ### Vignette Setup:
@@ -220,7 +223,7 @@ flextable(final_table) %>%
   autofit()
 ```
 
-Our minimum sample size is small at 80% (*n* = `r final_table %>% filter(percent_below >= 80) %>% arrange(percent_below, corrected_sample_size) %>% slice_head() %>%  pull(corrected_sample_size) %>% round()` as the minimum). We could consider using 90% (*n* = `r final_table %>% filter(percent_below >= 90) %>% arrange(percent_below, corrected_sample_size) %>% slice_head() %>%  pull(corrected_sample_size) %>% round()`) or 95% `r final_table %>% filter(percent_below >= 95) %>% arrange(percent_below, corrected_sample_size) %>% slice_head() %>%  pull(corrected_sample_size) %>% round()`. 
+Our minimum sample size is small at 80% (*n* = `r final_table %>% filter(percent_below >= 80) %>% arrange(percent_below, corrected_sample_size) %>% slice_head() %>%  pull(corrected_sample_size) %>% round()` as the minimum). We could consider using 90% (*n* = `r final_table %>% filter(percent_below >= 90) %>% arrange(percent_below, corrected_sample_size) %>% slice_head() %>%  pull(corrected_sample_size) %>% round()`) or 95% (*n* = `r final_table %>% filter(percent_below >= 95) %>% arrange(percent_below, corrected_sample_size) %>% slice_head() %>%  pull(corrected_sample_size) %>% round()`). 
 
 #### Maximum Sample Size
 

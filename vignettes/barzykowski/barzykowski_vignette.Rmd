@@ -1,12 +1,15 @@
 ---
-title: "Cue Word Valence Data Example"
+title: "Cue Word Triggered Memory’s Phenomenological Data Example"
 author: "Erin M. Buchanan"
-date: "`r Sys.Date()`"
-output: word_document 
-  # html_document:
-  #   toc: true
-  #   toc_depth: 4
-  #   toc_float: true
+date: "Last Knitted: `r Sys.Date()`"
+# output: word_document
+output:
+  html_document:
+    toc: true
+    toc_depth: 4
+    toc_float: true
+editor_options: 
+  chunk_output_type: inline
 ---
 
 ### Vignette Setup:
@@ -20,6 +23,7 @@ library(flextable)
 library(dplyr)
 library(tidyr)
 library(semanticprimeR)
+set.seed(583902)
 
 # Function for simulation
 item_power <- function(data, # name of data frame
@@ -92,19 +96,17 @@ item_power <- function(data, # name of data frame
 
 ### Project/Data Title: 
 
-Cue Word Valence
+Cue Word Triggered Memory’s Phenomenological 
 
 Data provided by: Krystian Barzykowski
 
 ### Project/Data Description: 
 
-Participants participated in a voluntary memory task, where they were provided with word-cue in response to which they were about to recall an autobiographical memory. The item set consists of 30 word-cues that were rated/classified by 142 separate participants.
+Participants participated in a voluntary memory task, where they were provided with a word cue in response to which they were about to recall an autobiographical memory. The item set consists of 30 word cues that were rated/classified by 142 separate participants.
 
 ### Methods Description: 
 
-They briefly described the content of their thoughts and rated it on a 7-point scale: (a) to what extent the content was accompanied by unexpected physiological sensations (henceforth, called physiological sensation), (b) to what extent they had deliberately tried to bring the thought to mind (henceforth, called effort), (c) clarity (i.e. how clearly and well an individual remembered a given memory/mental content), (d) how detailed the content was,
-(e) how specific and concrete the content was, (f) intensity of emotions experienced in response to the content, (g) how surprising the
-content was, (h) how personal it was, and (i) the relevance to current life situation (not included). 
+They briefly described the content of their thoughts recalled in response to the word-cue and rated it on a 7-point scale: (a) to what extent the content was accompanied by unexpected physiological sensations (henceforth, called physiological sensation), (b) to what extent they had deliberately tried to bring the thought to mind (henceforth, called effort), (c) clarity (i.e. how clearly and well an individual remembered a given memory/mental content), (d) how detailed the content was, (e) how specific and concrete the content was, (f) intensity of emotions experienced in response to the content, (g) how surprising the content was, (h) how personal it was, and (i) the relevance to current life situation (not included).
 
 ### Data Location: 
 
@@ -179,15 +181,15 @@ Note that the data is already in long format (each item has one row), and theref
 
 #### Stopping Rule
 
-In this example, we have multiple variables to choose from for our analysis. We could include several to find the sample size rules for further study. In this example, I'll use the variables with the least and most variability and take the average of the 40% decile as suggested in our manuscript. This choice is somewhat arbitrary - in a real study, you could chose to use only the variables you were interested in and pick the most conservative values or simply average together estimates from all variables. 
+In this example, we have multiple variables to choose from for our analysis. We could include several to find the sample size rules for further study. In this example, we'll use the variables with the least and most variability and take the average of the 40% decile as suggested in our manuscript. This choice is somewhat arbitrary - in a real study, you could choose to use only the variables you were interested in and pick the most conservative values or simply average together estimates from all variables. 
 
 ```{r}
 apply(DF[ , -c(1,2)], 2, sd)
 ```
 
-These are Likert type items. The variance within them appears roughly equal. The lowest variance appears to be `r names(which.min(apply(DF[ , -c(1,2)], 2, sd)))`, and the max appears to be `r names(which.max(apply(DF[ , -c(1,2)], 2, sd)))`.
+These are Likert type items. The variance within them appears roughly equal. The lowest variance appears to be `r names(which.min(apply(DF[ , -c(1,2)], 2, sd)))`, and the maximum appears to be `r names(which.max(apply(DF[ , -c(1,2)], 2, sd)))`.
 
-Run the function proposed by the manuscript:
+Run the function proposed in the manuscript:
 
 ```{r}
 # set seed
@@ -236,51 +238,50 @@ How large does the sample have to be for 80% to 95% of the items to be below our
 
 ```{r}
 cutoff_personal <- calculate_cutoff(population = DF, 
-                           grouping_items = "items",
-                           score = "Rating",
-                           minimum = as.numeric(min(DF$Rating)),
-                           maximum = as.numeric(max(DF$Rating)))
+                           grouping_items = "Cue no",
+                           score = "Personal nature",
+                           minimum = as.numeric(min(DF$`Personal nature`)),
+                           maximum = as.numeric(max(DF$`Personal nature`)))
 # showing how this is the same as the person calculated version versus semanticprimeR's function
 cutoff_personal$cutoff
 
-final_table <- calculate_correction(
+final_table_personal <- calculate_correction(
   proportion_summary = var1$final_sample,
-  pilot_sample_size = ,
-  proportion_variability = cutoff$prop_var
+  pilot_sample_size = length(unique(DF$`Participant's ID`)),
+  proportion_variability = cutoff_personal$prop_var
   )
 
-flextable(final_table) %>% 
+flextable(final_table_personal) %>% 
   autofit()
 ```
 
 ```{r}
-cutoff_surprsing <- calculate_cutoff(population = DF, 
-                           grouping_items = "items",
-                           score = "Rating",
-                           minimum = as.numeric(min(DF$Rating)),
-                           maximum = as.numeric(max(DF$Rating)))
+cutoff_surprising <- calculate_cutoff(population = DF, 
+                           grouping_items = "Cue no",
+                           score = "How surprising",
+                           minimum = as.numeric(min(DF$`How surprising`)),
+                           maximum = as.numeric(max(DF$`How surprising`)))
 # showing how this is the same as the person calculated version versus semanticprimeR's function
-cutoff_surprsing$cutoff
+cutoff_surprising$cutoff
 
-final_table <- calculate_correction(
-  proportion_summary = var1$final_sample,
-  pilot_sample_size = DF %>% group_by(items) %>% summarize(n = n()) %>% 
-    pull(n) %>% mean() %>% round(),
-  proportion_variability = cutoff$prop_var
+final_table_surprising <- calculate_correction(
+  proportion_summary = var2$final_sample,
+  pilot_sample_size = length(unique(DF$`Participant's ID`)),
+  proportion_variability = cutoff_surprising$prop_var
   )
 
-flextable(final_table) %>% 
+flextable(final_table_surprising) %>% 
   autofit()
 ```
 
-In this scenario, we could go with the point in which they both meet the 80% criterion, which is *n* = `r final_sample %>% filter(percent_below >= .80) %>% arrange(percent_below, new_sample) %>% filter(variable == "How surprising") %>% slice_head() %>% pull(new_sample)` for the personal variable and *n* = `r final_sample %>% filter(percent_below >= .80) %>% arrange(percent_below, new_sample) %>% filter(variable == "Personal nature") %>% slice_head() %>% pull(new_sample)` for the surprising variable. In these scenarios, it is likely better to estimate a larger sample. 
+In this scenario, we could go with the point wherein they both meet the 80% criterion, which is $n_{personal}$ = `r final_table_personal %>%  filter(percent_below >= 80) %>% arrange(percent_below, corrected_sample_size) %>% slice_head() %>% pull(corrected_sample_size) %>% round()` to $n_{surprising}$ = `r final_table_surprising %>%  filter(percent_below >= 80) %>% arrange(percent_below, corrected_sample_size) %>% slice_head() %>% pull(corrected_sample_size) %>% round()`. In these scenarios, it is probably better to estimate a larger sample. 
 
 #### Maximum Sample Size
 
-If you decide to use the 95% power as your criterion, you would see that items need somewhere between `r final_sample %>% filter(percent_below >= .95) %>% arrange(percent_below, new_sample) %>% filter(variable == "How surprising") %>% slice_head() %>% pull(new_sample)` and `r final_sample %>% filter(percent_below >= .95) %>% arrange(percent_below, new_sample) %>% filter(variable == "Personal nature") %>% slice_head() %>% pull(new_sample)` participants for both variables. In this case, you could choose to make the larger value for participants your maximum sample size to ensure both variables reach criterion. 
+If you decide to use 95% power as your criterion, you would see that items need somewhere between $n_{personal}$ = `r final_table_personal %>%  filter(percent_below >= 95) %>% arrange(percent_below, corrected_sample_size) %>% slice_head() %>% pull(corrected_sample_size) %>% round()` to $n_{surprising}$ = `r final_table_surprising %>%  filter(percent_below >= 95) %>% arrange(percent_below, corrected_sample_size) %>% slice_head() %>% pull(corrected_sample_size) %>% round()` participants for both variables. In this case, you could choose to make the larger value for participants your maximum sample size to ensure both variables reach the criterion. 
 
 #### Final Sample Size
 
-You should also consider any potential for missing data and/or unusable data given the requirements for your study. Given that participants are likely to see all items in this study, we could use the minimum, stopping rule, and maximum defined above. 
+You should also consider any potential for missing data and/or unusable data given the requirements for your study. Given that participants are likely to see all items in this study, we could use the minimum, stopping rule, and maximum defined above. However, one should consider that not all participants will be able to respond to all items within a memory. 
 
 

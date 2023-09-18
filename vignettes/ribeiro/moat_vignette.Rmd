@@ -1,12 +1,15 @@
 ---
 title: "Seeing is Believing"
 author: "Jason Geller"
-date: "`r Sys.Date()`"
-output: word_document
-  # html_document:
-  #   toc: true
-  #   toc_depth: 4
-  #   toc_float: true
+date: "Last Knitted: `r Sys.Date()`"
+# output: word_document
+output:
+  html_document:
+    toc: true
+    toc_depth: 4
+    toc_float: true
+editor_options: 
+  chunk_output_type: inline
 ---
 
 ### Vignette Setup: 
@@ -19,6 +22,8 @@ library(rio)
 library(flextable)
 library(dplyr)
 library(tidyr)
+library(semanticprimeR)
+set.seed(92747)
 
 # Function for simulation
 item_power <- function(data, # name of data frame
@@ -76,7 +81,7 @@ item_power <- function(data, # name of data frame
     pivot_longer(cols = -c(sample_size)) %>% 
     dplyr::rename(item = name, se = value) %>% 
     group_by(sample_size) %>% 
-    summarize(Percent_Below = sum(se <= cutoff)/length(unique(DF$items))) 
+    summarize(percent_below = sum(se <= cutoff)/length(unique(DF$items))) 
   
   # multiply by correction 
   final_sample$new_sample <- round(39.369 + 0.700*final_sample$sample_size + 0.003*cutoff - 0.694*length(unique(DF$items)))
@@ -100,29 +105,30 @@ Data provided by: Gianni Ribeiro
 
 ### Project/Data Description: 
 
-People have been duly concerned about how fake news influences the minds of the populous since the rise of propaganda in World War One (Lasswell, 1927). Experts are increasingly worried about the effects of false information being spread over the medium of video. Members of the deep trust alliance, a global network of scholars researching deepfakes and doctored videos, state that 'a fundamental erosion of trust is already underway' (Harrison, 2020). Newman et al (2015) discovered that the media type through which information is presented does indeed affect how true the information feels. Newman speculated that this truthiness effect could be because images provide participants with more information than text alone, thus making the source feel more informationally rich.
+People have been duly concerned about how fake news influences the minds of the populous since the rise of propaganda in World War One (Lasswell, 1927). Experts are increasingly worried about the effects of false information spreading over the medium of video. Members of the deep trust alliance, a global network of scholars researching deepfakes and doctored videos, state that ‘a fundamental erosion of trust is already underway’ (Harrison, 2020). Newman et al. (2015) discovered that the media type through which information is presented does indeed affect how true the information feels. Newman speculated that this truthiness effect could be because images provide participants with more information than text alone, thus making the source feel more informationally rich.
 
-In this experiment, we aim to test the generalisability of Newman’s truthiness effect in two ways: firstly, to see if it extends to other media types beside images, and secondly, to test if it applies to other domains. In this study, we will present individuals with both true and false claims presented through three different media types: (1) text, (2) text alongside a photo, and (3) text alongside a video. This is a direct replication of Newman’s experiment, just with the addition of the video condition. Similarly, participants will also be asked to make truth judgements about trivia claims and claims about COVID-19, to see if the truthiness effect extends to other domains besides trivia.
+In this experiment, our aim is to test the generalizability of Newman’s truthiness effect in two ways: first, to see if it extends to other media types in addition to images, and second, to test if it applies to other domains. In this study, we will present individuals with true and false claims presented through three different media types: (1) text, (2) text alongside a photo, and (3) text alongside a video. This is a direct replication of Newman’s experiment, just with the addition of the video condition. Similarly, participants will also be asked to make truth judgements about trivial claims and claims about COVID-19, to see if the truthiness effect extends to other domains besides trivia.
 
-In this within-subjects design, participants will be presented with true and false claims about trivia and COVID-19 in a counterbalanced order. These claims will be randomly assigned to appear either as text alone, text alongside an image and text alongside a video. Participants will be asked to rate how true they believe each claim is.
+In this within-subjects design, participants will be presented with true and false claims about trivia and COVID-19 in counterbalanced order. These claims will be randomly assigned to appear either as text alone, text alongside an image, or text alongside a video. Participants will be asked to rate how true they believe each claim is.
 
 ### Methods Description: 
 
 Participants were largely sourced from the first-year participant pool at The University of Queensland. Participation was completely voluntary, and participants can choose to withdraw at any time.
 
-Thirty matched trivia claims were generated directly from Newman’s materials. These claims were selected, and a true and false version of each claim was created. Newman’s original claims are available at the following link: https://data.mendeley.com/datasets/r68dcdjrpc/1
-The second set of materials comprising of matched true and false claims was generated through information resources from the World Health Organisation, and various conspiracy websites. These claims were then fact-checked by Kirsty Short, an epidemiologist and Senior Lecturer in the School of Chemistry and Molecular Sciences at The University of Queensland.
+Thirty matched trivia claims were generated directly from Newman’s materials. These claims were selected and a true and false version of each claim was created. Newman’s original claims are available at the following link: https://data.mendeley.com/datasets/r68dcdjrpc/1 
 
-The claims were also pilot tested to ensure none of them were performing at floor or ceiling. This pilot test comprised of 56 participants, and subsequently, four claims were dropped. The data from this pilot test was also used to accurately conduct a power analysis. After generating the means from the pilot test, we found that to acquire power of 0.8 or greater, a mean difference of 0.4 must exist between each media type. This mean difference is quite conservative, as we are planning on measuring truth ratings on a six-point scale and is easily achievable with 100 participants.
+The second set of materials comprising of matched true and false claims was generated using information resources from the World Health Organisation, and various conspiracy websites. These claims were then fact-checked by Kirsty Short, an epidemiologist and senior lecturer in the School of Chemistry and Molecular Sciences at The University of Queensland.
 
-Videos were largely sourced from the stock image website Envato Elements and Screenflow's Royalty Free Stock Media Library.
+The claims were also pilot tested to ensure that none of them performed at floor or ceiling. This pilot test consisted of  56 participants and subsequently four claims were dropped. The data from this pilot test was also used to accurately perform a power analysis. After generating the means of the pilot test, we found that to acquire a power of 0.8 or greater, there must be a mean difference of 0.4 between each media type. This mean difference is quite conservative, since we plan to measure truth ratings on a six-point scale and is easily achievable with 100 participants.
+
+The videos were largely sourced from the stock image website Envato Elements and Screenflow’s Royalty Free Stock Media Library.
 
 ### Data Location: 
 
 Data can be found here: https://osf.io/zu9pg/
  
 ```{r}
-DF <- import("ribeiro_data.csv")
+DF <- import("moat_data.csv") 
   
 str(DF)
 ```
@@ -172,7 +178,7 @@ var1 <- item_power(data = DF, # name of data frame
             sample_start = 20, 
             sample_stop = 300, 
             sample_increase = 5,
-            decile = .5)
+            decile = .4)
 ```
 
 #### Stopping Rule
@@ -185,9 +191,17 @@ var1$SE
 var1$cutoff
 
 cutoff <- var1$cutoff
+
+# we can also use semanticprimer's function
+cutoff_score <- calculate_cutoff(population = DF,
+                                 grouping_items = "question_type",
+                                 score = "rating",
+                                 minimum = min(DF$rating),
+                                 maximum = max(DF$rating))
+cutoff_score$cutoff
 ```
 
-Using our 50% decile as a guide, we find that `r round(cutoff, digits = 3)` is our target standard error for an accurately measured item. 
+Using our 40% decile as a guide, we find that `r round(cutoff, digits = 3)` is our target standard error for an accurately measured item. 
 
 #### Minimum Sample Size
 
@@ -196,17 +210,26 @@ To estimate minimum sample size, we should figure out what number of participant
 How large does the sample have to be for 80% of the items to be below our stopping SE rule? 
 
 ```{r}
-flextable(var1$final_sample %>% 
-            filter(Percent_Below >= .80) %>% 
-            arrange(Percent_Below, new_sample)) %>% 
+flextable(var1$final_sample %>% head()) %>% 
+  autofit()
+
+final_table <- calculate_correction(
+  proportion_summary = var1$final_sample,
+  pilot_sample_size = DF %>% group_by(question_type) %>% 
+    summarize(sample_size = n()) %>% ungroup() %>% 
+    summarize(avg_sample = mean(sample_size)) %>% pull(avg_sample),
+  proportion_variability = cutoff_score$prop_var
+  )
+
+flextable(final_table) %>% 
   autofit()
 ```
 
-In this scenario, we could go with the point in which they both meet the 80% criterion, which is *n* = `r var1$final_sample %>% filter(Percent_Below >= .80) %>% arrange(Percent_Below, new_sample) %>%  slice_head() %>% pull(new_sample)`.
+Based on these simulations, we can decide our minimum sample size is likely close to `r final_table %>% arrange(percent_below, corrected_sample_size) %>% filter(percent_below >= 80) %>% slice_head() %>% pull(corrected_sample_size) %>% round()`.
 
 #### Maximum Sample Size
 
-If you decide to use the 95% power as your criterion, you would see that items need approximately *n* = `r var1$final_sample %>% filter(Percent_Below >= .95) %>% arrange(Percent_Below, new_sample) %>% slice_head() %>% pull(new_sample)`. 
+In this example, we could set our maximum sample size for 90% of items, which would equate to `r final_table %>% arrange(percent_below, corrected_sample_size) %>% filter(percent_below >= 90) %>% slice_head() %>% pull(corrected_sample_size) %>% round()` participants. 
 
 #### Final Sample Size
 

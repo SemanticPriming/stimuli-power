@@ -1,12 +1,15 @@
 ---
 title: "McFall - EAMMi2"
 author: "Christopher L. Aberson"
-date: "`r Sys.Date()`"
-output: word_document
-  # html_document:
-  #   toc: true
-  #   toc_depth: 4
-  #   toc_float: true
+date: "Last Knitted: `r Sys.Date()`"
+# output: word_document
+output:
+  html_document:
+    toc: true
+    toc_depth: 4
+    toc_float: true
+editor_options: 
+  chunk_output_type: inline
 ---
 
 ### Vignette Setup: 
@@ -15,7 +18,7 @@ output: word_document
 knitr::opts_chunk$set(echo = TRUE)
 
 # Set a random seed
-set.seed(667)
+set.seed(43043423)
 library(rio)
 library(flextable)
 library(dplyr)
@@ -24,6 +27,7 @@ library(psych)
 library(rio)
 library(ggplot2)
 library(reshape)
+library(semanticprimeR)
 ```
 
 ### Project/Data Title: 
@@ -82,7 +86,7 @@ EAMMi2 <- EAMMi2[complete.cases(EAMMi2),]
 EAMMi2long <- EAMMi2 %>% pivot_longer(cols = everything()) %>% 
   dplyr::rename(item = name, score = value) %>% 
   group_by(item) %>% 
-  sample_n(size = 200)
+  sample_n(size = 50)
 
 flextable(head(EAMMi2long)) %>% autofit()
 ```
@@ -96,13 +100,21 @@ What the usual standard error for the data that could be considered for our stop
 ```{r}
 SE <- tapply(EAMMi2long$score, EAMMi2long$item, function (x) { sd(x)/sqrt(length(x)) })
 min(SE)
-quantile(SE, probs = .5)
+quantile(SE, probs = .4)
 max(SE)
 
-cutoff <- quantile(SE, probs = .5)
+cutoff <- quantile(SE, probs = .4)
+
+# we can also use semanticprimer's function
+cutoff_score <- calculate_cutoff(population = EAMMi2long,
+                                 grouping_items = "item",
+                                 score = "score",
+                                 minimum = min(EAMMi2long$score),
+                                 maximum = max(EAMMi2long$score))
+cutoff_score$cutoff
 ```
 
-The items have a range of `r min(SE)` to `r max(SE)`. We could use the 50% decile SE = `r cutoff` as our critical value for our stopping rule given the manuscript results. We could also have a set SE to a specific item if we do not believe we have representative pilot data in this example. You should also consider the scale when estimating these values (i.e., 1-7 scales will have smaller estimates than 1-100 scales). 
+The items have a range of `r min(SE)` to `r max(SE)`. We could use the 40% decile SE = `r cutoff` as our critical value for our stopping rule given the manuscript results. We could also have a set SE to a specific item if we do not believe we have representative pilot data in this example. You should also consider the scale when estimating these values (i.e., 1-7 scales will have smaller estimates than 1-100 scales). 
 
 #### Minimum Sample Size
 
@@ -110,7 +122,7 @@ To estimate minimum sample size, we should figure out what number of participant
 
 ```{r}
 # sequence of sample sizes to try
-samplesize_values <- seq(250, 550, 5)
+samplesize_values <- seq(20, 200, 5)
 
 # create a blank table for us to save the values in 
 
@@ -142,18 +154,29 @@ final_sample <-
   sim_table %>% 
   pivot_longer(cols = -c(sample_size)) %>% 
   group_by(sample_size) %>% 
-  summarize(Percent_Below = sum(value <= cutoff)/length(unique(EAMMi2long$item))) %>% 
-  filter(Percent_Below >= .80) %>% 
-  mutate(new_sample = round(39.369 + 0.700*sample_size + 0.003*cutoff - 0.694*length(unique(EAMMi2long$item))))
+  summarize(percent_below = sum(value <= cutoff)/length(unique(EAMMi2long$item))) %>% ungroup()
 
-flextable(final_sample) %>% autofit()
+flextable(final_sample %>% head()) %>% autofit()
 ```
 
-Based on these simulations, we can decide our minimum sample size is likely close to `r min(final_sample$new_sample)`. 
+```{r}
+final_table <- calculate_correction(
+  proportion_summary = final_sample,
+  pilot_sample_size = EAMMi2long %>% group_by(item) %>% 
+    summarize(sample_size = n()) %>% ungroup() %>% 
+    summarize(avg_sample = mean(sample_size)) %>% pull(avg_sample),
+  proportion_variability = cutoff_score$prop_var
+  )
+
+flextable(final_table) %>% 
+  autofit()
+```
+
+Based on these simulations, we can decide our minimum sample size is likely close to `r final_table %>% arrange(percent_below, corrected_sample_size) %>% filter(percent_below >= 80) %>% slice_head() %>% pull(corrected_sample_size) %>% round()`.
 
 #### Maximum Sample Size
 
-In this example, we could set our maximum sample size for 90% power, which would equate to `r final_sample %>% filter(Percent_Below >= .90) %>% pull(sample_size) %>% min()` participants. The very low starting standard error indicates there is likely not much variance in these items to begin with, thus, the sampling is biased upwards by the lack of variance in the data (i.e., it's hard to get the data down to that low SE for many items when it is already close to floor). 
+In this example, we could set our maximum sample size for 90% power, which would equate to `r final_table %>% arrange(percent_below, corrected_sample_size) %>% filter(percent_below >= 90) %>% slice_head() %>% pull(corrected_sample_size) %>% round()` participants. 
 
 #### Final Sample Size
 

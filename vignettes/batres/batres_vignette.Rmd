@@ -1,12 +1,15 @@
 ---
 title: "Attractiveness Ratings Example"
 author: "Erin M. Buchanan"
-date: "`r Sys.Date()`"
-output: word_document
-  # html_document:
-  #   toc: true
-  #   toc_depth: 4
-  #   toc_float: true
+date: "Last Knitted: `r Sys.Date()`"
+# output: word_document
+output:
+  html_document:
+    toc: true
+    toc_depth: 4
+    toc_float: true
+editor_options: 
+  chunk_output_type: inline
 ---
 
 ### Vignette Setup:
@@ -23,6 +26,7 @@ library(flextable)
 library(dplyr)
 library(tidyr)
 library(psych)
+library(semanticprimeR)
 
 # Function for simulation
 item_power <- function(data, # name of data frame
@@ -80,7 +84,7 @@ item_power <- function(data, # name of data frame
     pivot_longer(cols = -c(sample_size)) %>% 
     rename(item = name, se = value) %>% 
     group_by(sample_size) %>% 
-    summarize(Percent_Below = sum(se <= cutoff)/length(unique(DF$items))) 
+    summarize(percent_below = sum(se <= cutoff)/length(unique(DF$items))) 
   
   # multiply by correction 
   final_sample$new_sample <- round(39.369 + 0.700*final_sample$sample_size + 0.003*cutoff - 0.694*length(unique(DF$items)))
@@ -170,11 +174,11 @@ var1 <- item_power(data = DF_long, # name of data frame
             sample_start = 20, 
             sample_stop = 300, 
             sample_increase = 5,
-            decile = .5)
+            decile = .4)
 ```
 
 
-What the usual standard error for the data that could be considered for our stopping rule using the 50% decile? 
+What the usual standard error for the data that could be considered for our stopping rule using the 40%% decile? 
 
 ```{r}
 # individual SEs
@@ -183,26 +187,40 @@ var1$SE
 var1$cutoff
 ```
 
-Using our 50% decile as a guide, we find that `r round(var1$cutoff, digits = 3)` is our target standard error for an accurately measured item. 
+Using our 40%% decile as a guide, we find that `r round(var1$cutoff, digits = 3)` is our target standard error for an accurately measured item. 
 
 #### Minimum Sample Size
 
 To estimate minimum sample size, we should figure out what number of participants it would take to achieve 80%, 85%, 90%, and 95% of the SEs for items below our critical score of `r round(var1$cutoff, digits = 3)`?
 
+```{r}
+cutoff <- calculate_cutoff(population = DF_long, 
+                           grouping_items = "item",
+                           score = "score",
+                           minimum = 1,
+                           maximum = 7)
+# showing how this is the same as the person calculated version versus semanticprimeR's function
+cutoff$cutoff
+```
+
 Please note that you will always need to simulate larger than the pilot data sample size to get the starting numbers. We will correct them below. As shown in our manuscript, we need to correct for the overestimation of sample sizes based on the original pilot data size. Given that the pilot data is large: `r nrow(DF)`, this correction is especially useful. This correction is built into our function. 
 
 ```{r}
-flextable(var1$final_sample %>% 
-            filter(Percent_Below >= .80) %>% 
-            arrange(Percent_Below, new_sample)) %>% 
+final_table <- calculate_correction(
+  proportion_summary = var1$final_sample,
+  pilot_sample_size = nrow(DF),
+  proportion_variability = cutoff$prop_var
+  )
+
+flextable(final_table) %>% 
   autofit()
 ```
 
-Our minimum suggested sample size does not exist at exactly 80% of the items, but instead we can use 85% (*n* = `r var1$final_sample %>% filter(Percent_Below >= .80) %>% arrange(Percent_Below, new_sample) %>% slice_head() %>%  pull(new_sample)` as the minimum). In this example, 90% actually hits below 85% at the minimum (*n* = `r var1$final_sample %>% filter(Percent_Below >= .90) %>% arrange(Percent_Below, new_sample) %>% slice_head() %>%  pull(new_sample)`). For 95% of items hitting criterion, the minimum sample size would be approximately `r var1$final_sample %>% filter(Percent_Below >= .95) %>% arrange(Percent_Below, new_sample) %>% slice_head() %>%  pull(new_sample)`. In this case, the researcher could decide that smallest number would be their minimum sample size. 
+Our minimum suggested sample size does not exist at exactly 80% of the items, but instead we can use the first available over 80% (*n* = `r final_table %>%  filter(percent_below >= 80) %>% arrange(percent_below, corrected_sample_size) %>% slice_head() %>% pull(corrected_sample_size) %>% round()` as the minimum). 
 
 #### Maximum Sample Size
 
-While there are many considerations for maximum sample size (time, effort, resources), the simulation suggests that `r var1$final_sample %>% filter(Percent_Below >= .95) %>% arrange(Percent_Below, new_sample) %>% slice_head() %>%  pull(new_sample)` people would ensure nearly all items achieve cutoff criterions. 
+While there are many considerations for maximum sample size (time, effort, resources), the simulation suggests that `r final_table %>%  filter(percent_below >= 95) %>% arrange(percent_below, corrected_sample_size) %>% slice_head() %>% pull(corrected_sample_size) %>% round()`  people would ensure nearly all items achieve cutoff criterions. 
 
 #### Final Sample Size
 

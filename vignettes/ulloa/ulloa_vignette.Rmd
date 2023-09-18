@@ -1,12 +1,15 @@
 ---
 title: "Liking effect induced by gaze"
 author: "Necdet Gürkan & Yangyang Yu"
-date: "`r Sys.Date()`"
-output: word_document
-  # html_document:
-  #   toc: true
-  #   toc_depth: 4
-  #   toc_float: true
+date: "Last Knitted: `r Sys.Date()`"
+# output: word_document
+output:
+  html_document:
+    toc: true
+    toc_depth: 4
+    toc_float: true
+editor_options: 
+  chunk_output_type: inline
 ---
 
 ### Vignette Setup:
@@ -22,7 +25,7 @@ library(tidyr)
 library(psych)
 library(reshape)
 library(reshape2)
-#library(semanticprimeR)
+library(semanticprimeR)
 set.seed(483948)
 ```
 
@@ -45,7 +48,7 @@ Participants were students at Heinrich-Heine-Universität Düsseldorf, Germany t
 Data included within this vignette.
 
 ```{r}
-DF <- import("vignettes/ulloa/ulloa_data.csv")
+DF <- import("ulloa_data.csv")
 drops <- c("RT", "side", "aff-ness")
 DF <- DF[ , !(names(DF) %in% drops)]
 head(DF)
@@ -74,7 +77,7 @@ Paris, France
 ### Column Metadata:
 
 ```{r}
-metadata <- import("vignettes/ulloa/ulloa_metadata.xlsx")
+metadata <- import("ulloa_metadata.xlsx")
 
 flextable(metadata) %>% autofit()
 ```
@@ -106,14 +109,14 @@ DF_invalid <- subset(DF, congr == "invalid") %>%
 SE1 <- tapply(DF_valid$liking, DF_valid$item, function (x) { sd(x)/sqrt(length(x)) })
 
 SE1
-cutoff1 <- quantile(SE1, probs = .5)
+cutoff1 <- quantile(SE1, probs = .4)
 cutoff1
 
 # individual SEs for invalid cue-targeting condition
 SE2 <- tapply(DF_invalid$liking, DF_invalid$item, function (x) { sd(x)/sqrt(length(x)) })
 
 SE2
-cutoff2 <- quantile(SE2, probs = .5)
+cutoff2 <- quantile(SE2, probs = .4)
 cutoff2
 ```
 
@@ -177,65 +180,85 @@ Calculate the cutoff score with information necessary for correction.
 ```{r cutoff}
 cutoff_valid <- calculate_cutoff(population = DF_valid, 
                  grouping_items = "item",
-                 score_column = "liking", 
+                 score = "liking", 
                  minimum = min(DF_valid$liking),
                  maximum = max(DF_valid$liking))
 
+# same as above
 cutoff_valid$cutoff
 
-cutoff_value <- calculate_cutoff(population = DF_valid, 
+cutoff_invalid <- calculate_cutoff(population = DF_invalid, 
                  grouping_items = "item",
                  score = "liking", 
                  minimum = min(DF_valid$liking),
                  maximum = max(DF_valid$liking))
 
-cutoff_valid$cutoff
+cutoff_invalid$cutoff
 ```
 
 ```{r summary analysis part1}
 ### for valid cue-targeting condition
-final_sample <- 
+final_sample_valid <- 
   sim_table %>%
   pivot_longer(cols = -c(sample_size, var))  %>% 
   dplyr::rename(item = name, se = value)   %>% 
   dplyr::group_by(sample_size, var)  %>% 
   dplyr::summarize(percent_below = sum(se <= cutoff1)/length(unique(DF_valid$item)))  %>% 
-  dplyr::arrange(percent_below) 
+  dplyr::arrange(percent_below) %>% 
+  ungroup()
 
-flextable(final_sample) %>% autofit()
+flextable(final_sample_valid %>% head()) %>% 
+  autofit()
 ```
 
 Calculate the final corrected scores:
 
 ```{r calculate correction}
-final_scores <- calculate_correction(proportion_summary = final_sample,
+final_scores <- calculate_correction(proportion_summary = final_sample_valid,
                      pilot_sample_size = length(unique(DF$suj)),
-                     proportion_variability = cutoff$prop_var)
+                     proportion_variability = cutoff_valid$prop_var)
 
-flextable(final_scores) %>% autofit()
+# only show first four rows since all 100
+flextable(final_scores %>% 
+            ungroup() %>% 
+            slice_head(n = 4)) %>% autofit()
 ```
 
 ```{r summary analysis part2}
-### for invalid cue-targeting
-final_sample2 <- 
+### for valid cue-targeting condition
+final_sample_invalid <- 
   sim_table2 %>%
-  pivot_longer(cols = -c(sample_size, var)) %>% 
-  dplyr::rename(item = name, se = value)  %>% 
-  dplyr::group_by(sample_size, var) %>% 
-  dplyr::summarize(percent_below = sum(se <= cutoff2)/length(unique(DF_invalid$item))) %>% 
-  dplyr::filter(percent_below >= .80) %>% 
+  pivot_longer(cols = -c(sample_size, var))  %>% 
+  dplyr::rename(item = name, se = value)   %>% 
+  dplyr::group_by(sample_size, var)  %>% 
+  dplyr::summarize(percent_below = sum(se <= cutoff2)/length(unique(DF_invalid$item)))  %>% 
   dplyr::arrange(percent_below) %>% 
-  mutate(new_sample = round(39.369 + 0.700*sample_size + 0.003*cutoff2 - 0.694*length(unique(DF_invalid$item))))
+  ungroup()
 
-flextable(final_sample2) %>% autofit()
+flextable(final_sample_invalid %>% head()) %>% 
+  autofit()
 ```
+
+Calculate the final corrected scores:
+
+```{r calculate correction2}
+final_scores2 <- calculate_correction(proportion_summary = final_sample_invalid,
+                     pilot_sample_size = length(unique(DF$suj)),
+                     proportion_variability = cutoff_invalid$prop_var)
+
+# only show first four rows since all 100
+flextable(final_scores2 %>% 
+            ungroup() %>% 
+            slice_head(n = 4)) %>% autofit()
+```
+
 #### Minimum Sample Size
 
-Based on these simulations, we can decide our minimum sample size is likely close to `r min(final_sample$new_sample)` for the valid trials or `r min(final_sample2$new_sample)` for the invalid trials. 
+Based on these simulations, we can decide our minimum sample size for 80% is likely close to `r final_scores %>% arrange(percent_below, sample_size) %>% filter(percent_below >= 80) %>% slice_head() %>% pull(corrected_sample_size) %>% round()` for the valid trials or `r final_scores2 %>% arrange(percent_below, sample_size) %>% filter(percent_below >= 80) %>% slice_head() %>% pull(corrected_sample_size) %>% round()` for the invalid trials, depending on rounding. 
 
 #### Maximum Sample Size
 
-In this example, we could set our maximum sample size for 90% power, which would equate to `r final_sample %>% filter(percent_below >= .90) %>% pull(new_sample) %>% min()` for the valid trials to `r final_sample2 %>% filter(percent_below >= .90) %>% pull(new_sample) %>% min()` for the invalid trials.
+In this example, we could set our maximum sample size for 95% items below the criterion, which would equate to `r final_scores %>% arrange(percent_below, sample_size) %>% filter(percent_below >= 95) %>% slice_head() %>% pull(corrected_sample_size) %>% round()` for the valid trials or `r final_scores2 %>% arrange(percent_below, sample_size) %>% filter(percent_below >= 95) %>% slice_head() %>% pull(corrected_sample_size) %>% round()` for invalid trials. In this case, values are equal because the percent below jumps from 75% to 100%. 
 
 #### Final Sample Size
 

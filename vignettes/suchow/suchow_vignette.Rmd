@@ -1,12 +1,15 @@
 ---
 title: "Superficial face judgement "
 author: "Necdet Gürkan & Yangyang Yu"
-date: "`r Sys.Date()`"
-output: word_document
-  # html_document:
-  #   toc: true
-  #   toc_depth: 4
-  #   toc_float: true
+date: "Last Knitted: `r Sys.Date()`"
+# output: word_document
+output:
+  html_document:
+    toc: true
+    toc_depth: 4
+    toc_float: true
+editor_options: 
+  chunk_output_type: inline
 ---
 
 ### Vignette Setup:
@@ -20,6 +23,8 @@ library(flextable)
 library(dplyr)
 library(tidyr)
 library(psych)
+library(semanticprimeR)
+set.seed(4538939)
 ```
 
 ### Project/Data Title: 
@@ -32,8 +37,7 @@ Data provided by: Jordan W. Suchow
 
 The diversity of human faces and the contexts in which they appear gives rise to an expansive stimulus space over which people infer psychological traits (e.g., trustworthiness or alertness) and other attributes (e.g., age or adiposity). Machine learning methods, in particular deep neural networks, provide expressive feature representations of face stimuli, but the correspondence between these representations and various human attribute inferences is difficult to determine because the former are high-dimensional vectors produced via black box optimization algorithms. In this paper, we combined deep generative image models with over 1 million judgments to model inferences of more than 30 attributes over a comprehensive latent face space. The predictive accuracy of the model approached human interrater reliability, which simulations suggest would not have been possible with fewer faces, fewer judgments, or lower-dimensional feature representations. The model can be used to predict and manipulate inferences with respect to arbitrary face photographs or to generate synthetic photorealistic face stimuli that evoke impressions tuned along the modeled attributes.
 
-In sum, the dataset contains 1.14 million ratings across 1000 items and 34 traits by 5,000 participants. NOTE: The trait trustworthy in the dataset is collected twice, so the trait column has 35 traits.
-
+In sum, the dataset contains 1.14 million ratings across 1000 items and 34 traits by 5,000 participants. NOTE: The trait trustworthy in the dataset was collected twice, so the trait column has 35 traits.
 
 ### Methods Description: 
 
@@ -85,7 +89,7 @@ flextable(metadata) %>% autofit()
 
 #### Stopping Rule
 
-When pilot data is this large, it is important to sample a smaller subset based on what the participant might actually do in the study. We will pick 50 faces rated on 10 traits - and then select the highest and lowest variance to estimate from. This choice is somewhat arbitrary - in a real study, you could chose to use only the variables you were interested in and pick the most conservative values or simply average together estimates from all variables. 
+When pilot data is this large, it is important to sample a smaller subset based on what the participant might actually do in the study. We will pick 50 faces rated on 10 traits - and then select the highest and lowest variance to estimate from. This choice is somewhat arbitrary - in a real study, you could choose to use only the variables you were interested in and pick the most conservative values or simply average together estimates from all variables. 
 
 ```{r}
 # pick random faces
@@ -115,12 +119,12 @@ face_data_trait30_sub <- subset(face_data, trait == names(which.max(SE_full)))
 ```{r compute se for traits}
 # individual SEs for 4 trait 
 SE1 <- tapply(face_data_trait4_sub$response, face_data_trait4_sub$stimulus, function (x) { sd(x)/sqrt(length(x)) })
-quantile(SE1, probs = .5)
+quantile(SE1, probs = .4)
 
 # individual SEs for 30 trait
 SE2 <- tapply(face_data_trait30_sub$response, face_data_trait30_sub$stimulus, function (x) { sd(x)/sqrt(length(x)) })
 
-quantile(SE2, probs = .5)
+quantile(SE2, probs = .4)
 ```
 
 #### Minimum Sample Size
@@ -182,42 +186,97 @@ for (i in 1:length(samplesize_values)){
 }
 ```
 
+Calculate the cutoff score with information necessary for correction. 
+
+```{r cutoff}
+cutoff_trait4 <- calculate_cutoff(population = face_data_trait4_sub, 
+                 grouping_items = "stimulus",
+                 score = "response", 
+                 minimum = min(face_data_trait4_sub$response),
+                 maximum = max(face_data_trait4_sub$response))
+
+# same as above
+cutoff_trait4$cutoff
+
+cutoff_trait30 <- calculate_cutoff(population = face_data_trait30_sub, 
+                 grouping_items = "stimulus",
+                 score = "response", 
+                 minimum = min(face_data_trait30_sub$response),
+                 maximum = max(face_data_trait30_sub$response))
+
+cutoff_trait30$cutoff
+```
+
+Trait 4 Results:
+
 ```{r summary analysis part1}
-cutoff <- quantile(SE1, probs = .5)
+cutoff <- quantile(SE1, probs = .4)
 final_sample <- 
   sim_table %>%
   pivot_longer(cols = -c(sample_size, var))  %>% 
   dplyr::rename(item = name, se = value)   %>% 
   dplyr::group_by(sample_size, var)  %>% 
-  dplyr::summarize(Percent_Below = sum(se <= cutoff)/length(unique(face_data_trait4_sub$stimulus)))  %>% 
-  dplyr::filter(Percent_Below >= .80) %>% 
-  dplyr::arrange(Percent_Below) %>% 
-  mutate(new_sample = round(39.369 + 0.700*sample_size + 0.003*cutoff - 0.694*length(unique(face_data_trait4_sub$stimulus))))
+  dplyr::summarize(percent_below = sum(se <= cutoff)/length(unique(face_data_trait4_sub$stimulus)))  %>% 
+  dplyr::filter(percent_below >= .80) %>% 
+  dplyr::arrange(percent_below) %>% 
+  ungroup()
 
-flextable(final_sample) %>% autofit()
+flextable(final_sample %>% head()) %>% autofit()
 ```
 
+Calculate the final corrected scores:
+
+```{r calculate correction}
+final_scores <- calculate_correction(proportion_summary = final_sample,
+                     pilot_sample_size = face_data_trait4_sub %>% 
+                       group_by(stimulus) %>% 
+                       summarize(sample_size = n()) %>% 
+                       ungroup() %>% 
+                       summarize(avg_sample = mean(sample_size)) %>% 
+                       pull(avg_sample),
+                     proportion_variability = cutoff_trait4$prop_var)
+
+flextable(final_scores) %>% autofit()
+```
+
+Trait 30 Results: 
+
 ```{r summary analysis part2}
-cutoff <- quantile(SE2, probs = .5) 
+cutoff <- quantile(SE2, probs = .4) 
 final_sample2 <- 
   sim_table2 %>%
   pivot_longer(cols = -c(sample_size, var)) %>% 
   dplyr::rename(item = name, se = value)  %>% 
   dplyr::group_by(sample_size, var) %>% 
-  dplyr::summarize(Percent_Below = sum(se <= cutoff)/length(unique(face_data_trait30_sub$stimulus))) %>% 
-  dplyr::filter(Percent_Below >= .80) %>% 
-  dplyr::arrange(Percent_Below) %>% 
-  mutate(new_sample = round(39.369 + 0.700*sample_size + 0.003*cutoff - 0.694*length(unique(face_data_trait4_sub$stimulus))))
+  dplyr::summarize(percent_below = sum(se <= cutoff)/length(unique(face_data_trait30_sub$stimulus))) %>% 
+  dplyr::filter(percent_below >= .80) %>% 
+  dplyr::arrange(percent_below) %>% 
+  ungroup()
 
-flextable(final_sample2) %>% autofit()
+flextable(final_sample2 %>% head()) %>% autofit()
 ```
 
-Based on these simulations, we can decide our minimum sample size is somewhere between `r min(final_sample$new_sample)` and `r min(final_sample2$new_sample)`. We can consider only the most variant trait for power analysis since it would satisfy other traits in the dataset as well.
+Calculate the final corrected scores:
+
+```{r calculate correction2}
+final_scores2 <- calculate_correction(proportion_summary = final_sample2,
+                     pilot_sample_size = face_data_trait30_sub %>% 
+                       group_by(stimulus) %>% 
+                       summarize(sample_size = n()) %>% 
+                       ungroup() %>% 
+                       summarize(avg_sample = mean(sample_size)) %>% 
+                       pull(avg_sample),
+                     proportion_variability = cutoff_trait30$prop_var)
+
+flextable(final_scores2) %>% autofit()
+```
+
+Based on these simulations, we can decide our minimum sample size for 80% is likely close to `r final_scores %>% arrange(percent_below, sample_size) %>% filter(percent_below >= 80) %>% slice_head() %>% pull(corrected_sample_size) %>% round()` for the trait 4 trials or `r final_scores2 %>% arrange(percent_below, sample_size) %>% filter(percent_below >= 80) %>% slice_head() %>% pull(corrected_sample_size) %>% round()` for the trait 30 trials, depending on rounding. We can consider only the most variant trait for power analysis since it would satisfy other traits in the dataset as well.
 
 #### Maximum Sample Size
 
-We could set our maximum sample size for 95% power, which would equate to `r final_sample2 %>% filter(Percent_Below >= .95) %>% pull(new_sample) %>% min()` participants. 
+In this example, we could set our maximum sample size for 95% items below the criterion, which would equate to `r final_scores %>% arrange(percent_below, sample_size) %>% filter(percent_below >= 95) %>% slice_head() %>% pull(corrected_sample_size) %>% round()` for the trait 4 trials or `r final_scores2 %>% arrange(percent_below, sample_size) %>% filter(percent_below >= 95) %>% slice_head() %>% pull(corrected_sample_size) %>% round()` for trait 30 trials.
 
 #### Final Sample Size
 
-Considering both estimated traits and a smaller proportion of things to rate, we found that we could likely use samples from 50-75 people. Other considerations could include fatigue on the number of ratings each person has to complete. 
+Considering both estimated traits and a smaller proportion of things to rate, we found that we could likely use samples from 40 to 60 people. Other considerations could include fatigue on the number of ratings each person has to complete. 
