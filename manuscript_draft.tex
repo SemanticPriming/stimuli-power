@@ -629,6 +629,37 @@ Power & 1.088 & 0.426 & 2.552 & .011\\
 \hypertarget{updated-example}{%
 \section{Updated Example}\label{updated-example}}
 
+\begin{lltable}
+
+\scriptsize{
+
+\begin{longtable}{llllllllllll}\noalign{\getlongtablewidth\global\LTcapwidth=\longtablewidth}
+\caption{\label{tab:table-scores-updated}Applied Correction for Each Proposed Sample Size}\\
+\toprule
+Formula Estimate & \multicolumn{1}{c}{Intercept} & \multicolumn{1}{c}{Projected SS} & \multicolumn{1}{c}{Pilot SS} & \multicolumn{1}{c}{Log2 Projected SS} & \multicolumn{1}{c}{Log2 Pilot SS} & \multicolumn{1}{c}{Log2 Power} & \multicolumn{1}{c}{Prop Var} & \multicolumn{1}{c}{Log2 Prop Var} & \multicolumn{1}{c}{Power} & \multicolumn{1}{c}{Corrected Sample} & \multicolumn{1}{c}{Data Loss}\\
+\midrule
+\endfirsthead
+\caption*{\normalfont{Table \ref{tab:table-scores-updated} continued}}\\
+\toprule
+Formula Estimate & \multicolumn{1}{c}{Intercept} & \multicolumn{1}{c}{Projected SS} & \multicolumn{1}{c}{Pilot SS} & \multicolumn{1}{c}{Log2 Projected SS} & \multicolumn{1}{c}{Log2 Pilot SS} & \multicolumn{1}{c}{Log2 Power} & \multicolumn{1}{c}{Prop Var} & \multicolumn{1}{c}{Log2 Prop Var} & \multicolumn{1}{c}{Power} & \multicolumn{1}{c}{Corrected Sample} & \multicolumn{1}{c}{Data Loss}\\
+\midrule
+\endhead
+Formula & 206.59 & 0.37 & -0.77 & 27.54 & 2.58 & -66.15 & 16.40 & -1.37 & 1.09 & NA & NA\\
+Concrete 80 & 1.00 & 45.00 & 28.00 & 5.49 & 4.81 & 6.32 & 0.13 & -2.94 & 80.00 & 40.25 & 44.84\\
+Concrete 85 & 1.00 & 50.00 & 28.00 & 5.64 & 4.81 & 6.41 & 0.13 & -2.94 & 85.00 & 45.93 & 51.17\\
+Concrete 90 & 1.00 & 50.00 & 28.00 & 5.64 & 4.81 & 6.49 & 0.13 & -2.94 & 90.00 & 45.92 & 51.15\\
+Concrete 95 & 1.00 & 65.00 & 28.00 & 6.02 & 4.81 & 6.57 & 0.13 & -2.94 & 95.00 & 62.14 & 69.22\\
+LDT 80 & 1.00 & 75.00 & 33.00 & 6.23 & 5.04 & 6.32 & 0.08 & -3.61 & 80.00 & 68.47 & 87.62\\
+LDT 85 & 1.00 & 75.00 & 33.00 & 6.23 & 5.04 & 6.41 & 0.08 & -3.61 & 85.00 & 68.13 & 87.18\\
+LDT 90 & 1.00 & 90.00 & 33.00 & 6.49 & 5.04 & 6.49 & 0.08 & -3.61 & 90.00 & 80.88 & 103.50\\
+LDT 95 & 1.00 & 105.00 & 33.00 & 6.71 & 5.04 & 6.57 & 0.08 & -3.61 & 95.00 & 92.80 & 118.76\\
+\bottomrule
+\end{longtable}
+
+}
+
+\end{lltable}
+
 The updated proposal steps are in Table \ref{tab:table-summary}. The main change occurs in Step 2 with a designated cutoff decile, and Step 5 with a correction score. Using the data from the 40\% decile in Table \ref{tab:table-example}, we can determine that the stopping rule for concreteness ratings would be 0.18, and the stopping rule for lexical decision times would be 51.32. For Step 5, we apply our correction formula separately for each one, as they have different variability scores, and these scores are shown in Table \ref{tab:table-scores-updated}. Each row was multiplied by row one's formula, and then these scores are summed for the final sample size. Sample sizes cannot be proportional, so we recommend rounding up to the nearest whole number.
 
 For one additional consideration, we calculated the potential amount of data retention given that participants could indicate they did not know a word (\(M_{answered}\) = 0.90, \emph{SD} = 0.13) in the concreteness task or answer a trial incorrectly in the lexical decision task (\(M_{correct}\) = 0.78, \emph{SD} = 0.22). In order to account for this facet, the potential sample sizes were multiplied by \(\frac{1}{p_{retained}}\) where the denominator is proportion retained for each task.

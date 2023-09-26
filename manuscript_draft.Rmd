@@ -791,7 +791,7 @@ apa_table(table_correct,
 
 # Updated Example
 
-```{r table-scores-updated, results = 'asis', eval = F}
+```{r table-scores-updated, results = 'asis', eval = T}
 c_sample <- c(results_table_example$`C 80`[4], 
               results_table_example$`C 85`[4],
               results_table_example$`C 90`[4],
@@ -870,7 +870,8 @@ table_correction_applied$`Data Loss`[6:9] <- unlist(table_correction_applied$`Co
 
 apa_table(table_correction_applied, 
           caption = "Applied Correction for Each Proposed Sample Size", 
-          font_size = "footnotesize")
+          font_size = "scriptsize", 
+          landscape = TRUE)
 ```
 
 The updated proposal steps are in Table \@ref(tab:table-summary). The main change occurs in Step 2 with a designated cutoff decile, and Step 5 with a correction score. Using the data from the 40% decile in Table \@ref(tab:table-example), we can determine that the stopping rule for concreteness ratings would be `r apa_num(cutoff_c[4])`, and the stopping rule for lexical decision times would be `r apa_num(cutoff_e[4])`. For Step 5, we apply our correction formula separately for each one, as they have different variability scores, and these scores are shown in Table \@ref(tab:table-scores-updated). Each row was multiplied by row one's formula, and then these scores are summed for the final sample size. Sample sizes cannot be proportional, so we recommend rounding up to the nearest whole number.
