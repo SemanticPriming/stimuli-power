@@ -1,0 +1,356 @@
+---
+title: "Power and Sample Size Simulatio: Online search trends and word-related emotional response during COVID-19 lockdown in Italy"
+author: "Mahmoud M.Elsherif"
+date: "`r Sys.Date()`"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Power and Sample Size Simulatio: Online search trends and word-related emotional response during COVID-19 lockdown in Italy}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+### Vignette Setup:
+
+```{r vignette-setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+# Libraries necessary for this vignette
+library(rio)
+library(flextable)
+library(dplyr)
+library(tidyr)
+library(psych)
+library(reshape)
+library(semanticprimeR)
+set.seed(0329032)
+```
+
+### Project/Data Title: 
+
+Online search trends and word-related emotional response during COVID-19 lockdown in Italy
+
+Data provided by: Maria Montefinese
+
+### Project/Data Description: 
+
+The strong and long lockdown adopted by the Italian government to limit the spread of the COVID-19 represents the first threat-related mass isolation in history that scientists can study in depth to understand the emotional response of individuals to a pandemic. Perception of a pandemic threat through invasive media communication, such as that related to COVID-19, can induce fear-related emotions (Van Bavel et al., 2020). The dimension theory of emotions (Osgood & Suci, 1955) assumes that emotive space is defined along three dimensions: valence (indicating the way an individual judges a stimulus; from unpleasant to pleasant), arousal (indicating the degree of activation an individual feels towards a stimulus; from calm to excited) and dominance (indicating the degree of control an individual feels over a given stimulus; from out of control to in control). Fear is characterized as a negatively valenced emotion, accompanied by a high level of arousal (Witte, 1992; Witte, 1998) and a low dominance (Stevenson, Mikel & James, 2007). This is generally in line with previous results showing that participants judged stimuli related to the most feared medical conditions as the most negative, the most anxiety-provoking, and the least controllable (Warriner, Kuperman & Brysbaert, 2013). Fear is also characterized by extreme levels of emotional avoidance of specific stimuli (Perin et al., 2015) and may be considered a unidirectional precursor to psychopathological responses within the current context (Ahorsu et al., 2020). dealing with fear in a pandemic situation could be easier for some people than others. Indeed, individual differences have been associated with behavioral responses to pandemic status (Carvalho Pianowski & Gonçalves, 2020).
+
+To mitigate the effects of the COVID-19 on the mental health of individuals, it is imperative to evaluate their emotional response to this emergency. The internet searches are  a direct tool to address this problem. In fact, COVID-19 has been reported to affect the content that people explore online (Effenberger et al., 2020), and online media and platforms offer essential channels where people express their feelings and emotions and seek health-related information (Kalichman et al., 2003; Reeves, 2001). In particular, Google Trends is an available data source of real-time internet search patterns, which has been shown to be a valid indicator of people’s desires and intentions (Payne, Brown-Iannuzzi & Hannay, 2017; Pelham et al., 2018). Therefore, the amount of searches related to COVID-19 on the  internet revealed by Google Trends are an indicator of how people feel about concepts related to the COVID-19 pandemic. A change in online search trends reflects a change in participants’ interests and attitudes towards a specific topic. Based on the topic, the context (that is, the reasons for this change), and this mutated interest per se, it is possible to predict people’s behavior and affective response to the topic in question. In this study, our aim was to understand how emotional reaction and online search behavior have changed in response to the COVID-19 lockdown in the Italian population.
+
+### Methods Description: 
+
+Data were collected in the period from 4 May to 17 May  2020, the last day of complete lockdown in Italy, from 71 native adult Italian speakers (56 females and 13 males; mean age (SD) = 26.2 (7.9) years; mean education  (SD) = 15.3 (3.2) years). There were no other specific eligibility criteria. An online survey was conducted using Google Forms to collect affective ratings during the lockdown caused by the COVID-19 epidemic in Italy. In particular, we asked participants to complete the Positive and Negative Affect Schedule (PANAS, Terraciano, McCrae & Costa, 2003) and Fear of COVID-19 Scale (FCV-19S, Ahorsu et al., 2020) and judged valence, arousal, and dominance (on a 9-point self-assessment manikin, Montefinese et al., 2014) of words related or unrelated to COVID-19, as identified by Google search trends. The word stimuli consisted of 3 groups of 20 words each. The first group (REL+) consisted of the words showing the largest positive relation between their search trends and the search trend for COVID-related terms. On the contrary, the second group (REL-) consisted of the words showing the largest negative relation between their search trends and the search trend for COVID-related terms. In other words, the COVID-19 epidemic in Italy and the consequent increase in interest in terms related to COVID was related to a similar increase in interest for the REL+ words and a decrease in interest for the REL- words. The third group (UNREL) consisted of the words for which the search trend was unrelated to the search trend for the COVID-related terms.
+
+### Data Location: 
+
+https://osf.io/we9r4/ 
+
+```{r}
+DF <- import("data/montefinese_data.csv") 
+
+names(DF) <- make.names(names(DF),unique = TRUE)
+
+names(DF)[names(DF) == 'ITEM..ITA.'] <- "item"
+
+DF <- DF %>%
+  filter(StimType != "") %>% 
+  filter(Measure == "Valence") %>% # only look at valence score 
+  arrange(item) %>% #orders the rows of the data by the target_name column
+  group_by(item) %>% #group by the target name
+  transform(items = as.numeric(factor(item)))%>% #transform target name into a item
+  select(items, item, everything()
+         ) #select all variables from items and target_name 
+
+head(DF)
+```
+
+### Date Published: 
+
+2021-08-10
+
+### Dataset Citation: 
+
+Montefinese M, Ambrosini E, Angrilli A. 2021. Online search trends and word-related emotional response during COVID-19 lockdown in Italy: a cross-sectional online study. PeerJ 9:e11858 https://doi.org/10.7717/peerj.11858
+ 
+### Keywords: 
+
+Covid-19; Emotional response; Online search; Lockdown; Coping
+
+### Use License: 
+
+CC-By Attribution 4.0 International
+
+### Geographic Description - City/State/Country of Participants:
+
+Italy
+
+### Column Metadata: 
+
+```{r}
+metadata <- import("data/montefinese_metadata.xlsx")
+
+flextable(metadata) %>% autofit()
+```
+
+### AIPE Analysis:
+
+In this dataset, there are REL+ and REL- variables. In the REL+ condition, the words show the  largest positive relation between their search trends and the search trend for the COVID-related terms. In the REL- condition, the words showed the largest negative relation between their search trends and the search trends for the COVID-related terms. The third group (UNREL) consisted in the words for which the search trend was unrelated to the search trend for the COVID-related terms.
+
+#### Stopping Rule
+
+What the usual standard error for the data that could be considered for our stopping rule using the 40% decile? Given potential differences in conditions, we subset the data to each condition to estimate separately. 
+
+```{r subset and restructure}
+### create  subset for REL+
+DF_RELpos <- subset(DF, StimType == "REL+")
+
+### create  subset for REL-
+DF_RELneg <- subset(DF, StimType == "REL-")
+
+### create  subset for UNREL
+DF_UNREL <- subset(DF, StimType == "UNREL")
+```
+
+```{r compute se for REL+ and REL-}
+
+# individual SEs for REL+ condition 
+cutoff_relpos <- calculate_cutoff(population = DF_RELpos,
+                                  grouping_items = "item", 
+                                  score = "Response", 
+                                  minimum = min(DF_RELpos$Response),
+                                  maximum = max(DF_RELpos$Response))
+
+SE1 <- tapply(DF_RELpos$Response, DF_RELpos$item, function (x) { sd(x)/sqrt(length(x)) })
+SE1
+cutoff_relpos$cutoff
+
+# individual SEs for REL- condition
+cutoff_relneg <- calculate_cutoff(population = DF_RELneg,
+                                  grouping_items = "item", 
+                                  score = "Response", 
+                                  minimum = min(DF_RELneg$Response),
+                                  maximum = max(DF_RELneg$Response))
+
+SE2 <- tapply(DF_RELneg$Response, DF_RELneg$item, function (x) { sd(x)/sqrt(length(x)) })
+SE2
+cutoff_relneg$cutoff
+
+# individual SEs for UNREL condition
+cutoff_unrel <- calculate_cutoff(population = DF_UNREL,
+                                  grouping_items = "item", 
+                                  score = "Response", 
+                                  minimum = min(DF_UNREL$Response),
+                                  maximum = max(DF_UNREL$Response))
+
+SE3 <- tapply(DF_UNREL$Response, DF_UNREL$item, function (x) { sd(x)/sqrt(length(x)) })
+SE3
+cutoff_unrel$cutoff
+```
+
+```{r power three different conditions}
+# sequence of sample sizes to try
+nsim <- 10 # small for cran
+samplesize_values <- seq(25, 300, 5)
+
+# create a blank table for us to save the values in positive ----
+sim_table <- matrix(NA, 
+                    nrow = length(samplesize_values)*nsim, 
+                    ncol = length(unique(DF_RELpos$item)))
+# make it a data frame
+sim_table <- as.data.frame(sim_table)
+
+# add a place for sample size values 
+sim_table$sample_size <- NA
+sim_table$var <- "Response"
+
+# make a second table for negative -----
+sim_table2 <- matrix(NA, 
+                    nrow = length(samplesize_values)*nsim, 
+                    ncol = length(unique(DF_RELneg$item)))
+
+# make it a data frame
+sim_table2 <- as.data.frame(sim_table2)
+
+# add a place for sample size values 
+sim_table2$sample_size <- NA
+sim_table2$var <- "Response"
+
+# make a second table for unrelated -----
+sim_table3 <- matrix(NA, 
+                    nrow = length(samplesize_values)*nsim, 
+                    ncol = length(unique(DF_UNREL$item)))
+
+# make it a data frame
+sim_table3 <- as.data.frame(sim_table3)
+
+# add a place for sample size values 
+sim_table3$sample_size <- NA
+sim_table3$var <- "Response"
+
+iterate <- 1
+
+for (p in 1:nsim){
+  
+  # loop over sample size
+  for (i in 1:length(samplesize_values)){
+      
+    # related positive temp variables ----
+    temp_RELpos <- DF_RELpos %>% 
+      dplyr::group_by(item) %>% 
+      dplyr::sample_n(samplesize_values[i], replace = T) %>% 
+      dplyr::summarize(se1 = sd(Response)/sqrt(length(Response))) 
+    
+    # put in table 
+    colnames(sim_table)[1:length(unique(DF_RELpos$item))] <- temp_RELpos$item
+    sim_table[iterate, 1:length(unique(DF_RELpos$item))] <- temp_RELpos$se1
+    sim_table[iterate, "sample_size"] <- samplesize_values[i]
+    sim_table[iterate, "nsim"] <- p
+    
+    # related negative temp variables ----
+    temp_RELneg <-DF_RELneg %>% 
+      dplyr::group_by(item) %>% 
+      dplyr::sample_n(samplesize_values[i], replace = T) %>% 
+      dplyr::summarize(se2 = sd(Response)/sqrt(length(Response))) 
+  
+    # put in table 
+    colnames(sim_table2)[1:length(unique(DF_RELneg$item))] <- temp_RELneg$item
+    sim_table2[iterate, 1:length(unique(DF_RELneg$item))] <- temp_RELneg$se2
+    sim_table2[iterate, "sample_size"] <- samplesize_values[i]
+    sim_table2[iterate, "nsim"] <- p
+    
+    # unrelated temp variables ----
+    temp_UNREL <-DF_UNREL %>% 
+      dplyr::group_by(item) %>% 
+      dplyr::sample_n(samplesize_values[i], replace = T) %>% 
+      dplyr::summarize(se3 = sd(Response)/sqrt(length(Response))) 
+  
+    # put in table 
+    colnames(sim_table3)[1:length(unique(DF_UNREL$item))] <- temp_UNREL$item
+    sim_table3[iterate, 1:length(unique(DF_UNREL$item))] <- temp_UNREL$se3
+    sim_table3[iterate, "sample_size"] <- samplesize_values[i]
+    sim_table3[iterate, "nsim"] <- p
+    
+    iterate <- iterate + 1
+    
+  }
+}
+
+```
+
+#### Minimum Sample Size
+
+Suggestions for REL+ Condition: 
+
+```{r summary analysis part1}
+# multiply by correction 
+cutoff <- quantile(SE1, probs = .4)
+
+final_sample <- 
+  sim_table %>%
+  pivot_longer(cols = -c(sample_size, var, nsim)) %>% 
+  dplyr::rename(item = name, se = value) %>% 
+  dplyr::group_by(sample_size, var, nsim) %>% 
+  dplyr::summarize(percent_below = sum(se <= cutoff)/length(unique(DF_RELpos$item))) %>% 
+  ungroup() %>% 
+  # then summarize all down averaging percents
+  dplyr::group_by(sample_size, var) %>% 
+  summarize(percent_below = mean(percent_below)) %>% 
+  dplyr::arrange(percent_below) %>% 
+  ungroup()
+
+flextable(final_sample %>% head()) %>% autofit()
+```
+
+```{r}
+final_table_pos <- calculate_correction(
+  proportion_summary = final_sample,
+  pilot_sample_size = length(unique(DF_RELpos$ssID)),
+  proportion_variability = cutoff_relpos$prop_var
+  )
+
+flextable(final_table_pos) %>% 
+  autofit()
+```
+
+Suggestions for REL- Condition: 
+
+```{r summary analysis part2}
+cutoff <- quantile(SE2, probs = .4)
+
+final_sample2 <- 
+  sim_table2 %>%
+  pivot_longer(cols = -c(sample_size, var, nsim)) %>% 
+  dplyr::rename(item = name, se = value)  %>% 
+  dplyr::group_by(sample_size, var, nsim) %>% 
+  dplyr::summarize(percent_below = sum(se <= cutoff)/length(unique(DF_RELneg$item))) %>% 
+  ungroup() %>% 
+  # then summarize all down averaging percents
+  dplyr::group_by(sample_size, var) %>% 
+  summarize(percent_below = mean(percent_below)) %>% 
+  dplyr::arrange(percent_below) %>% 
+  ungroup()
+
+flextable(final_sample2 %>% head()) %>% autofit()
+```
+
+```{r}
+final_table_neg <- calculate_correction(
+  proportion_summary = final_sample2,
+  pilot_sample_size = length(unique(DF_RELneg$ssID)),
+  proportion_variability = cutoff_relneg$prop_var
+  )
+
+flextable(final_table_neg) %>% 
+  autofit()
+```
+
+Suggestions for UNREL Condition: 
+
+```{r summary analysis part3}
+cutoff <- quantile(SE3, probs = .4)
+
+final_sample3 <- 
+  sim_table3 %>%
+  pivot_longer(cols = -c(sample_size, var, nsim)) %>% 
+  dplyr::rename(item = name, se = value) %>% 
+  dplyr::group_by(sample_size, var, nsim) %>% 
+  dplyr::summarize(percent_below = sum(se <= cutoff)/length(unique(DF_UNREL$item))) %>% 
+  ungroup() %>% 
+  # then summarize all down averaging percents
+  dplyr::group_by(sample_size, var) %>% 
+  summarize(percent_below = mean(percent_below)) %>% 
+  dplyr::arrange(percent_below) %>% 
+  ungroup()
+
+flextable(final_sample3 %>% head()) %>% autofit()
+```
+
+```{r}
+final_table_unrel <- calculate_correction(
+  proportion_summary = final_sample3,
+  pilot_sample_size = length(unique(DF_UNREL$ssID)),
+  proportion_variability = cutoff_unrel$prop_var
+  )
+
+flextable(final_table_unrel) %>% 
+  autofit()
+```
+
+Based on these simulations, we can decide our minimum sample size by examining all three potential scores at 80% of items below the criterion, $n_{positive}$ = `r final_table_pos %>%  filter(percent_below >= 80) %>% arrange(percent_below, corrected_sample_size) %>% slice_head() %>% pull(corrected_sample_size) %>% round()`, $n_{negative}$ = `r final_table_neg %>%  filter(percent_below >= 80) %>% arrange(percent_below, corrected_sample_size) %>% slice_head() %>% pull(corrected_sample_size) %>% round()`, or $n_{unrelated}$ = `r final_table_unrel %>%  filter(percent_below >= 80) %>% arrange(percent_below, corrected_sample_size) %>% slice_head() %>% pull(corrected_sample_size) %>% round()`. These scores are all very similar, and we should select the largest one. 
+
+#### Maximum Sample Size
+
+In this example, we could set our maximum sample size for 90% power which would equate to: $n_{positive}$ = `r final_table_pos %>%  filter(percent_below >= 90) %>% arrange(percent_below, corrected_sample_size) %>% slice_head() %>% pull(corrected_sample_size) %>% round()`, $n_{negative}$ = `r final_table_neg %>%  filter(percent_below >= 90) %>% arrange(percent_below, corrected_sample_size) %>% slice_head() %>% pull(corrected_sample_size) %>% round()`, or $n_{unrelated}$ = `r final_table_unrel %>%  filter(percent_below >= 90) %>% arrange(percent_below, corrected_sample_size) %>% slice_head() %>% pull(corrected_sample_size) %>% round()`.
+
+#### Final Sample Size
+
+The final sample size should be selected from the largest suggested sample size based on condition to ensure that all conditions are adequately measured. 
+
+

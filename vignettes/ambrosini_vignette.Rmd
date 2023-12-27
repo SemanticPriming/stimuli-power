@@ -1,0 +1,253 @@
+---
+title: 'Power and Sample Size Simulation: Italian Age of Acquisition Norms for a Large Set of Words (ItAoA)'
+author: "Mahmoud M.Elsherif"
+date: "`r Sys.Date()`"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Power and Sample Size Simulation: Italian Age of Acquisition Norms for a Large Set of Words (ItAoA)}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+### Vignette Setup:
+
+```{r vignette_setup, include = FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+# Set a random seed
+set.seed(3898934)
+
+# Libraries necessary for this vignette
+library(rio)
+library(flextable)
+library(dplyr)
+library(tidyr)
+library(psych)
+library(semanticprimeR)
+
+# Function for simulation
+item_power <- function(data, # name of data frame
+                       dv_col, # name of DV column as a character
+                       item_col, # number of items column as a character
+                       nsim = 10, # small for cran 
+                       sample_start = 20, 
+                       sample_stop = 200, 
+                       sample_increase = 5,
+                       decile = .4){
+  
+  DF <- cbind.data.frame(
+    "dv" = data[ , dv_col],
+    "items" = data[ , item_col]
+  )
+  
+  # just in case
+  colnames(DF) <- c("dv", "items")
+  
+  # figure out the "sufficiently narrow" ci value
+  SE <- tapply(DF$dv, DF$items, function (x) { sd(x)/sqrt(length(x)) })
+  cutoff <- quantile(SE, probs = decile)
+  
+  # sequence of sample sizes to try
+  samplesize_values <- seq(sample_start, sample_stop, sample_increase)
+
+  # create a blank table for us to save the values in 
+  sim_table <- matrix(NA, 
+                      nrow = length(samplesize_values), 
+                      ncol = length(unique(DF$items)))
+
+  # make it a data frame
+  sim_table <- as.data.frame(sim_table)
+
+  # add a place for sample size values 
+  sim_table$sample_size <- NA
+
+  iterate <- 1
+  for (p in 1:nsim){
+    # loop over sample sizes
+    for (i in 1:length(samplesize_values)){
+        
+      # temp that samples and summarizes
+      temp <- DF %>% 
+        group_by(items) %>% 
+        sample_n(samplesize_values[i], replace = T) %>% 
+        summarize(se = sd(dv)/sqrt(length(dv)))
+      
+      # dv on items
+      colnames(sim_table)[1:length(unique(DF$items))] <- temp$items
+      sim_table[iterate, 1:length(unique(DF$items))] <- temp$se
+      sim_table[iterate, "sample_size"] <- samplesize_values[i]
+      sim_table[iterate, "nsim"] <- p
+      
+      iterate <- iterate + 1
+      
+    }
+  }
+
+  # figure out cut off
+  final_sample <- sim_table %>% 
+    pivot_longer(cols = -c(sample_size, nsim)) %>% 
+    dplyr::rename(item = name, se = value) %>% 
+    group_by(sample_size, nsim) %>% 
+    summarize(percent_below = sum(se <= cutoff)/length(unique(DF$items))) %>% 
+    ungroup() %>% 
+    # then summarize all down averaging percents
+    dplyr::group_by(sample_size) %>% 
+    summarize(percent_below = mean(percent_below)) %>% 
+    dplyr::arrange(percent_below) %>% 
+    ungroup()
+  
+  return(list(
+    SE = SE, 
+    cutoff = cutoff, 
+    DF = DF, 
+    sim_table = sim_table, 
+    final_sample = final_sample
+  ))
+
+}
+```
+
+### Project/Data Title: 
+
+Italian Age of Acquisition Norms for a Large Set of Words (ItAoA)
+
+Data provided by: Ettore Ambrosini
+
+### Project/Data Description: 
+
+The age of acquisition (AoA) represents the age at which a word is learned. This measure has been shown to affect performance in a wide variety of cognitive tasks (see reviews by Juhasz, 2005; Johnston and Barry, 2006; Brysbaert and Ellis, 2016), with faster reaction times for words learned early in life compared to those learned later.
+
+There are two main approaches to derive AoA data. First, objective AoA measures can be obtained by analysis of children’s production (Chalard et al., 2003; Álvarez and Cuetos, 2007; Lotto et al., 2010; Grigoriev and Oshhepkov, 2013). Within this approach, children (classified by age) are asked to name the picture of common objects and activities. The AoA of a given word is computed as the mean age of the group of children in which at least 75% of them can name the picture correctly. Alternatively, subjective AoA can be obtained using adult estimates (Barca et al., 2002; Ferrand et al., 2008; Moors et al., 2013). Here, adult participants are asked to provide AoA ratings  on a Likert scale (Schock et al., 2012; Alonso et al., 2015; Borelli et al., 2018) or directly in years,  indicating the number corresponding to the age they thought they had learned a given word (Stadthagen-Gonzalez and Davis, 2006; Ferrand et al., 2008; Moors et al., 2013). Compared to the use of a Likert scale, the latter method is easier for participants to use and  does not restrict artificially the response range, instead providing more precise information on the AoA of words’ AoA (Ghyselinck et al., 2000). It has been shown that the AoA estimates obtained from the two different methods are highly correlated (Morrison et al., 1997; Ghyselinck et al., 2000; Pind et al., 2000; Lotto et al., 2010; see also Brysbaert, 2017; Brysbaert and Biemiller, 2017) and this correlation still remains significant when other variables, such as familiarity, frequency, and phonological length, are controlled (Bonin et al., 2004).
+
+Only two sets of Italian norms with objective AoA (Rinaldi et al., 2004) and subjective AoA (Borelli et al., 2018) include abstract and concrete words and different word classes (adjective, noun, and verb), but they are limited to a relatively small number of word stimuli (519 and 512 words, respectively). Unfortunately, the lack of overlap between AoA (Dell’Acqua et al., 2000; Barca et al., 2002; Barbarotto et al., 2005; Della Rosa et al., 2010; Borelli et al., 2018) and semantic-affective norms (Zannino et al., 2006; Kremer and Baroni, 2011; Montefinese et al., 2013b, 2014; Fairfield et al., 2017) for Italian words has prevented direct comparison of different lexical-semantic dimensions to establish the extent to which they overlap or complement each other in word processing. An important motivation of the present study is to extend previous Italian norms by collecting AoA ratings for a much larger range of Italian words for which concreteness and semantic-affective norms are now available, thus ensuring greater coverage of words varying along these dimensions.
+
+### Methods Description: 
+
+A total of 507 native Italian speakers were enrolled to participate in an online study (436 females and 81 males; mean age: 20.82 years, SD = 2.22; mean education: 15.16 years, SD = 1.11). We selected 1,957 Italian words from our Italian adaptations of the original ANEW (Montefinese et al., 2014; Fairfield et al., 2017) and from available Italian semantic norms (Zannino et al., 2006; Kremer and Baroni, 2011; Montefinese et al., 2013). The set of stimuli included 76% of nouns, 16% of adjectives, and 8% of verbs. The word stimuli were presented in the same verbal form as the previous Italian norms (e.g., the verbs were presented in the infinitive form) to preserve consistency with these data collections (Montefinese et al., 2014; Fairfield et al., 2017). Word stimuli were distributed on 20 lists containing 97–98 words each. To avoid primacy or recency effects, the order in which words appeared on the list was randomized for each participant separately. All lists were roughly matched for word length, word frequency, number of orthographic neighbors, and mean frequency of orthographic neighbors. For each list, an online form was created using Google modules. Participants were asked to estimate the age (in years) at which they thought they had learned the word, specifying that this information should indicate the age at which, for the first time, they understood the word when someone else used it in their presence, even when they did not use the word themselves. These instructions and the examples provided to the participants closely matched those used in a large number of previous studies (Ghyselinck et al., 2000; Stadthagen-Gonzalez and Davis, 2006; Kuperman et al., 2012; Moors et al., 2013; Łuniewska et al., 2016). The task lasted about 40 min.
+
+### Data Location: 
+
+Included with the vignette and Data Location: https://osf.io/rzycf/
+
+```{r}
+DF <- import("data/ambrosini_data.csv.zip")
+
+DF <- DF %>%
+  arrange(Ita_Word) %>% #orders the rows of the data by the target_name column
+  group_by(Ita_Word) %>% #group by the target name
+  transform(items = as.numeric(factor(Ita_Word)))%>% #transform target name into a item
+  select(items, Eng_Word, Ita_Word, everything()
+         ) #select all variables from items and target_name 
+
+DF <- DF %>% 
+  group_by(Ita_Word) %>%
+  filter (Rating != 'Unknown')
+
+head(DF)
+```
+
+### Date Published: 
+
+2019-02-13
+
+### Dataset Citation: 
+
+Montefinese, M., Vinson, D., Vigliocco, G., & Ambrosini, E. (2018, November 26). Italian age of acquisition norms for a large set of words (ItAoA). https://doi.org/10.17605/OSF.IO/3TRG2 
+
+### Keywords: 
+
+age of acquisition, word, lexicon, Italian language, cross-linguistic comparison, subjective rating
+
+### Use License: 
+
+CC-By Attribution 4.0 International
+
+### Geographic Description - City/State/Country of Participants:
+
+Italy
+
+### Column Metadata: 
+
+```{r}
+metadata <- import("data/ambrosini_metadata.xlsx")
+
+flextable(metadata) %>% autofit()
+```
+
+### AIPE Analysis:
+
+Note that the data are already in long format (each item has one row), and therefore, we do not need to restructure the data.
+
+#### Stopping Rule
+
+In this dataset, we have `r nrow(DF)` individual words to select from for our research study. You would obviously not use all of these in one study. Let’s say we wanted participants to rate 75 pairs of words during our study (note: this selection is completely arbitrary).
+
+```{r}
+random_items <- unique(DF$items)[sample(unique(DF$items), size = 75)]
+
+DF <- DF %>% 
+  filter(items %in% random_items)
+
+# Function for simulation
+var1 <- item_power(data = DF, # name of data frame
+            dv_col = "Rating", # name of DV column as a character
+            item_col = "items", # number of items column as a character
+            nsim = 10,
+            sample_start = 20, 
+            sample_stop = 100, 
+            sample_increase = 5,
+            decile = .4)
+```
+
+What is the usual standard error for the data that could be considered for our stopping rule using the 40% decile? 
+
+```{r}
+# individual SEs
+var1$SE
+
+var1$cutoff
+```
+
+Using our 40% decile as a guide, we find that `r round(var1$cutoff, digits = 3)` is our target standard error for an accurately measured item. 
+
+#### Minimum Sample Size
+
+To estimate the minimum sample size, we should figure out what number of participants it would take to achieve 80%, 85%, 90%, and 95% of the SEs for items below our critical score of `r round(var1$cutoff, digits = 3)`?
+
+```{r}
+cutoff <- calculate_cutoff(population = DF, 
+                           grouping_items = "items",
+                           score = "Rating",
+                           minimum = as.numeric(min(DF$Rating)),
+                           maximum = as.numeric(max(DF$Rating)))
+# showing how this is the same as the person calculated version versus semanticprimeR's function
+cutoff$cutoff
+
+final_table <- calculate_correction(
+  proportion_summary = var1$final_sample,
+  pilot_sample_size = DF %>% group_by(items) %>% summarize(n = n()) %>% 
+    pull(n) %>% mean() %>% round(),
+  proportion_variability = cutoff$prop_var
+  )
+
+flextable(final_table) %>% 
+  autofit()
+```
+
+Our minimum sample size is small at 80% (*n* = `r final_table %>% filter(percent_below >= 80) %>% arrange(percent_below, corrected_sample_size) %>% slice_head() %>%  pull(corrected_sample_size) %>% round()` as the minimum). We could consider using 90% (*n* = `r final_table %>% filter(percent_below >= 90) %>% arrange(percent_below, corrected_sample_size) %>% slice_head() %>%  pull(corrected_sample_size) %>% round()`) or 95% (*n* = `r final_table %>% filter(percent_below >= 95) %>% arrange(percent_below, corrected_sample_size) %>% slice_head() %>%  pull(corrected_sample_size) %>% round()`). 
+
+#### Maximum Sample Size
+
+While there are many considerations for maximum sample size (time, effort, resources), if we consider a higher value just for estimation sake, we could use *n* = `r final_table %>% filter(percent_below >= 98) %>% arrange(percent_below, corrected_sample_size) %>% slice_head() %>%  pull(corrected_sample_size) %>% round()` at 98%. 
+
+#### Final Sample Size
+
+In any estimate of sample size, you should also consider the potential for missing data and/or unusable data due to any other exclusion criteria in your study (i.e., attention checks, speeding, getting the answer right, etc.). In this study, these values can be influenced by the other variables that we used to select the stimuli in the study.
+

@@ -1,0 +1,229 @@
+---
+title: "Power and Sample Size Simulation: Reaction Time Example (raw RT)"
+author: "Christopher L. Aberson"
+date: "`r Sys.Date()`"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Power and Sample Size Simulation: Reaction Time Example (raw RT)}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+### Vignette Setup:
+
+```{r vignette-setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+# Set a random seed
+set.seed(667)
+library(rio)
+library(flextable)
+library(dplyr)
+library(tidyr)
+library(psych)
+library(ggplot2)
+library(reshape)
+library(semanticprimeR)
+```
+
+### Project/Data Title: 
+
+Continuous lexical decision task: classification of Dutch words as either actual words or nonwords
+
+Data provided by: Tom Heyman
+
+### Project/Data Description: 
+
+Data come from a study reported in Heyman, De Deyne, Hutchison, & Storms (2015, Behavior Research Methods; henceforth HDHS). More specifically, the study involved a continuous lexical decision task intended to measure (item-level) semantic priming effects (i.e., Experiment 3 of HDHS). It is similar to the SPAML set-up (see https://osf.io/q4fjy/), but with fewer items and participants. The study had several goals, but principally we wanted to examine how a different/new paradigm called the speeded word fragment completion task would compare against a more common, well-established paradigm like lexical decision in terms of semantic priming (i.e., magnitude of the effect, reliability of item-level priming, cross-task correlation of item-level priming effects, etc.). Experiment 3 only involved a continuous lexical decision task, so the datafile contains no data from the speeded word fragment completion task. 
+
+### Methods Description: 
+
+Participants were 40 students from the University of Leuven, Belgium (10 men, 30 women, mean age 20 years). A total of 576 pairs were used in a continuous lexical decision task (so participants do not perceive them as pairs): 144 word–word pairs, 144 word–pseudoword pairs, 144 pseudoword–word pairs, and 144 pseudoword–pseudoword pairs. Of the 144 word-word pairs, 72 were fillers and 72 were critical pairs, half of which were related, the other half unrelated (this was counterbalanced across participants). The dataset only contains data for the critical pairs. Participants were informed that they would see a letter string on each trial and that they had to indicate whether the letter string formed an existing Dutch word or not by pressing the arrow keys. Half of the participants had to press the left arrow for word and the right arrow for nonword, and vice versa for the other half.
+
+### Data Location:
+
+https://osf.io/frxpd/ 
+
+The example dataset also includes *R* scripts at this location that used Accuracy in Parameter Estimation in a different fashion. 
+
+```{r}
+HDHS<- read.csv("data/HDHSAIPE.txt", sep="")
+str(HDHS)
+```
+
+### Date Published:
+
+2022-02-04 
+
+### Dataset Citation:
+
+Heyman, T. (2022, February 4). Dataset AIPE. Retrieved from osf.io/frxpd [based on Heyman, T., De Deyne, S., Hutchison, K. A., & Storms, G. (2015). Using the speeded word fragment completion task to examine semantic priming. Behavior Research Methods, 47(2), 580-606.]
+
+### Keywords:
+
+Semantic priming; continuous lexical decision task
+
+### Use License:
+
+CC-By Attribution 4.0 International
+
+### Geographic Description - City/State/Country of Participants: 
+
+Belgium
+
+### Column Metadata:
+
+```{r}
+metadata <- import("data/HDHSMeta.txt")
+
+flextable(metadata) %>% autofit()
+```
+
+### AIPE Analysis:
+
+```{r}
+# pick only correct answers
+HDHScorrect <- HDHS[HDHS$accTarget==1,] 
+summary_stats <- HDHScorrect %>% #data frame
+  select(RT, Target) %>% #pick the columns
+  group_by(Target) %>% #put together the stimuli
+  summarize(SES = sd(RT)/sqrt(length(RT)), samplesize = length(RT)) #create SE and the sample size for below
+##give descriptives of the SEs
+describe(summary_stats$SES)
+
+##figure out the original sample sizes (not really necessary as all Targets were seen by 40 participants)
+original_SS <- HDHS %>% #data frame
+  count(Target) #count up the sample size
+##add the original sample size to the data frame
+summary_stats <- merge(summary_stats, original_SS, by = "Target")
+##original sample size average
+describe(summary_stats$n)
+
+##reduced sample size
+describe(summary_stats$samplesize)
+
+##percent retained
+describe(summary_stats$samplesize/summary_stats$n)
+
+flextable(head(HDHScorrect)) %>% autofit()
+```
+
+#### Stopping Rule
+
+What the usual standard error for the data that could be considered for our stopping rule?
+
+```{r}
+SE <- tapply(HDHScorrect$RT, HDHScorrect$Target, function (x) { sd(x)/sqrt(length(x)) })
+min(SE)
+max(SE)
+
+cutoff <- quantile(SE, probs = .4)
+cutoff
+```
+
+The items have a range of `r min(SE)` to `r max(SE)`. We could use the 40% decile SE = `r cutoff` as our critical value for our stopping rule, as suggested by the manuscript analysis. We could also have a set SE to a specific target if we do not believe we have representative pilot data in this example. You should also consider the scale when estimating these values (i.e., millisecond data has more room to vary than other smaller scales). 
+
+#### Minimum Sample Size
+
+To estimate minimum sample size, we should figure out what number of participants it would take to achieve 80% of the SEs for items below our critical score of `r cutoff`?
+
+```{r}
+# sequence of sample sizes to try
+nsim <- 10 # small for cran
+samplesize_values <- seq(20, 500, 5)
+
+# create a blank table for us to save the values in 
+sim_table <- matrix(NA, 
+                    nrow = length(samplesize_values)*nsim, 
+                    ncol = length(unique(HDHS$Target)))
+
+# make it a data frame
+sim_table <- as.data.frame(sim_table)
+
+# add a place for sample size values 
+sim_table$sample_size <- NA
+
+iterate <- 1
+
+for (p in 1:nsim){
+  
+  # loop over sample sizes
+  for (i in 1:length(samplesize_values)){
+      
+    # temp dataframe that samples and summarizes
+    temp <- HDHScorrect %>% 
+      group_by(Target) %>% 
+      sample_n(samplesize_values[i], replace = T) %>% 
+      summarize(se = sd(RT)/sqrt(length(RT))) 
+    
+    colnames(sim_table)[1:length(unique(HDHScorrect$Target))] <- temp$Target
+    sim_table[iterate, 1:length(unique(HDHScorrect$Target))] <- temp$se
+    sim_table[iterate, "sample_size"] <- samplesize_values[i]
+    sim_table[iterate, "nsim"] <- p
+    iterate <- 1 + iterate
+  }
+  
+}
+
+final_sample <- 
+  sim_table %>% 
+  pivot_longer(cols = -c(sample_size, nsim)) %>% 
+  group_by(sample_size, nsim) %>% 
+  summarize(percent_below = sum(value <= cutoff)/length(unique(HDHScorrect$Target))) %>% 
+  ungroup() %>% 
+  # then summarize all down averaging percents
+  dplyr::group_by(sample_size) %>% 
+  summarize(percent_below = mean(percent_below)) %>% 
+  dplyr::arrange(percent_below) %>% 
+  ungroup()
+
+flextable(final_sample %>% head()) %>% autofit()
+```
+
+#### Expected Data Loss
+
+The original data found that `r 100*(1-nrow(HDHScorrect)/nrow(HDHS))` percent of the data were unusable. 
+
+#### Minimum Sample Size
+
+```{r}
+# use semanticprimer cutoff function for prop variance
+cutoff <- calculate_cutoff(population = HDHScorrect, 
+                           grouping_items = "Target",
+                           score = "RT",
+                           minimum = as.numeric(min(HDHScorrect$RT)),
+                           maximum = as.numeric(max(HDHScorrect$RT)))
+# showing how this is the same as the person calculated version versus semanticprimeR's function
+cutoff$cutoff
+
+final_table <- calculate_correction(
+  proportion_summary = final_sample,
+  pilot_sample_size = HDHScorrect %>% group_by(Target) %>% 
+    summarize(sample_size = n()) %>% 
+    ungroup() %>% summarize(avg_sample = mean(sample_size)) %>% 
+    pull(avg_sample),
+  proportion_variability = cutoff$prop_var
+  )
+
+flextable(final_table) %>% 
+  autofit()
+```
+
+
+Based on these simulations, we can decide our minimum sample size is likely close to `r final_table %>% filter(percent_below >=80) %>% slice_head() %>% pull(corrected_sample_size) %>% round()` and `r final_table %>% filter(percent_below >=80) %>% slice_head() %>% pull(corrected_sample_size) %>% round() * (1 + 1*(1-nrow(HDHScorrect)/nrow(HDHS)))` including information about data loss. 
+
+#### Maximum Sample Size
+
+In this example, we could set our maximum sample size for 90% power (as defined as 90% of items below our criterion), which would equate to `r final_table %>% filter(percent_below >= 90) %>% slice_head() %>% pull(corrected_sample_size) %>% round()` and `r final_table %>% filter(percent_below >= 90) %>% slice_head() %>% pull(corrected_sample_size) %>% round() * (1 + 1*(1-nrow(HDHScorrect)/nrow(HDHS)))` with the expected data loss. The final table does not include 95% of items below our criterion, even after estimating 500 participants. An investigation of the table indicates that it levels off at 93-94%. 
+
+#### Final Sample Size
+
+In any estimate of sample size, you should also consider the potential for missing data and/or unusable data due to any other exclusion criteria in your study (i.e., attention checks, speeding, getting the answer right, etc.). In this study, we likely expect all participants to see all items, and therefore, we could expect to use the minimum sample size as our final sample size, the point at which all items reach our SE criterion, or the maximum sample size. Note that maximum sample sizes can also be defined by time, money, or other means.
+

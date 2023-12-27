@@ -1,0 +1,302 @@
+---
+title: "Power and Sample Size Simulation: Superficial Face Judgment"
+author: "Necdet Gürkan & Yangyang Yu"
+date: "`r Sys.Date()`"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Power and Sample Size Simulation: Superficial Face Judgment}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+
+### Vignette Setup:
+
+```{r vignette-setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+# Libraries necessary for this vignette
+library(rio)
+library(flextable)
+library(dplyr)
+library(tidyr)
+library(psych)
+library(semanticprimeR)
+set.seed(4538939)
+```
+
+### Project/Data Title: 
+
+Deep models of superficial trait inferences
+
+Data provided by: Jordan W. Suchow
+
+### Project/Data Description: 
+
+The diversity of human faces and the contexts in which they appear gives rise to an expansive stimulus space over which people infer psychological traits (e.g., trustworthiness or alertness) and other attributes (e.g., age or adiposity). Machine learning methods, in particular deep neural networks, provide expressive feature representations of face stimuli, but the correspondence between these representations and various human attribute inferences is difficult to determine because the former are high-dimensional vectors produced via black box optimization algorithms. In this paper, we combined deep generative image models with over 1 million judgments to model inferences of more than 30 attributes over a comprehensive latent face space. The predictive accuracy of the model approached human interrater reliability, which simulations suggest would not have been possible with fewer faces, fewer judgments, or lower-dimensional feature representations. The model can be used to predict and manipulate inferences with respect to arbitrary face photographs or to generate synthetic photorealistic face stimuli that evoke impressions tuned along the modeled attributes.
+
+In sum, the dataset contains 1.14 million ratings across 1000 items and 34 traits by 5,000 participants. NOTE: The trait trustworthy in the dataset was collected twice, so the trait column has 35 traits.
+
+### Methods Description: 
+
+For the attribute model studies, we used a between-subjects design where participants evaluated faces with respect to each attribute. Participants first consented. Then they completed a preinstruction agreement to answer open-ended questions at the end of the study. In the instructions, participants were given 25 examples of face images in order to provide a sense of the diversity they would encounter during the experiment. Participants were instructed to rate a series of faces on a continuous slider scale where extremes were bipolar descriptors such as “trustworthy” to “not trustworthy.” We did not supply definitions of each attribute to participants and instead relied on participants’ intuitive notions for each. 
+
+Each participant then completed 120 trials with the single attribute to which they were assigned. One hundred of these trials displayed images randomly selected (without replacement) from the full set; the remaining 20 trials were repeats of earlier trials, selected randomly from the 100 unique trials, which we used to assess intrarater reliability. Each stimulus in the full set was judged by at least 30 unique participants. 
+
+At the end of the experiment, participants were given a survey that queried what participants believed we were assessing and asked for a self-assessment of their performance and feedback on any potential points of confusion, as well as demographic information such as age, race, and gender. Participants were given 30 min to complete the entire experiment, but most completed it in under 20 min. Each participant was paid $1.50. 
+
+### Data Location: 
+
+https://github.com/jcpeterson/omi
+
+```{r}
+## Please set the work directory to the folder containing the scripts and data
+face_data <- import("data/suchow_data.csv.zip")
+str(face_data)
+```
+
+### Date Published:
+
+2022-04-15
+
+### Dataset Citation:
+
+Peterson, J. C., Uddenberg, S., Griffiths, T., Todorov, A., & Suchow, J. W. (2022). Deep models of superficial face judgments. Proceedings of the National Academy of Sciences (PNAS).
+
+### Keywords: 
+
+first impressions, social perception, face perception
+
+### Use License: 
+
+https://creativecommons.org/licenses/by-nc-sa/4.0/
+
+### Geographic Description - City/State/Country of Participants:
+
+For the attribute model studies, we used Amazon Mechanical Turk to recruit a total of 4,157 participants across 10,974 sessions, of which 10,633 (≈ 97%) met our criteria for inclusion. Participants identified their gender as female (2,065) or male (2,053), preferred not to say (21), or did not have their gender listed as an option (18). The mean age was ∼39 y old. Participants identified their race/ethnicity as either White (2,935), Black/African American (458), Latinx/a/o or Hispanic (158), East Asian (174), Southeast Asian (71), South Asian (70), Native American/American Indian (31), Middle Eastern (12), Native Hawaiian or Other Pacific Islander (3), or some combination of two or more races/ethnicities (215). The remaining participants either preferred not to say (22) or did not have their race/ethnicity listed as an option (8). Participants were recruited from the United States.
+
+### Column Metadata: 
+
+```{r}
+metadata <- import("data/suchow_metadata.xlsx")
+
+flextable(metadata) %>% autofit()
+```
+
+### AIPE Analysis: 
+
+#### Stopping Rule
+
+When pilot data is this large, it is important to sample a smaller subset based on what the participant might actually do in the study. We will pick 50 faces rated on 10 traits - and then select the highest and lowest variance to estimate from. This choice is somewhat arbitrary - in a real study, you could choose to use only the variables you were interested in and pick the most conservative values or simply average together estimates from all variables. 
+
+```{r}
+# pick random faces
+faces <- unique(face_data$stimulus)[sample(unique(face_data$stimulus), size = 50)]
+# pick random traits
+traits <- unique(face_data$trait)[sample(unique(face_data$trait), size = 10)]
+
+face_data <- face_data %>% 
+  filter(trait %in% traits) %>% 
+  filter(stimulus %in% faces)
+```
+
+```{r sd analysis}
+# all SEs 
+SE_full <- tapply(face_data$response, face_data$trait, function (x) { sd(x)/sqrt(length(x)) })
+SE_full
+```
+
+```{r subset and restructure}
+## smallest variance is trait 4
+face_data_trait4_sub <- subset(face_data, trait == names(which.min(SE_full)))
+
+## largest is trait 30
+face_data_trait30_sub <- subset(face_data, trait == names(which.max(SE_full)))
+```
+
+```{r compute se for traits}
+# individual SEs for 4 trait 
+SE1 <- tapply(face_data_trait4_sub$response, face_data_trait4_sub$stimulus, function (x) { sd(x)/sqrt(length(x)) })
+quantile(SE1, probs = .4)
+
+# individual SEs for 30 trait
+SE2 <- tapply(face_data_trait30_sub$response, face_data_trait30_sub$stimulus, function (x) { sd(x)/sqrt(length(x)) })
+
+quantile(SE2, probs = .4)
+```
+
+#### Minimum Sample Size
+
+How large does the sample have to be for 80% and 95% of the items to be below our stopping SE rule? 
+
+```{r power Two different traits}
+# sequence of sample sizes to try
+nsim <- 10 # small for cran 
+samplesize_values <- seq(25, 100, 5)
+
+# create a blank table for us to save the values in 
+sim_table <- matrix(NA, 
+                    nrow = length(samplesize_values)*nsim, 
+                    ncol = length(unique(face_data_trait4_sub$stimulus)))
+# make it a data frame
+sim_table <- as.data.frame(sim_table)
+
+# add a place for sample size values 
+sim_table$sample_size <- NA
+sim_table$var <- "response"
+
+# make a second table for the second variable
+sim_table2 <- matrix(NA, 
+                    nrow = length(samplesize_values)*nsim, 
+                    ncol = length(unique(face_data_trait30_sub$stimulus)))
+
+# make it a data frame
+sim_table2 <- as.data.frame(sim_table2)
+
+# add a place for sample size values 
+sim_table2$sample_size <- NA
+sim_table2$var <- "response"
+
+iterate <- 1
+for (p in 1:nsim){
+  # loop over sample sizes for age and outdoor trait
+  for (i in 1:length(samplesize_values)){
+      
+    # temp dataframe for age trait that samples and summarizes
+    temp7 <- face_data_trait4_sub %>% 
+      dplyr::group_by(stimulus) %>% 
+      dplyr::sample_n(samplesize_values[i], replace = T) %>% 
+      dplyr::summarize(se1 = sd(response)/sqrt(length(response))) 
+    
+    # 
+    colnames(sim_table)[1:length(unique(face_data_trait4_sub$stimulus))] <- temp7$stimulus
+    sim_table[iterate, 1:length(unique(face_data_trait4_sub$stimulus))] <- temp7$se1
+    sim_table[iterate, "sample_size"] <- samplesize_values[i]
+    sim_table[iterate, "nsim"] <- p
+    
+    # temp dataframe for outdoor trait that samples and summarizes
+    temp35 <-face_data_trait30_sub %>% 
+      dplyr::group_by(stimulus) %>% 
+      dplyr::sample_n(samplesize_values[i], replace = T) %>% 
+      dplyr::summarize(se2 = sd(response)/sqrt(length(response))) 
+    
+    # 
+    colnames(sim_table2)[1:length(unique(face_data_trait30_sub$stimulus))] <- temp35$stimulus
+    sim_table2[iterate, 1:length(unique(face_data_trait30_sub$stimulus))] <- temp35$se2
+    sim_table2[iterate, "sample_size"] <- samplesize_values[i]
+    sim_table2[iterate, "nsim"] <- p
+    
+    iterate <- 1 + iterate
+  
+  }
+  
+}
+```
+
+Calculate the cutoff score with information necessary for correction. 
+
+```{r cutoff}
+cutoff_trait4 <- calculate_cutoff(population = face_data_trait4_sub, 
+                 grouping_items = "stimulus",
+                 score = "response", 
+                 minimum = min(face_data_trait4_sub$response),
+                 maximum = max(face_data_trait4_sub$response))
+
+# same as above
+cutoff_trait4$cutoff
+
+cutoff_trait30 <- calculate_cutoff(population = face_data_trait30_sub, 
+                 grouping_items = "stimulus",
+                 score = "response", 
+                 minimum = min(face_data_trait30_sub$response),
+                 maximum = max(face_data_trait30_sub$response))
+
+cutoff_trait30$cutoff
+```
+
+Trait 4 Results:
+
+```{r summary analysis part1}
+cutoff <- quantile(SE1, probs = .4)
+final_sample <- 
+  sim_table %>%
+  pivot_longer(cols = -c(sample_size, var, nsim)) %>% 
+  dplyr::rename(item = name, se = value) %>% 
+  dplyr::group_by(sample_size, var, nsim) %>% 
+  dplyr::summarize(percent_below = sum(se <= cutoff)/length(unique(face_data_trait4_sub$stimulus))) %>% 
+  ungroup() %>% 
+  # then summarize all down averaging percents
+  dplyr::group_by(sample_size, var) %>% 
+  summarize(percent_below = mean(percent_below)) %>% 
+  dplyr::arrange(percent_below) %>% 
+  ungroup()
+
+flextable(final_sample %>% head()) %>% autofit()
+```
+
+Calculate the final corrected scores:
+
+```{r calculate correction}
+final_scores <- calculate_correction(proportion_summary = final_sample,
+                     pilot_sample_size = face_data_trait4_sub %>% 
+                       group_by(stimulus) %>% 
+                       summarize(sample_size = n()) %>% 
+                       ungroup() %>% 
+                       summarize(avg_sample = mean(sample_size)) %>% 
+                       pull(avg_sample),
+                     proportion_variability = cutoff_trait4$prop_var)
+
+flextable(final_scores) %>% autofit()
+```
+
+Trait 30 Results: 
+
+```{r summary analysis part2}
+cutoff <- quantile(SE2, probs = .4) 
+final_sample2 <- 
+  sim_table2 %>%
+  pivot_longer(cols = -c(sample_size, var, nsim)) %>% 
+  dplyr::rename(item = name, se = value)  %>% 
+  dplyr::group_by(sample_size, var, nsim) %>% 
+  dplyr::summarize(percent_below = sum(se <= cutoff)/length(unique(face_data_trait30_sub$stimulus))) %>% 
+  ungroup() %>% 
+  # then summarize all down averaging percents
+  dplyr::group_by(sample_size, var) %>% 
+  summarize(percent_below = mean(percent_below)) %>% 
+  dplyr::arrange(percent_below) %>% 
+  ungroup()
+
+flextable(final_sample2 %>% head()) %>% autofit()
+```
+
+Calculate the final corrected scores:
+
+```{r calculate correction2}
+final_scores2 <- calculate_correction(proportion_summary = final_sample2,
+                     pilot_sample_size = face_data_trait30_sub %>% 
+                       group_by(stimulus) %>% 
+                       summarize(sample_size = n()) %>% 
+                       ungroup() %>% 
+                       summarize(avg_sample = mean(sample_size)) %>% 
+                       pull(avg_sample),
+                     proportion_variability = cutoff_trait30$prop_var)
+
+flextable(final_scores2) %>% autofit()
+```
+
+Based on these simulations, we can decide our minimum sample size for 80% is likely close to `r final_scores %>% arrange(percent_below, sample_size) %>% filter(percent_below >= 80) %>% slice_head() %>% pull(corrected_sample_size) %>% round()` for the trait 4 trials or `r final_scores2 %>% arrange(percent_below, sample_size) %>% filter(percent_below >= 80) %>% slice_head() %>% pull(corrected_sample_size) %>% round()` for the trait 30 trials, depending on rounding. We can consider only the most variant trait for power analysis since it would satisfy other traits in the dataset as well.
+
+#### Maximum Sample Size
+
+In this example, we could set our maximum sample size for 95% items below the criterion, which would equate to `r final_scores %>% arrange(percent_below, sample_size) %>% filter(percent_below >= 95) %>% slice_head() %>% pull(corrected_sample_size) %>% round()` for the trait 4 trials or `r final_scores2 %>% arrange(percent_below, sample_size) %>% filter(percent_below >= 95) %>% slice_head() %>% pull(corrected_sample_size) %>% round()` for trait 30 trials.
+
+#### Final Sample Size
+
+Considering both estimated traits and a smaller proportion of things to rate, we found that we could likely use samples from 40 to 60 people. Other considerations could include fatigue on the number of ratings each person has to complete. 

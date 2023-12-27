@@ -1,9 +1,0 @@
-Variable Name	Variable Description	"Type (numeric, character, logical, etc.)"
-RT	Response time to the target in seconds	Numeric
-zRT	Z-transformed target response times per participant	Numeric
-Pp	Participant identifier (1 to 40)	Integer
-Type	Whether target was preceded by a related prime (“R”) or an unrelated prime (“U”)	Character
-Prime	Prime stimulus (in Dutch)	Character
-Target	Target stimulus (in Dutch)	Character
-accTarget	Whether response to target was correct (1) or not (0)	Integer
-accPrime	Whether response to the preceding prime was correct (1) or not (0)	Integer
