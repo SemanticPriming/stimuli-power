@@ -565,6 +565,13 @@ summary_long$percent_var <- ifelse(
 
 mean_var <- tapply(summary_long$percent_var, summary_long$scale_size, mean)
 
+# New facet label names for power variable
+power.labs <- c("80% of items", "85% of items",
+                "90% of items", "95% of items")
+names(power.labs) <- c("80", "85", "90", "95")
+
+plot_colors <- c("#4FEAAC", "#FF826F", "#4F84FD")
+
 ggplot(summary_long %>% 
          group_by(original_n, power, scale_size) %>% 
          summarize(sample_size_avg = mean(sample_size)),
@@ -572,12 +579,15 @@ ggplot(summary_long %>%
   geom_point() + 
   geom_point(aes(original_n, original_n), color = "black") + 
   geom_line() + 
+  geom_line(aes(original_n, original_n), color = "black") + 
   theme_linedraw(base_size = 15) + 
-  xlab("Pilot Sample Size") + 
-  ylab("Projected Sample Size") + 
-  scale_color_discrete(name = "Scale Size") +
-  facet_wrap(~power)
-
+  xlab("\nPilot Sample Size") + 
+  ylab("Projected Sample Size\n") + 
+  scale_color_manual(name = "Scale Size",
+                     values = c(plot_colors)) +
+  facet_wrap(~power,
+             labeller = labeller(power = power.labs))+
+  theme_bw()
 ```
 
 Figure \@ref(fig:scale-size-figure) demonstrates the influence of scale size on the results separated by potential cutoff level. The black dots denote the original sample size for reference. Larger scales have more potential variability, and therefore, we see that percent and millisecond scales project a larger required sample size. This relationship does not appear to be linear with scale size, as percent scales often represent the highest projected sample size. Potentially, this finding is due to the larger proportion of possible variance -- the variance of the item standard deviations / total possible variance -- was largest for percent scales in this set of simulations ($p_{Percent}$ = `r apa_num(mean_var["Percent"], gt1 = FALSE)`). This finding may be an interaction with heterogeneity, as the Likert scale had the next highest percent variability in item standard errors ($p_{Likert}$ = `r apa_num(mean_var["Likert"], gt1 = FALSE)`), followed by milliseconds ($p_{Milliseconds}$ = `r apa_num(mean_var["Milliseconds"], gt1 = FALSE)`).
@@ -595,11 +605,15 @@ ggplot(summary_long %>%
   geom_point() + 
   geom_point(aes(original_n, original_n), color = "black") + 
   geom_line() + 
+  geom_line(aes(original_n, original_n), color = "black") + 
   theme_linedraw(base_size = 15) + 
-  xlab("Pilot Sample Size") + 
-  ylab("Projected Sample Size") + 
-  scale_color_discrete(name = "Scale Skew") +
-  facet_wrap(~power)
+  xlab("\nPilot Sample Size") + 
+  ylab("Projected Sample Size\n") + 
+  scale_color_manual(name = "Scale Skew",
+                     values = c(plot_colors)) +
+  facet_wrap(~power,
+             labeller = labeller(power = power.labs))+
+  theme_bw()
 ```
 
 Figure \@ref(fig:scale-skew-figure) displays that ceiling distributions, averaged over all other variables, show slightly higher estimates than normal distributions. This result is consistent across scale type and heterogeneity, as results indicated that they are often the same or slightly higher for ceiling distributions.
@@ -667,14 +681,17 @@ ggplot(summary_long %>%
          summarize(sample_size_avg = mean(sample_size),
                    new_sample_size_avg = mean(new_sample)),
        aes(original_n, new_sample_size_avg, color = variability)) + 
-  geom_point() + 
+  geom_line(aes(original_n, original_n), color = "black") +
   geom_point(aes(original_n, original_n), color = "black") + 
+  geom_point() + 
   geom_line() + 
-  theme_linedraw() + 
-  xlab("Pilot Sample Size") + 
-  ylab("Projected Sample Size") + 
-  scale_color_discrete(name = "Item Heterogeneity") +
-  facet_wrap(~power)
+  xlab("\nPilot Sample Size") + 
+  ylab("Projected Sample Size\n") + 
+  scale_color_manual(name = "Item Heterogeneity",
+                     values = c(plot_colors)) +
+  facet_wrap(~power,
+             labeller = labeller(power = power.labs))+
+  theme_bw()
 ```
 
 ## Corrections for Individual Researchers
@@ -762,23 +779,53 @@ for (scale_loop in unique(summary_long$scale_size)){
 # plot(fit_model, resid_model); abline(v = 0); abline(h = 0)
 ```
 
-Last, we examined the question of an appropriate SE decile. First, the 0%, 10%, and 20% deciles are likely too restrictive, providing very large estimates that do not always find a reasonable sample size in proportion to the pilot sample size, scale size, and heterogeneity. If we examine the $R^2$ values for each decile of our regression equation separately, we find that the values are all $R^2$ \> .99 with very little differences between them. Figure \@ref(fig:decile-figure) illustrates the corrected scores for simulations at the 40% and 50% decile recommended cutoff for item standard errors. For small heterogeneity, differences in decile are minimal, while large heterogeneity shows more correction at the 40% decile range, especially for scales with larger potential variance. Therefore, we would suggest using the 40% decile to overpower each item to determine the minimum and maximum sample size.
+Last, we examined the question of an appropriate SE decile. First, the 0%, 10%, and 20% deciles are likely too restrictive, providing very large estimates that do not always find a reasonable sample size in proportion to the pilot sample size, scale size, and heterogeneity. If we examine the $R^2$ values for each decile of our regression equation separately, we find that the values are all $R^2$ \> .99 with very little differences between them. Figures \@ref(fig:decile40-figure) and \@ref(fig:decile50-figure) illustrate the corrected scores for simulations at the 40% and 50% decile recommended cutoff for item standard errors. For small heterogeneity, differences in decile are minimal, while larger heterogeneity shows more correction at the 40% decile range, especially for scales with larger potential variance. Therefore, we would suggest the 40% decile to overpower each item to determine the minimum and maximum sample size.
 
-```{r decile-figure, fig.cap = "Comparison of the cutoffs for 40% and 50% deciles across heterogeneity (rows), powering of items (columns), and scale size (shape)."}
+```{r decile40-figure, fig.cap = "Comparison of the cutoffs for 40% deciles across heterogeneity (columns), powering of items (rows), and scale size (color)."}
 summary_long %>% 
-  filter(name == "Decile 40" | name == "Decile 50") %>% 
+  filter(name == "Decile 40") %>% 
   group_by(variability, original_n, scale_size, name, power) %>% 
   summarize(new_sample = mean(new_sample)) %>% 
-  ggplot(., aes(original_n, new_sample, color = name)) + 
-  geom_point(aes(shape = scale_size)) + 
+  ggplot(., aes(original_n, new_sample, color = scale_size)) + 
   geom_point(aes(original_n, original_n), color = "black") + 
+  geom_line(aes(original_n, original_n), color = "black") + 
+  geom_point() + 
+  geom_line() + 
   theme_classic(base_size = 10) + 
-  facet_wrap(~ variability*power) + 
-  xlab("Pilot Sample Size") + 
-  ylab("Corrected Sample Size") + 
-  scale_shape_discrete(name = "Scale Size") +
-  scale_color_discrete(name = "Cutoff Decile") + 
+  facet_grid(power~ variability,
+             labeller = labeller(power = power.labs)) +
+  ggtitle("Results for 40% deciles") +
+  xlab("\nPilot Sample Size") + 
+  ylab("Corrected Sample Size\n") + 
+  scale_color_manual(name = "Scale Size",
+                     values = c(plot_colors)) + 
+  theme_bw() +
   theme(legend.position="bottom")
+
+```
+
+```{r decile50-figure, fig.cap = "Comparison of the cutoffs for 50% deciles across heterogeneity (columns), powering of items (rows), and scale size (color)."}
+summary_long %>% 
+  filter(name == "Decile 50") %>% 
+  group_by(variability, original_n, scale_size, name, power) %>% 
+  summarize(new_sample = mean(new_sample)) %>% 
+  ggplot(., aes(original_n, new_sample, color = scale_size)) + 
+  geom_point(aes(original_n, original_n), color = "black") + 
+  geom_line(aes(original_n, original_n), color = "black") + 
+  geom_point() + 
+  geom_line() +
+  theme_classic(base_size = 10) + 
+  facet_grid(power~ variability,
+             labeller = labeller(power = power.labs)) + 
+  ggtitle("Results for 40% deciles") +
+  xlab("\nPilot Sample Size") + 
+  ylab("Corrected Sample Size\n") + 
+  scale_shape_discrete(name = "Scale Size") +
+  scale_color_manual(name = "Cutoff Decile",
+                     values = c(plot_colors)) + 
+  theme_bw() +
+  theme(legend.position="bottom")
+
 ```
 
 The final formula for 40% decile correction is provided in Table \@ref(tab:table-decile). Proportion of variance can be calculated with the following:
