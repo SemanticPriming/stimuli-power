@@ -37,27 +37,27 @@ Step & Proposed Steps & Updated Steps\\
 \begin{center}
 \begin{threeparttable}
 
-\caption{\label{tab:table-example}Sample Size Estimates by Decile for Concreteness Example}
+\caption{\label{tab:table-example}Sample Size Estimates by Decile for Example Study}
 
 \begin{tabular}{lllllllllll}
 \toprule
-Deciles & \multicolumn{1}{c}{C Decile SE} & \multicolumn{1}{c}{C 80} & \multicolumn{1}{c}{C 85} & \multicolumn{1}{c}{C 90} & \multicolumn{1}{c}{C 95} & \multicolumn{1}{c}{L Decile SE} & \multicolumn{1}{c}{L 80} & \multicolumn{1}{c}{L 85} & \multicolumn{1}{c}{L 90} & \multicolumn{1}{c}{L 95}\\
+Deciles & \multicolumn{1}{c}{C SE} & \multicolumn{1}{c}{C 80} & \multicolumn{1}{c}{C 85} & \multicolumn{1}{c}{C 90} & \multicolumn{1}{c}{C 95} & \multicolumn{1}{c}{L SE} & \multicolumn{1}{c}{L 80} & \multicolumn{1}{c}{L 85} & \multicolumn{1}{c}{L 90} & \multicolumn{1}{c}{L 95}\\
 \midrule
-Decile 10 & 0.13 & 85 & 85 & 95 & 100 & 39.64 & 115 & 135 & 135 & 175\\
-Decile 20 & 0.14 & 70 & 75 & 80 & 90 & 45.67 & 85 & 90 & 110 & 125\\
-Decile 30 & 0.16 & 50 & 55 & 60 & 65 & 46.76 & 85 & 90 & 105 & 115\\
-Decile 40 & 0.18 & 45 & 50 & 50 & 65 & 51.32 & 75 & 75 & 90 & 105\\
-Decile 50 & 0.19 & 35 & 35 & 45 & 50 & 71.17 & 40 & 45 & 45 & 50\\
-Decile 60 & 0.20 & 30 & 35 & 35 & 45 & 78.95 & 35 & 35 & 45 & 50\\
-Decile 70 & 0.21 & 30 & 30 & 35 & 45 & 87.85 & 25 & 35 & 35 & 35\\
-Decile 80 & 0.23 & 25 & 30 & 30 & 40 & 100.45 & 20 & 25 & 25 & 35\\
-Decile 90 & 0.25 & 20 & 20 & 25 & 40 & 121.11 & 20 & 20 & 20 & 20\\
+Decile 10 & 0.11 & 120 & 125 & 135 & 150 & 33.70 & 165 & 195 & 240 & NA\\
+Decile 20 & 0.14 & 65 & 70 & 75 & 85 & 46.88 & 95 & 100 & 135 & 180\\
+Decile 30 & 0.17 & 50 & 50 & 55 & 70 & 50.45 & 70 & 90 & 115 & 160\\
+Decile 40 & 0.18 & 45 & 45 & 50 & 55 & 56.93 & 55 & 70 & 90 & 130\\
+Decile 50 & 0.19 & 40 & 45 & 45 & 50 & 65.23 & 50 & 55 & 70 & 100\\
+Decile 60 & 0.21 & 35 & 40 & 40 & 45 & 72.51 & 40 & 50 & 50 & 75\\
+Decile 70 & 0.21 & 30 & 35 & 40 & 40 & 81.21 & 35 & 40 & 50 & 65\\
+Decile 80 & 0.23 & 30 & 30 & 35 & 40 & 94.19 & 25 & 30 & 35 & 50\\
+Decile 90 & 0.25 & 25 & 25 & 30 & 30 & 114.51 & 20 & 20 & 25 & 35\\
 \bottomrule
 \addlinespace
 \end{tabular}
 
 \begin{tablenotes}[para]
-\normalsize{\textit{Note.} Esimates are based on meeting at least the minimum percent of items (e.g., 80\%) but may be estimated over that amount (e.g., 82.5\%).}
+\normalsize{\textit{Note.} C = Concreteness rating, L = Lexical Decision Response Latencies. Estimates are based on meeting at least the minimum percent of items (e.g., 80\%) but may be estimated over that amount (e.g., 82.5\%). SE columns represent the standard error value cutoff for each decile, while 80/85/90/95 percent columns represent the sample size needed to have that percent of items below the SE cutoff. For example, 100 participants are required to ensure at least 95\% of concreteness items SE are below the 10 percent decile SE cutoff, and 175 participants are necessary for the lexical decision SE to be below its 10 percent decile cutoff.}
 \end{tablenotes}
 
 \end{threeparttable}
@@ -185,35 +185,3 @@ Power & 1.088 & 0.426 & 2.552 & .011\\
 \end{center}
 
 \end{table*}
-\efloatseparator
- 
-\begin{lltable}
-
-\scriptsize{
-
-\begin{longtable}{llllllllllll}\noalign{\getlongtablewidth\global\LTcapwidth=\longtablewidth}
-\caption{\label{tab:table-scores-updated}Applied Correction for Each Proposed Sample Size}\\
-\toprule
-Formula Estimate & \multicolumn{1}{c}{Intercept} & \multicolumn{1}{c}{Projected SS} & \multicolumn{1}{c}{Pilot SS} & \multicolumn{1}{c}{Log2 Projected SS} & \multicolumn{1}{c}{Log2 Pilot SS} & \multicolumn{1}{c}{Log2 Power} & \multicolumn{1}{c}{Prop Var} & \multicolumn{1}{c}{Log2 Prop Var} & \multicolumn{1}{c}{Power} & \multicolumn{1}{c}{Corrected Sample} & \multicolumn{1}{c}{Data Loss}\\
-\midrule
-\endfirsthead
-\caption*{\normalfont{Table \ref{tab:table-scores-updated} continued}}\\
-\toprule
-Formula Estimate & \multicolumn{1}{c}{Intercept} & \multicolumn{1}{c}{Projected SS} & \multicolumn{1}{c}{Pilot SS} & \multicolumn{1}{c}{Log2 Projected SS} & \multicolumn{1}{c}{Log2 Pilot SS} & \multicolumn{1}{c}{Log2 Power} & \multicolumn{1}{c}{Prop Var} & \multicolumn{1}{c}{Log2 Prop Var} & \multicolumn{1}{c}{Power} & \multicolumn{1}{c}{Corrected Sample} & \multicolumn{1}{c}{Data Loss}\\
-\midrule
-\endhead
-Formula & 206.59 & 0.37 & -0.77 & 27.54 & 2.58 & -66.15 & 16.40 & -1.37 & 1.09 & NA & NA\\
-Concrete 80 & 1.00 & 45.00 & 28.00 & 5.49 & 4.81 & 6.32 & 0.13 & -2.94 & 80.00 & 40.25 & 44.84\\
-Concrete 85 & 1.00 & 50.00 & 28.00 & 5.64 & 4.81 & 6.41 & 0.13 & -2.94 & 85.00 & 45.93 & 51.17\\
-Concrete 90 & 1.00 & 50.00 & 28.00 & 5.64 & 4.81 & 6.49 & 0.13 & -2.94 & 90.00 & 45.92 & 51.15\\
-Concrete 95 & 1.00 & 65.00 & 28.00 & 6.02 & 4.81 & 6.57 & 0.13 & -2.94 & 95.00 & 62.14 & 69.22\\
-LDT 80 & 1.00 & 75.00 & 33.00 & 6.23 & 5.04 & 6.32 & 0.08 & -3.61 & 80.00 & 68.47 & 87.62\\
-LDT 85 & 1.00 & 75.00 & 33.00 & 6.23 & 5.04 & 6.41 & 0.08 & -3.61 & 85.00 & 68.13 & 87.18\\
-LDT 90 & 1.00 & 90.00 & 33.00 & 6.49 & 5.04 & 6.49 & 0.08 & -3.61 & 90.00 & 80.88 & 103.50\\
-LDT 95 & 1.00 & 105.00 & 33.00 & 6.71 & 5.04 & 6.57 & 0.08 & -3.61 & 95.00 & 92.80 & 118.76\\
-\bottomrule
-\end{longtable}
-
-}
-
-\end{lltable}
