@@ -185,3 +185,41 @@ Power & 1.088 & 0.426 & 2.552 & .011\\
 \end{center}
 
 \end{table*}
+\efloatseparator
+ 
+\begin{lltable}
+
+\begin{TableNotes}[para]
+\normalsize{\textit{Note.} SS = Sample Size, Proj = Projected, Prop = Proportion, Var = Variance, Cor = Corrected}
+\end{TableNotes}
+
+\scriptsize{
+
+\begin{longtable}{llllllllllll}\noalign{\getlongtablewidth\global\LTcapwidth=\longtablewidth}
+\caption{\label{tab:table-scores-updated}Applied Correction for Each Proposed Sample Size}\\
+\toprule
+Formula & Intercept & Proj SS & Pilot SS & Log Proj SS & Log Pilot SS & Log Power & Prop Var & Log Prop Var & Power & Loss & Cor SS\\
+\midrule
+\endfirsthead
+\caption*{\normalfont{Table \ref{tab:table-scores-updated} continued}}\\
+\toprule
+Formula & Intercept & Proj SS & Pilot SS & Log Proj SS & Log Pilot SS & Log Power & Prop Var & Log Prop Var & Power & Loss & Cor SS\\
+\midrule
+\endhead
+Formula & 206.59 & 0.37 & -0.77 & 27.54 & 2.58 & -66.15 & 16.40 & -1.37 & 1.09 & NA & NA\\
+Concrete 80 & 1.00 & 45.00 & 29.00 & 5.49 & 4.86 & 6.32 & 0.14 & -2.82 & 80.00 & 39.63 & 42.56\\
+Concrete 85 & 1.00 & 45.00 & 29.00 & 5.49 & 4.86 & 6.41 & 0.14 & -2.82 & 85.00 & 39.29 & 42.19\\
+Concrete 90 & 1.00 & 50.00 & 29.00 & 5.64 & 4.86 & 6.49 & 0.14 & -2.82 & 90.00 & 45.30 & 48.65\\
+Concrete 95 & 1.00 & 55.00 & 29.00 & 5.78 & 4.86 & 6.57 & 0.14 & -2.82 & 95.00 & 51.21 & 54.99\\
+LDT 80 & 1.00 & 55.00 & 33.00 & 5.78 & 5.04 & 6.32 & 0.08 & -3.60 & 80.00 & 48.79 & 61.05\\
+LDT 85 & 1.00 & 70.00 & 33.00 & 6.13 & 5.04 & 6.41 & 0.08 & -3.60 & 85.00 & 63.54 & 79.51\\
+LDT 90 & 1.00 & 90.00 & 33.00 & 6.49 & 5.04 & 6.49 & 0.08 & -3.60 & 90.00 & 80.87 & 101.20\\
+LDT 95 & 1.00 & 130.00 & 33.00 & 7.02 & 5.04 & 6.57 & 0.08 & -3.60 & 95.00 & 110.48 & 138.25\\
+\bottomrule
+\addlinespace
+\insertTableNotes
+\end{longtable}
+
+}
+
+\end{lltable}

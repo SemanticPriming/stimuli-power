@@ -815,7 +815,7 @@ For each variable, the plot of the pilot sample size, projected sample size (i.e
 
 ### Scale Size
 
-```{r scale-size-figure, echo = F, fig.cap="Simulated pilot sample size and final projected sample size to achieve 80%, 85%, 90%, and 95% of items below threshold. These values are averaged over all other variables including decile. Black dots represent original sample size for reference. "}
+```{r scale-size-figure, echo = F, fig.cap="Simulated pilot sample size and final projected sample size to achieve 80%, 85%, 90%, and 95% of items below threshold. These values are averaged over all other variables including decile. Black dots represent original sample size for reference. ", fig.height=6, fig.width=8}
 
 likert_var <- sqrt(((7-1)^2)/4)
 percent_var <- sqrt(((100-0)^2)/4)
@@ -852,14 +852,15 @@ ggplot(summary_long %>%
                      values = c(plot_colors)) +
   facet_wrap(~power,
              labeller = labeller(power = power.labs))+
-  theme_bw()
+  theme_bw() +
+  theme(legend.position="bottom")
 ```
 
 Figure \@ref(fig:scale-size-figure) demonstrates the influence of scale size on the results separated by potential cutoff level. The black dots denote the original sample size for reference. Larger scales have more potential variability, and therefore, we see that percent and millisecond scales project a larger required sample size. This relationship does not appear to be linear with scale size, as percent scales often represent the highest projected sample size. Potentially, this finding is due to the larger proportion of possible variance -- the variance of the item standard deviations / total possible variance -- was largest for percent scales in this set of simulations ($p_{Percent}$ = `r apa_num(mean_var["Percent"], gt1 = FALSE)`). This finding may be an interaction with heterogeneity, as the Likert scale had the next highest percent variability in item standard errors ($p_{Likert}$ = `r apa_num(mean_var["Likert"], gt1 = FALSE)`), followed by milliseconds ($p_{Milliseconds}$ = `r apa_num(mean_var["Milliseconds"], gt1 = FALSE)`).
 
 ### Skew
 
-```{r scale-skew-figure, echo = F, fig.cap="Simulated pilot sample size and final projected sample size to achieve 80%, 85%, 90%, and 95% of items below threshold. In comparison to Figure 1, this figure shows projected sample size for ceiling versus normal distributions on each scale. All other variables are averaged together, and black dots represent original sample size for reference." }
+```{r scale-skew-figure, echo = F, fig.cap="Simulated pilot sample size and final projected sample size to achieve 80%, 85%, 90%, and 95% of items below threshold. In comparison to Figure 1, this figure shows projected sample size for ceiling versus normal distributions on each scale. All other variables are averaged together, and black dots represent original sample size for reference.", fig.height=6, fig.width=8 }
 
 ggplot(summary_long %>% 
          group_by(original_n, power, data_type) %>% 
@@ -876,14 +877,15 @@ ggplot(summary_long %>%
                      values = c(plot_colors)) +
   facet_wrap(~power,
              labeller = labeller(power = power.labs))+
-  theme_bw()
+  theme_bw() +
+  theme(legend.position="bottom")
 ```
 
 Figure \@ref(fig:scale-skew-figure) displays that ceiling distributions, averaged over all other variables, show slightly higher estimates than normal distributions. This result is consistent across scale type and heterogeneity, as results indicated that they are often the same or slightly higher for ceiling distributions.
 
 ### Item Heterogeneity
 
-```{r scale-hetero-figure, echo = F, fig.cap="Simulated pilot sample size and final projected sample size to achieve 80%, 85%, 90%, and 95% of items below threshold. In comparison to Figure 1 and 2, this figure shows projected sample size or differing amounts of heterogeneity on each scale. All other variables are averaged together, and black dots represent original sample size for reference."}
+```{r scale-hetero-figure, echo = F, fig.cap="Simulated pilot sample size and final projected sample size to achieve 80%, 85%, 90%, and 95% of items below threshold. In comparison to Figure 1 and 2, this figure shows projected sample size or differing amounts of heterogeneity on each scale. All other variables are averaged together, and black dots represent original sample size for reference.", fig.height=6, fig.width=8}
 
 ggplot(summary_long %>% 
          group_by(original_n, power, variability) %>% 
@@ -900,7 +902,8 @@ ggplot(summary_long %>%
                      values = c(plot_colors)) +
   facet_wrap(~power,
              labeller = labeller(power = power.labs))+
-  theme_bw()
+  theme_bw() +
+  theme(legend.position="bottom")
 ```
 
 ```{r strongest-predict, include = F, echo = F}
@@ -941,7 +944,7 @@ $$ 1 - \sqrt{\frac{N_{Pilot} - min(N_{Simulation})}{N_{Pilot}}}^{log_2(N_{Pilot}
 
 $N_{Pilot}$ indicates the sample size of the pilot data minus the minimum simulated sample size to ensure that the smallest sample sizes do not decay (i.e., the formula zeroes out). This value is raised to the power of $log_2$ of the sample size of the pilot data, which decreases the impact of the decay to smaller increments for increasing sample sizes. This value is then multiplied by the projected sample size. As shown in Figure \@ref(fig:corrected-figure), this correction factor produces the desired quality of maintaining that small pilot studies should *increase* sample size, and that sample size suggestions level off as pilot study data sample size increases.
 
-```{r corrected-figure, echo = F, fig.cap="Corrected projected sample sizes for variability and power levels to achieve 80%, 85%, 90%, and 95% of items below threshold. All other variables are averaged together, and black dots represent original sample size for reference."}
+```{r corrected-figure, echo = F, fig.cap="Corrected projected sample sizes for variability and power levels to achieve 80%, 85%, 90%, and 95% of items below threshold. All other variables are averaged together, and black dots represent original sample size for reference.", fig.height=6, fig.width=8}
 
 decay <- 1-sqrt((summary_long$original_n-20)/summary_long$original_n)^log2(summary_long$original_n)
 summary_long$new_sample <- summary_long$sample_size*decay
@@ -960,7 +963,8 @@ ggplot(summary_long %>%
                      values = c(plot_colors)) +
   facet_wrap(~power,
              labeller = labeller(power = power.labs))+
-  theme_bw()
+  theme_bw() +
+  theme(legend.position="bottom")
 ```
 
 ## Corrections for Individual Researchers
@@ -1050,7 +1054,7 @@ for (scale_loop in unique(summary_long$scale_size)){
 
 Last, we examined the question of an appropriate SE decile. First, the 0%, 10%, and 20% deciles are likely too restrictive, providing very large estimates that do not always find a reasonable sample size in proportion to the pilot sample size, scale size, and heterogeneity. If we examine the $R^2$ values for each decile of our regression equation separately, we find that the values are all $R^2$ \> .99 with very little differences between them. Figures \@ref(fig:decile40-figure) and \@ref(fig:decile50-figure) illustrate the corrected scores for simulations at the 40% and 50% decile recommended cutoff for item standard errors. For small heterogeneity, differences in decile are minimal, while larger heterogeneity shows more correction at the 40% decile range, especially for scales with larger potential variance. Therefore, we would suggest the 40% decile to overpower each item to determine the minimum and maximum sample size.
 
-```{r decile40-figure, fig.cap = "Comparison of the cutoffs for 40% deciles across heterogeneity (columns), powering of items (rows), and scale size (color)."}
+```{r decile40-figure, fig.cap = "Comparison of the cutoffs for 40% deciles across heterogeneity (columns), powering of items (rows), and scale size (color).", fig.height=8, fig.width=8}
 summary_long %>% 
   filter(name == "Decile 40") %>% 
   group_by(variability, original_n, scale_size, name, power) %>% 
@@ -1073,7 +1077,7 @@ summary_long %>%
 
 ```
 
-```{r decile50-figure, fig.cap = "Comparison of the cutoffs for 50% deciles across heterogeneity (columns), powering of items (rows), and scale size (color)."}
+```{r decile50-figure, fig.cap = "Comparison of the cutoffs for 50% deciles across heterogeneity (columns), powering of items (rows), and scale size (color).", fig.height=8, fig.width=8}
 summary_long %>% 
   filter(name == "Decile 50") %>% 
   group_by(variability, original_n, scale_size, name, power) %>% 
@@ -1199,7 +1203,15 @@ table_correction_applied$`Data Loss`[6:9] <- unlist(table_correction_applied$`Co
 
 apa_table(table_correction_applied, 
           caption = "Applied Correction for Each Proposed Sample Size", 
-          font_size = "footnotesize")
+          font_size = "scriptsize",
+          col.names = c("Formula", "Intercept", 
+                                        "Proj SS", "Pilot SS", 
+                                        "Log Proj SS", "Log Pilot SS", 
+                                        "Log Power", "Prop Var", 
+                                        "Log Prop Var", "Power", 
+                        "Loss", "Cor SS"),
+          landscape = TRUE,
+          note = "SS = Sample Size, Proj = Projected, Prop = Proportion, Var = Variance, Cor = Corrected")
 ```
 
 The updated proposal steps are in Table \@ref(tab:table-summary) on the right hand side. The main change occurs in Step 2 with a designated cutoff decile, and Step 5 with a correction score. Using the data from the 40% decile in Table \@ref(tab:table-example), we can determine that the stopping rule for concreteness ratings would be `r apa_num(cutoff_c[4])`, and the stopping rule for lexical decision times would be `r apa_num(cutoff_e[4])`. For Step 5, we apply our correction formula separately for each one, as they have different variability scores, and these scores are shown in Table \@ref(tab:table-scores-updated). Each row was multiplied by row one's formula, and then these scores are summed for the final sample size. Sample sizes cannot be proportional, so we recommend rounding up to the nearest whole number.
