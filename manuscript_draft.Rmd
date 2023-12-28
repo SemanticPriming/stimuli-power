@@ -77,6 +77,7 @@ library(latex2exp)
 ```
 
 ```{r trackdown, eval = F}
+# devtools::install_github("ClaudioZandonella/trackdown")
 library(trackdown)
 # initial set up 
 # upload_file(file = "manuscript_draft.Rmd",
@@ -149,7 +150,7 @@ Building on these ideas, we suggest the following procedure to determine a sampl
 
 6) Report these values, and designate a minimum sample size, the cutoff/stopping rule criterion, and the maximum sample size. Each researcher should also report if they plan to use an adaptive design, which would stop data collection after meeting the cutoff criterion for each item.
 
-These steps are summarized in Table \@ref(tab:table-summary). We will first demonstrate the ideas behind the steps using open data [@brysbaert2014; @balota2007]. This example will reveal a few areas of needed exploration for the steps. Next, we provide simulations for the proposed procedure to find solutions to overcome these potential limitations and formally define Step 2. Finally, we include additional resources for researchers to use to implement the proposed sample size estimation procedure.
+These steps are summarized in Table \@ref(tab:table-summary). We will first demonstrate the ideas behind the steps using open data [@brysbaert2014; @balota2007]. This example will reveal a few areas of needed exploration for the steps. Next, we portray simulations for the proposed procedure and find solutions to streamline and improve the sample size estimation procedure. Table \@ref(tab:table-summary) shows the results of the simulations and solutions on the right hand side. Finally, we include additional resources for researchers to use to implement the estimation procedure.
 
 ```{r table-summary, results = 'asis'}
 apa_table(data.frame(
@@ -183,7 +184,8 @@ elpDF <- import("./data/ELPDecisionData.zip")
 
 # grab only the overlap for this fake study
 elpDF <- elpDF %>% 
-  filter(Stimulus %in% conDF$Word)
+  filter(Stimulus %in% conDF$Word) %>% 
+  filter(Type == 1)
 
 conDF <- conDF %>% 
   filter(Word %in% elpDF$Stimulus) 
@@ -259,43 +261,49 @@ cutoff_e <- quantile(SE_e, probs = seq(from = .1, to = .9, by = .1))
 
 We first filtered the ELP data to the same real words as the concreteness subset selected above, and this data includes `r length(unique(elpDF$Stimulus))` real words. The average pilot sample size for this random sample was `r format(round(mean(tapply(elp_small$RT, elp_small$Stimulus, length)), digits = 2), nsmall = 2)` (*SD* = `r round(sd(tapply(elp_small$RT, elp_small$Stimulus, length)), digits = 2)`), and *n* = `r pilot_size_e` will be our pilot size for this example.
 
-
-
 *Step 2*. Table \@ref(tab:table-example) demonstrates the cutoff scores for deciles of the standard errors for the items for the concreteness ratings and lexical decision response latencies. A researcher could potentially pick any of these cutoffs or other percentage options not shown here. We will use simulation to determine the suggestion that best captures the balance of adequately powering our sample and feasibility.
 
 *Step 3-5*. The pilot data was then simulated 500 times, with replacement, with samples of 20 to 300 participants per item increasing in units of 5, for concreteness ratings and lexical decision latencies separately (Step 3). The standard error of each item was calculated for the bootstrapped samples separately for concreteness ratings and lexical decision times (Step 4), and the percentage of items below each potential cutoff was gathered for each (Step 5). The smallest sample size with at least 80%, 85%, 90%, and 95% of items below the cutoff are reported in Table \@ref(tab:table-example) for each task (Step 5).
 
 ```{r con-sample, include = F, echo = F}
 # sequence of sample sizes to try
+nsim <- 5
 samplesize_values <- seq(20, 300, 5)
 # create a blank table for us to save the values in 
 sim_table <- matrix(NA, 
-          nrow = length(samplesize_values), 
+          nrow = length(samplesize_values)*nsim, 
           ncol = length(unique(con_use$Word)))
 # make it a data frame
 sim_table <- as.data.frame(sim_table)
 # add a place for sample size values 
 sim_table$sample_size <- NA
-# loop over sample sizes
-for (i in 1:length(samplesize_values)){
-  
- # temp dataframe that samples and summarizes
- temp <- con_use %>% 
-  group_by(Word) %>% 
-  sample_n(samplesize_values[i], replace = T) %>% 
-  summarize(se = sd(Rating)/sqrt(length(Rating))) 
- 
- colnames(sim_table)[1:length(unique(con_use$Word))] <- temp$Word
- sim_table[i, 1:length(unique(con_use$Word))] <- temp$se
- sim_table[i, "sample_size"] <- samplesize_values[i]
+
+iterate <- 1
+for (p in 1:nsim){
+  # loop over sample sizes
+  for (i in 1:length(samplesize_values)){
+    
+   # temp dataframe that samples and summarizes
+   temp <- con_use %>% 
+    group_by(Word) %>% 
+    sample_n(samplesize_values[i], replace = T) %>% 
+    summarize(se = sd(Rating)/sqrt(length(Rating))) 
+   
+   colnames(sim_table)[1:length(unique(con_use$Word))] <- temp$Word
+   sim_table[iterate, 1:length(unique(con_use$Word))] <- temp$se
+   sim_table[iterate, "sample_size"] <- samplesize_values[i]
+   sim_table[iterate, "nsim"] <- p
+   
+   iterate <- iterate + 1
+  }
 }
 
 # figure out potential samples
 final_sample_c <- 
  sim_table %>% 
- pivot_longer(cols = -c(sample_size)) %>% 
+ pivot_longer(cols = -c(sample_size, nsim)) %>% 
  rename(item = name, se = value) %>% 
- group_by(sample_size) %>% 
+ group_by(sample_size, nsim) %>% 
  summarize(Percent_Below10 = sum(se <= cutoff_c["10%"])/length(unique(con_use$Word)),
           Percent_Below20 = sum(se <= cutoff_c["20%"])/length(unique(con_use$Word)),
           Percent_Below30 = sum(se <= cutoff_c["30%"])/length(unique(con_use$Word)),
@@ -305,6 +313,17 @@ final_sample_c <-
           Percent_Below70 = sum(se <= cutoff_c["70%"])/length(unique(con_use$Word)),
           Percent_Below80 = sum(se <= cutoff_c["80%"])/length(unique(con_use$Word)),
           Percent_Below90 = sum(se <= cutoff_c["90%"])/length(unique(con_use$Word))) %>% 
+  ungroup() %>% 
+  group_by(sample_size) %>% 
+  summarize(Percent_Below10 = mean(Percent_Below10),
+            Percent_Below20 = mean(Percent_Below20),
+            Percent_Below30 = mean(Percent_Below30),
+            Percent_Below40 = mean(Percent_Below40),
+            Percent_Below50 = mean(Percent_Below50),
+            Percent_Below60 = mean(Percent_Below60),
+            Percent_Below70 = mean(Percent_Below70),
+            Percent_Below80 = mean(Percent_Below80),
+            Percent_Below90 = mean(Percent_Below90)) %>% 
   pivot_longer(-sample_size) %>% 
   filter(value >= .80) %>% 
   group_by(name) %>% 
@@ -339,6 +358,7 @@ sd_items_c <- sd(tapply(con_use$Rating, con_use$Word, sd))
 
 ```{r elp-sample, include = F, echo = F}
 # sequence of sample sizes to try
+nsim <- 5
 samplesize_values <- seq(20, 300, 5)
 # create a blank table for us to save the values in 
 sim_table <- matrix(NA, 
@@ -348,25 +368,35 @@ sim_table <- matrix(NA,
 sim_table <- as.data.frame(sim_table)
 # add a place for sample size values 
 sim_table$sample_size <- NA
-# loop over sample sizes
-for (i in 1:length(samplesize_values)){
+
+iterate <- 1
+
+for (p in 1:nsim){
   
- # temp dataframe that samples and summarizes
- temp <- elp_use %>% 
-  group_by(Stimulus) %>% 
-  sample_n(samplesize_values[i], replace = T) %>% 
-  summarize(se = sd(RT)/sqrt(length(RT))) 
- 
- colnames(sim_table)[1:length(unique(elp_use$Stimulus))] <- temp$Stimulus
- sim_table[i, 1:length(unique(elp_use$Stimulus))] <- temp$se
- sim_table[i, "sample_size"] <- samplesize_values[i]
- }
+  # loop over sample sizes
+  for (i in 1:length(samplesize_values)){
+    
+   # temp dataframe that samples and summarizes
+   temp <- elp_use %>% 
+    group_by(Stimulus) %>% 
+    sample_n(samplesize_values[i], replace = T) %>% 
+    summarize(se = sd(RT)/sqrt(length(RT))) 
+   
+   colnames(sim_table)[1:length(unique(elp_use$Stimulus))] <- temp$Stimulus
+   sim_table[iterate, 1:length(unique(elp_use$Stimulus))] <- temp$se
+   sim_table[iterate, "sample_size"] <- samplesize_values[i]
+   sim_table[iterate, "nsim"] <- p
+
+   iterate <- iterate + 1
+   }
+
+}
 # figure out potential samples
 final_sample_e <- 
  sim_table %>% 
  pivot_longer(cols = -c(sample_size)) %>% 
  rename(item = name, se = value) %>% 
- group_by(sample_size) %>% 
+ group_by(sample_size, nsim) %>% 
  summarize(Percent_Below10 = sum(se <= cutoff_e["10%"])/length(unique(elp_use$Stimulus)),
           Percent_Below20 = sum(se <= cutoff_e["20%"])/length(unique(elp_use$Stimulus)),
           Percent_Below30 = sum(se <= cutoff_e["30%"])/length(unique(elp_use$Stimulus)),
@@ -376,6 +406,17 @@ final_sample_e <-
           Percent_Below70 = sum(se <= cutoff_e["70%"])/length(unique(elp_use$Stimulus)),
           Percent_Below80 = sum(se <= cutoff_e["80%"])/length(unique(elp_use$Stimulus)),
           Percent_Below90 = sum(se <= cutoff_e["90%"])/length(unique(elp_use$Stimulus))) %>% 
+  ungroup() %>% 
+  group_by(sample_size) %>% 
+  summarize(Percent_Below10 = mean(Percent_Below10),
+            Percent_Below20 = mean(Percent_Below20),
+            Percent_Below30 = mean(Percent_Below30),
+            Percent_Below40 = mean(Percent_Below40),
+            Percent_Below50 = mean(Percent_Below50),
+            Percent_Below60 = mean(Percent_Below60),
+            Percent_Below70 = mean(Percent_Below70),
+            Percent_Below80 = mean(Percent_Below80),
+            Percent_Below90 = mean(Percent_Below90)) %>% 
   pivot_longer(-sample_size) %>% 
   filter(value >= .80) %>% 
   group_by(name) %>% 
@@ -461,14 +502,14 @@ results_table[9 , 2:11] <- unlist(c(cutoff_c[9], concrete_cuts[9 , ],
                                  cutoff_e[9], lexical_cuts[9, ]))
 
 results_table_example <- as.data.frame(results_table)
-colnames(results_table_example) <- c("Deciles", "C Decile SE", "C 80", "C 85", "C 90", "C 95",
-             "L Decile SE", "L 80", "L 85", "L 90", "L 95")
+colnames(results_table_example) <- c("Deciles", "C SE", "C 80", "C 85", "C 90", "C 95",
+             "L SE", "L 80", "L 85", "L 90", "L 95")
 results_table_example$`C Decile SE` <- apa_num(as.numeric(results_table_example$`C Decile SE`), digits = 2)
 results_table_example$`L Decile SE` <- apa_num(as.numeric(results_table_example$`L Decile SE`), digits = 2)
 
 apa_table(results_table_example, 
-          caption = "Sample Size Estimates by Decile for Concreteness Example",
-          note = "Esimates are based on meeting at least the minimum percent of items (e.g., 80%) but may be estimated over that amount (e.g., 82.5%).")
+          caption = "Sample Size Estimates by Decile for Example Study",
+          note = "C = Concreteness rating, L = Lexical Decision Response Latencies. Estimates are based on meeting at least the minimum percent of items (e.g., 80%) but may be estimated over that amount (e.g., 82.5%). SE columns represent the standard error value cutoff for each decile, while 80/85/90/95 percent columns represent the sample size needed to have that percent of items below the SE cutoff. For example, 100 participants are required to ensure at least 95% of concreteness items SE are below the 10 percent decile SE cutoff, and 175 participants are necessary for the lexical decision SE to be below its 10 percent decile cutoff.")
 ```
 
 *Step 6*. In the last step, the researcher would indicate their smallest sample size, the cutoff standard error criterion if they wanted to adaptively test (e.g., examine the SE after each participant and stop data collection if all items reached criteria), and their maximum sample size. As mentioned earlier, the decile for a balanced standard error cutoff is unclear and without guidance, a potential set of researcher degrees of freedom could play a role in the chosen cutoff [CITE SIMONSOHN]. Even though both measurements (ratings and response latencies) appear to converge on similar sample size suggestions for each decile and percent level, the impact of scale size (i.e., concreteness ratings 1-5 versus response latencies in ms 0-`r max(elp_small$RT, na.rm = T)`) and heterogeneity of item standard errors (concrete $SD_{SD}$ = `r apa_num(sd_items_c)` and lexical $SD_{SD}$ = `r apa_num(sd_items_e)`) is not obvious. Last, by selecting the ends of the distribution for our concreteness words, skew of the distribution may additionally impact our estimates. Each of these will be explored in our simulation.
@@ -551,8 +592,8 @@ For each variable, the plot of the pilot sample size, projected sample size (i.e
 
 ### Scale Size
 
-```{r scale-size-figure, echo = F, fig.cap="Simulated pilot sample size and final projected sample size to achieve 80%, 85%, 90%, and 95% of items below threshold. These values are averaged over all other variables. Black dots represent original sample size for reference. "}
-likert_var <- sqrt(((7-1)^2)/4)
+```{r scale-size-figure, echo = F, fig.cap="Simulated pilot sample size and final projected sample size to achieve 80%, 85%, 90%, and 95% of items below threshold. These values are averaged over all other variables including decile. Black dots represent original sample size for reference. "}
+
 percent_var <- sqrt(((100-0)^2)/4)
 millisecond_var <- sqrt(((3000-0)^2)/4)
 
@@ -592,12 +633,10 @@ ggplot(summary_long %>%
 
 Figure \@ref(fig:scale-size-figure) demonstrates the influence of scale size on the results separated by potential cutoff level. The black dots denote the original sample size for reference. Larger scales have more potential variability, and therefore, we see that percent and millisecond scales project a larger required sample size. This relationship does not appear to be linear with scale size, as percent scales often represent the highest projected sample size. Potentially, this finding is due to the larger proportion of possible variance -- the variance of the item standard deviations / total possible variance -- was largest for percent scales in this set of simulations ($p_{Percent}$ = `r apa_num(mean_var["Percent"], gt1 = FALSE)`). This finding may be an interaction with heterogeneity, as the Likert scale had the next highest percent variability in item standard errors ($p_{Likert}$ = `r apa_num(mean_var["Likert"], gt1 = FALSE)`), followed by milliseconds ($p_{Milliseconds}$ = `r apa_num(mean_var["Milliseconds"], gt1 = FALSE)`).
 
-  
-
-
 ### Skew
 
-```{r scale-skew-figure, echo = F, fig.cap="Simulated pilot sample size compared to projected sample size for ceiling versus normal distributions on each scale. " }
+```{r scale-skew-figure, echo = F, fig.cap="Simulated pilot sample size and final projected sample size to achieve 80%, 85%, 90%, and 95% of items below threshold. In comparison to Figure 1, this figure shows projected sample size for ceiling versus normal distributions on each scale. All other variables are averaged together, and black dots represent original sample size for reference." }
+
 ggplot(summary_long %>% 
          group_by(original_n, power, data_type) %>% 
          summarize(sample_size_avg = mean(sample_size)),
@@ -620,7 +659,8 @@ Figure \@ref(fig:scale-skew-figure) displays that ceiling distributions, average
 
 ### Item Heterogeneity
 
-```{r scale-hetero-figure, echo = F, fig.cap="Simulated pilot sample size compared to projected sample size for differing amounts of heterogeneity on each scale. "}
+```{r scale-hetero-figure, echo = F, fig.cap="Simulated pilot sample size and final projected sample size to achieve 80%, 85%, 90%, and 95% of items below threshold. In comparison to Figure 1 and 2, this figure shows projected sample size or differing amounts of heterogeneity on each scale. All other variables are averaged together, and black dots represent original sample size for reference."}
+
 ggplot(summary_long %>% 
          group_by(original_n, power, variability) %>% 
          summarize(sample_size_avg = mean(sample_size)),
@@ -673,7 +713,8 @@ $$ 1 - \sqrt{\frac{N_{Pilot} - min(N_{Simulation})}{N_{Pilot}}}^{log_2(N_{Pilot}
 
 $N_{Pilot}$ indicates the sample size of the pilot data minus the minimum simulated sample size to ensure that the smallest sample sizes do not decay (i.e., the formula zeroes out). This value is raised to the power of $log_2$ of the sample size of the pilot data, which decreases the impact of the decay to smaller increments for increasing sample sizes. This value is then multiplied by the projected sample size. As shown in Figure \@ref(fig:corrected-figure), this correction factor produces the desired quality of maintaining that small pilot studies should *increase* sample size, and that sample size suggestions level off as pilot study data sample size increases.
 
-```{r corrected-figure, echo = F, fig.cap="Corrected projected sample sizes for variability and power levels. "}
+```{r corrected-figure, echo = F, fig.cap="Corrected projected sample sizes for variability and power levels to achieve 80%, 85%, 90%, and 95% of items below threshold. All other variables are averaged together, and black dots represent original sample size for reference."}
+
 decay <- 1-sqrt((summary_long$original_n-20)/summary_long$original_n)^log2(summary_long$original_n)
 summary_long$new_sample <- summary_long$sample_size*decay
 ggplot(summary_long %>% 
@@ -933,7 +974,7 @@ apa_table(table_correction_applied,
           font_size = "footnotesize")
 ```
 
-The updated proposal steps are in Table \@ref(tab:table-summary). The main change occurs in Step 2 with a designated cutoff decile, and Step 5 with a correction score. Using the data from the 40% decile in Table \@ref(tab:table-example), we can determine that the stopping rule for concreteness ratings would be `r apa_num(cutoff_c[4])`, and the stopping rule for lexical decision times would be `r apa_num(cutoff_e[4])`. For Step 5, we apply our correction formula separately for each one, as they have different variability scores, and these scores are shown in Table \@ref(tab:table-scores-updated). Each row was multiplied by row one's formula, and then these scores are summed for the final sample size. Sample sizes cannot be proportional, so we recommend rounding up to the nearest whole number.
+The updated proposal steps are in Table \@ref(tab:table-summary) on the right hand side. The main change occurs in Step 2 with a designated cutoff decile, and Step 5 with a correction score. Using the data from the 40% decile in Table \@ref(tab:table-example), we can determine that the stopping rule for concreteness ratings would be `r apa_num(cutoff_c[4])`, and the stopping rule for lexical decision times would be `r apa_num(cutoff_e[4])`. For Step 5, we apply our correction formula separately for each one, as they have different variability scores, and these scores are shown in Table \@ref(tab:table-scores-updated). Each row was multiplied by row one's formula, and then these scores are summed for the final sample size. Sample sizes cannot be proportional, so we recommend rounding up to the nearest whole number.
 
 For one additional consideration, we calculated the potential amount of data retention given that participants could indicate they did not know a word ($M_{answered}$ = `r round(mean(data_loss_c$percent_correct), digits = 2)`, *SD* = `r round(sd(data_loss_c$percent_correct), digits = 2)`) in the concreteness task or answer a trial incorrectly in the lexical decision task ($M_{correct}$ = `r round(mean(data_loss_e$percent_correct), digits = 2)`, *SD* = `r round(sd(data_loss_e$percent_correct), digits = 2)`). In order to account for this data loss, the potential sample sizes were multiplied by $\frac{1}{p_{retained}}$ where the denominator is proportion retained for each task.
 
@@ -985,6 +1026,7 @@ samples <- bootstrap_samples(start = 20, # starting sample size
   increase = 5, # increase bootstrapped samples by this amount
   population = pops, # population or pilot data
   replace = TRUE, # bootstrap with replacement? 
+  nsim = 5, # number of simulations to run
   grouping_items = "item") # item column label  
 
 head(samples[[1]])
