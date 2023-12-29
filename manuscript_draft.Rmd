@@ -49,14 +49,8 @@ author:
       - Data curation
       - Writing - review & editing
     email: ngurkan@stevens.edu
-  - name: Yangyang Yu
-    affiliation: '5'
-    role:
-      - Data curation
-      - Writing - review & editing
-    email: yyu44@stevens.edu
   - name: Ettore Ambrosini
-    affiliation: '6,27'
+    affiliation: '6,26'
     role:
       - Resources
       - Writing - original draft
@@ -111,47 +105,35 @@ author:
       - Writing - original draft
       - Writing - review & editing
     email: g.huang@cityu.edu.hk
-  - name: Bastian Jaeger
-    affiliation: '14'
-    role:
-      - Resources
-      - Writing - review & editing
-    email: B.Jaeger@tilburguniversity.edu
   - name: Joseph McFall
-    affiliation: '15,28'
+    affiliation: '14,27'
     role:
       - Resources
       - Writing - review & editing
     email: jmcfall@ur.rochester.edu
   - name: Gianni Ribeiro
-    affiliation: '16'
+    affiliation: '15'
     role:
       - Resources
       - Writing - original draft
       - Writing - review & editing
     email: g.ribeiro@uq.edu.au
   - name: Jan P. Röer
-    affiliation: '17'
+    affiliation: '16'
     role:
       - Resources
       - Writing - original draft
       - Writing - review & editing
     email: jan.roeer@uni-wh.de
-  - name: Jordan Suchow
-    affiliation: '5'
-    role:
-      - Resources
-      - Writing - review & editing
-    email: jsuchow@stevens.edu
   - name: José L. Ulloa
-    affiliation: '18'
+    affiliation: '17'
     role:
       - Resources
       - Writing - original draft
       - Writing - review & editing
     email: joseluisulloafulgeri@gmail.com
   - name: Timo B. Roettger
-    affiliation: '19'
+    affiliation: '18'
     role:
       - Formal analysis
       - Visualization
@@ -159,45 +141,45 @@ author:
       - Writing - review & editing
     email: timo.roettger@iln.uio.no
   - name: K. D. Valentine
-    affiliation: '20,29'
+    affiliation: '19,28'
     role:
       - Conceptualization
       - Writing - original draft
       - Writing - review & editing
     email: KVALENTINE2@mgh.harvard.edu
   - name: Antonino Visalli
-    affiliation: '21'
+    affiliation: '20'
     role:
       - Writing - original draft
       - Writing - review & editing
     email: antonino.visalli.av@gmail.com
   - name: Kathleen Schmidt
-    affiliation: '22'
+    affiliation: '21'
     role:
       - Writing - original draft
       - Writing - review & editing
     email: kschmi13@ashland.edu
   - name: Martin R. Vasilev
-    affiliation: '23'
+    affiliation: '22'
     role:
       - Writing - original draft
       - Writing - review & editing
     email: mvasilev@bournemouth.ac.uk
   - name: Giada Viviani
-    affiliation: '24'
+    affiliation: '23'
     role:
       - Writing - original draft
       - Writing - review & editing
     email: giada.viviani@studenti.unipd.it
   - name: Jacob F. Miranda
-    affiliation: '25'
+    affiliation: '24'
     role:
       - Project administration
       - Writing - original draft
       - Writing - review & editing
     email: jacob.miranda@csueastbay.edu
   - name: Savannah C. Lewis
-    affiliation: '26'
+    affiliation: '25'
     role:
       - Project administration
       - Writing - original draft
@@ -235,38 +217,36 @@ affiliation:
   - id: '13'
     institution: Department of Media and Communication, City University of Hong Kong
   - id: '14'
-    institution: Tilburg University
-  - id: '15'
     institution: Department of Psychology, University of Rochester
-  - id: '16'
+  - id: '15'
     institution: School of Psychology, The University of Queensland
-  - id: '17'
+  - id: '16'
     institution: Department of Psychology and Psychotherapy, Witten/Herdecke University
-  - id: '18'
+  - id: '17'
     institution: Programa de Investigación Asociativa (PIA) en Ciencias Cognitivas,
       Centro de Investigación en Ciencias Cognitivas (CICC), Facultad de Psicología,
       Universidad de Talca
-  - id: '19'
+  - id: '18'
     institution: University of Oslo
-  - id: '20'
+  - id: '19'
     institution: Massachusetts General Hospital
-  - id: '21'
+  - id: '20'
     institution: IRCCS San Camillo Hospital
-  - id: '22'
+  - id: '21'
     institution: Ashland University
-  - id: '23'
+  - id: '22'
     institution: Bournemouth University
-  - id: '24'
+  - id: '23'
     institution: University of Padova
-  - id: '25'
+  - id: '24'
     institution: California State University East Bay
-  - id: '26'
+  - id: '25'
     institution: University of Alabama
-  - id: '27'
+  - id: '26'
     institution: Padova Neuroscience Center, University of Padova
-  - id: '28'
+  - id: '27'
     institution: "Children's Institute Inc."
-  - id: '29'
+  - id: '28'
     institution: Harvard Medical School
     
 authornote: |
@@ -306,7 +286,7 @@ output            : papaja::apa6_pdf
 
 ```{r setup, include = FALSE, echo = FALSE}
 set.seed(895893)
-knitr::opts_chunk$set(cache.extra = knitr::rand_seed)
+knitr::opts_chunk$set(cache.extra = knitr::rand_seed, cache = TRUE)
 library(dplyr)
 library(ggplot2)
 library(tidyr)
@@ -513,7 +493,7 @@ We first filtered the ELP data to the same real words as the concreteness subset
 ```{r con-sample, include = F, echo = F}
 # sequence of sample sizes to try
 nsim <- 500
-samplesize_values <- seq(20, 300, 5)
+samplesize_values <- seq(20, 500, 5)
 # create a blank table for us to save the values in 
 sim_table <- matrix(NA, 
           nrow = length(samplesize_values)*nsim, 
@@ -604,7 +584,7 @@ sd_items_c <- sd(tapply(con_use$Rating, con_use$Word, sd))
 ```{r elp-sample, include = F, echo = F}
 # sequence of sample sizes to try
 nsim <- 500
-samplesize_values <- seq(20, 300, 5)
+samplesize_values <- seq(20, 500, 5)
 # create a blank table for us to save the values in 
 sim_table <- matrix(NA, 
           nrow = length(samplesize_values)*nsim, 
@@ -754,7 +734,7 @@ results_table_example$`L SE` <- apa_num(as.numeric(results_table_example$`L SE`)
 
 apa_table(results_table_example, 
           caption = "Sample Size Estimates by Decile for Example Study",
-          note = "C = Concreteness rating, L = Lexical Decision Response Latencies. Estimates are based on meeting at least the minimum percent of items (e.g., 80%) but may be estimated over that amount (e.g., 82.5%). SE columns represent the standard error value cutoff for each decile, while 80/85/90/95 percent columns represent the sample size needed to have that percent of items below the SE cutoff. For example, 100 participants are required to ensure at least 95% of concreteness items SE are below the 10 percent decile SE cutoff, and 175 participants are necessary for the lexical decision SE to be below its 10 percent decile cutoff.")
+          note = "C = Concreteness rating, L = Lexical Decision Response Latencies. Estimates are based on meeting at least the minimum percent of items (e.g., 80%) but may be estimated over that amount (e.g., 82.5%). SE columns represent the standard error value cutoff for each decile, while 80/85/90/95 percent columns represent the sample size needed to have that percent of items below the SE cutoff. For example, 150 participants are required to ensure at least 95% of concreteness items SE are below the 10 percent decile SE cutoff, and 345 participants are necessary for the lexical decision SE to be below its 10 percent decile cutoff.")
 ```
 
 *Step 6*. In the last step, the researcher would indicate their smallest sample size, the cutoff SE criterion if they wanted to adaptively test (e.g., examine the SE after each participant and stop data collection if all items reached criteria), and their maximum sample size. As mentioned earlier, the decile for a balanced SE cutoff is unclear and without guidance, a potential set of researcher degrees of freedom could play a role in the chosen cutoff [@simmons2011]. Even though both measurements (ratings and response latencies) appear to converge on similar sample size suggestions for each decile and percent level, the impact of scale size (i.e., concreteness ratings 1-5 versus response latencies in ms 0-`r max(elp_small$RT, na.rm = T)`) and heterogeneity of item standard errors (concrete $SD_{SD}$ = `r apa_num(sd_items_c)` and lexical $SD_{SD}$ = `r apa_num(sd_items_e)`) is not obvious. Last, by selecting the ends of the distribution for our concreteness words, skew of the distribution may additionally impact our estimates. Each of these will be explored in our simulation.

@@ -43,21 +43,21 @@ Step & Proposed Steps & Updated Steps\\
 \toprule
 Deciles & \multicolumn{1}{c}{C SE} & \multicolumn{1}{c}{C 80} & \multicolumn{1}{c}{C 85} & \multicolumn{1}{c}{C 90} & \multicolumn{1}{c}{C 95} & \multicolumn{1}{c}{L SE} & \multicolumn{1}{c}{L 80} & \multicolumn{1}{c}{L 85} & \multicolumn{1}{c}{L 90} & \multicolumn{1}{c}{L 95}\\
 \midrule
-Decile 10 & 0.11 & 120 & 125 & 135 & 150 & 33.70 & 165 & 195 & 240 & NA\\
-Decile 20 & 0.14 & 65 & 70 & 75 & 85 & 46.88 & 95 & 100 & 135 & 180\\
-Decile 30 & 0.17 & 50 & 50 & 55 & 70 & 50.45 & 70 & 90 & 115 & 160\\
-Decile 40 & 0.18 & 45 & 45 & 50 & 55 & 56.93 & 55 & 70 & 90 & 130\\
-Decile 50 & 0.19 & 40 & 45 & 45 & 50 & 65.23 & 50 & 55 & 70 & 100\\
-Decile 60 & 0.21 & 35 & 40 & 40 & 45 & 72.51 & 40 & 50 & 50 & 75\\
-Decile 70 & 0.21 & 30 & 35 & 40 & 40 & 81.21 & 35 & 40 & 50 & 65\\
+Decile 10 & 0.11 & 115 & 125 & 135 & 150 & 33.70 & 170 & 200 & 245 & 345\\
+Decile 20 & 0.14 & 65 & 70 & 75 & 85 & 46.88 & 90 & 105 & 130 & 180\\
+Decile 30 & 0.17 & 50 & 55 & 60 & 65 & 50.45 & 80 & 95 & 115 & 160\\
+Decile 40 & 0.18 & 45 & 45 & 50 & 55 & 56.93 & 60 & 75 & 90 & 125\\
+Decile 50 & 0.19 & 40 & 45 & 45 & 50 & 65.23 & 50 & 60 & 70 & 95\\
+Decile 60 & 0.21 & 35 & 35 & 40 & 45 & 72.51 & 40 & 45 & 60 & 80\\
+Decile 70 & 0.21 & 35 & 35 & 40 & 45 & 81.21 & 30 & 40 & 50 & 65\\
 Decile 80 & 0.23 & 30 & 30 & 35 & 40 & 94.19 & 25 & 30 & 35 & 50\\
-Decile 90 & 0.25 & 25 & 25 & 30 & 30 & 114.51 & 20 & 20 & 25 & 35\\
+Decile 90 & 0.25 & 25 & 30 & 30 & 35 & 114.51 & 20 & 20 & 25 & 35\\
 \bottomrule
 \addlinespace
 \end{tabular}
 
 \begin{tablenotes}[para]
-\normalsize{\textit{Note.} C = Concreteness rating, L = Lexical Decision Response Latencies. Estimates are based on meeting at least the minimum percent of items (e.g., 80\%) but may be estimated over that amount (e.g., 82.5\%). SE columns represent the standard error value cutoff for each decile, while 80/85/90/95 percent columns represent the sample size needed to have that percent of items below the SE cutoff. For example, 100 participants are required to ensure at least 95\% of concreteness items SE are below the 10 percent decile SE cutoff, and 175 participants are necessary for the lexical decision SE to be below its 10 percent decile cutoff.}
+\normalsize{\textit{Note.} C = Concreteness rating, L = Lexical Decision Response Latencies. Estimates are based on meeting at least the minimum percent of items (e.g., 80\%) but may be estimated over that amount (e.g., 82.5\%). SE columns represent the standard error value cutoff for each decile, while 80/85/90/95 percent columns represent the sample size needed to have that percent of items below the SE cutoff. For example, 150 participants are required to ensure at least 95\% of concreteness items SE are below the 10 percent decile SE cutoff, and 345 participants are necessary for the lexical decision SE to be below its 10 percent decile cutoff.}
 \end{tablenotes}
 
 \end{threeparttable}
@@ -211,10 +211,10 @@ Concrete 80 & 1.00 & 45.00 & 29.00 & 5.49 & 4.86 & 6.32 & 0.14 & -2.82 & 80.00 &
 Concrete 85 & 1.00 & 45.00 & 29.00 & 5.49 & 4.86 & 6.41 & 0.14 & -2.82 & 85.00 & 39.29 & 42.19\\
 Concrete 90 & 1.00 & 50.00 & 29.00 & 5.64 & 4.86 & 6.49 & 0.14 & -2.82 & 90.00 & 45.30 & 48.65\\
 Concrete 95 & 1.00 & 55.00 & 29.00 & 5.78 & 4.86 & 6.57 & 0.14 & -2.82 & 95.00 & 51.21 & 54.99\\
-LDT 80 & 1.00 & 55.00 & 33.00 & 5.78 & 5.04 & 6.32 & 0.08 & -3.60 & 80.00 & 48.79 & 61.05\\
-LDT 85 & 1.00 & 70.00 & 33.00 & 6.13 & 5.04 & 6.41 & 0.08 & -3.60 & 85.00 & 63.54 & 79.51\\
+LDT 80 & 1.00 & 60.00 & 33.00 & 5.91 & 5.04 & 6.32 & 0.08 & -3.60 & 80.00 & 54.08 & 67.68\\
+LDT 85 & 1.00 & 75.00 & 33.00 & 6.23 & 5.04 & 6.41 & 0.08 & -3.60 & 85.00 & 68.12 & 85.25\\
 LDT 90 & 1.00 & 90.00 & 33.00 & 6.49 & 5.04 & 6.49 & 0.08 & -3.60 & 90.00 & 80.87 & 101.20\\
-LDT 95 & 1.00 & 130.00 & 33.00 & 7.02 & 5.04 & 6.57 & 0.08 & -3.60 & 95.00 & 110.48 & 138.25\\
+LDT 95 & 1.00 & 125.00 & 33.00 & 6.97 & 5.04 & 6.57 & 0.08 & -3.60 & 95.00 & 107.09 & 134.00\\
 \bottomrule
 \addlinespace
 \insertTableNotes
