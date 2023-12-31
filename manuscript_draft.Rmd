@@ -50,7 +50,7 @@ author:
       - Writing - review & editing
     email: ngurkan@stevens.edu
   - name: Ettore Ambrosini
-    affiliation: '6,26'
+    affiliation: '6'
     role:
       - Resources
       - Writing - original draft
@@ -106,7 +106,7 @@ author:
       - Writing - review & editing
     email: g.huang@cityu.edu.hk
   - name: Joseph McFall
-    affiliation: '14,27'
+    affiliation: '14,26'
     role:
       - Resources
       - Writing - review & editing
@@ -141,7 +141,7 @@ author:
       - Writing - review & editing
     email: timo.roettger@iln.uio.no
   - name: K. D. Valentine
-    affiliation: '19,28'
+    affiliation: '19,27'
     role:
       - Conceptualization
       - Writing - original draft
@@ -243,10 +243,8 @@ affiliation:
   - id: '25'
     institution: University of Alabama
   - id: '26'
-    institution: Padova Neuroscience Center, University of Padova
-  - id: '27'
     institution: "Children's Institute Inc."
-  - id: '28'
+  - id: '27'
     institution: Harvard Medical School
     
 authornote: |
@@ -1311,6 +1309,13 @@ One limitation of these methods would be our decision to use datasets with very 
 Second, these methods do not ensure the normal interpretation of power, where you know that you would find a specific effect for a specific test, $\alpha$, and so on. As discussed in the introduction, there is not necessarily a one-to-one mapping of hypothesis to analysis; many of the estimations within a traditional power analysis are just that - best approximations for various parameters. These proposed methods and traditional power analysis could be used together to strengthen our understanding of the sample size necessary for both a hypothesis test and a well-tuned estimation.
 
 Researchers should consider this hybrid approach for AIPE, bootstrapping, and simulation as a powerful tool for hypothesis testing and parameter estimation. This procedure holds benefits for various research studies, specifically replication studies, that usually prioritize subject sample size but rarely item sample size, in spite of the fact that item sample sizes can contribute to power in multilevel models [@brysbaert2018]. Replicated effects, accumulated through multiple studies and accurate measurement, contribute to robust meta-analyses, enhancing our understanding of the genuine nature of observed effects. This article helps to achieve this goal by encouraging researchers to conduct studies where the power analysis is not based on the size of the effect but on adequate sampling of the stimuli. We argue that this article can be the initial step to apply AIPE in a manner that can allow researchers to use item information to provide a more accurate and statistically reliable measure of the effect we aimed to investigate. In conclusion, item power analysis is a tool to avoid the waste of resources while ensuring that adequately measured items can be achieved. Well measured data can enable us to counteract the literature that contains false positives, allowing us to achieve replicable, high-quality science to establish answers to scientific questions with precision and accuracy.
+
+# Open Practices
+
+- All data used in this manuscript and vignettes have been cited and can be found on our repository pages. 
+- Manuscript repository with code and data: https://osf.io/swmva/ or https://github.com/SemanticPriming/stimuli-power 
+- Package repository with vignettes and data: https://github.com/SemanticPriming/semanticprimeR
+- We did not pre-register this study, as it was a simulation study. No materials were used. 
 
 \newpage
 
