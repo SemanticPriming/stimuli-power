@@ -1,0 +1,4 @@
+- source: aps_24.qmd
+  quarto-pub:
+    - id: a6e58db8-5e0c-4836-b8a5-7df49b505815
+      url: 'https://doomlab.quarto.pub/aps_24'

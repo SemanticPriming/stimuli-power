@@ -1,0 +1,526 @@
+---
+title: 'Accuracy in Parameter Estimation and Simulation Approaches for Sample Size Planning'
+author: "Erin M. Buchanan"
+institute: "Harrisburg University"
+format: 
+  revealjs:
+    theme: night
+editor: source
+incremental: true 
+scrollable: true 
+preview-links: true
+code-copy: true 
+highlight-style: github 
+editor_options: 
+  chunk_output_type: inline
+---
+
+## Power and Sample Size Planning{.smaller}
+
+```{css}
+h1.title {
+font-size: 1.5em;
+}
+
+.reveal.smaller .slides h2, .reveal .slides section.smaller h2 {
+  font-size: 40px;
+}
+
+.reveal div.sourceCode pre code {
+  min-height: 100%;
+  font-size: 25px;
+}
+
+.reveal .cell-output-stdout pre code{
+  font-size: 20px;
+}
+```
+
+- Sample Size Planning: New Tools and Innovations
+  - Accuracy in Parameter Estimation and Simulation Approaches for Sample Size Planning, Erin M. Buchanan
+  - Power Analyses for Interaction Effects in Observational Studies, David A. Baranger
+  - Empowering Sample Size Justification with the Superpower R Package, Aaron Caldwell
+
+## Power and Sample Size Planning{.smaller}
+
+```{r echo = F}
+library(knitr)
+library(papaja)
+library(rio)
+library(ggplot2)
+library(dplyr)
+library(broom)
+library(kableExtra)
+include_graphics("oprah.png")
+```
+
+
+## A Blender Mix{.smaller}
+
+- Accuracy in Parameter Estimation and Simulation Approaches for Sample Size Planning
+- How we took a bunch of interesting ideas and mixed them together 
+
+## Sample Size Planning{.smaller} 
+
+- Sample size planning is often thought of as "point and click" 
+  - G\*Power: https://www.psychologie.hhu.de/arbeitsgruppen/allgemeine-psychologie-und-arbeitspsychologie/gpower
+  - https://jakewestfall.shinyapps.io/pangea/ 
+  - https://pwrss.shinyapps.io/index/
+  - https://designingexperiments.com/
+- Sample size planning is *technically* a closed-form solution for many analysis plans 
+- An incredible number of cool *R* packages for sample size planning, such as *pwr*
+- So, why do we need new innovations for power? 
+
+## The Need{.smaller}
+
+- TOPS movement + pre-registration + grants + registered reports = need for power analyses 
+- Power analyses are just our *best guesses* and are likely wrong 
+- Many Analyst studies show us that there is no design = analysis answer
+- The smallest effect of interest may be unknown
+- Some research papers do not have one specific hypothesis (i.e., dataset creations)
+- Once you leave the *t*-test behind, power becomes more complicated and often based on simulation 
+
+## Our Use Case{.smaller}
+
+- Research studies that use many items to assess the parameter of interest 
+- Research studies designed to collect data on many items and share the data 
+- We should be careful not to assume all items are equal ... 
+- And move away from using item-level averages as parameters of interest 
+
+
+## Combining Toolkits{.smaller}
+
+- Accuracy in Parameter Estimation: finding the sample size that allows for "accurately measured" parameters 
+  - Determine a "sufficiently narrow" confidence interval around your parameter
+  - Determine the sample size that should provide that CI
+- Bootstrapping (sort of) and Simulation
+  - Taking pilot data and simulating various sample sizes based on bootstrapping your sample
+  - Use this technique to find the sample size for a "sufficiently narrow" CI for items 
+
+## Sequential Testing{.smaller}
+
+- Sequential testing: examine the parameter of interest for the intended CI
+  - After each participant 
+  - At regular intervals during data collection
+- Benefits: 
+  - Maximizing the usefulness of data collection 
+- Cons: 
+  - Usually requires code based skill sets 
+
+## Proposed Method{.smaller}
+
+```{r table-summary, results = 'asis'}
+kable(data.frame(
+  "Step Number" = c("1", "2" , "3", "4", "5", "6"),
+    "Proposed Steps" = c("Use representative pilot data.",
+    "Calculate standard error of each of the items in the pilot data. Using the 40%, determine the cutoff and stopping rule for the standard error of the items.",
+    "Create bootstrapped samples of your pilot data starting with at least 20 participants up to a maximum number of participants.", 
+    "Calculate the standard error of each of the items in the bootstrapped data. From these scores, calculate the percent of items below the cutoff score from Step 2.",
+    "Determine the sample size at which 80%, 85%, 90%, 95% of items are below the cutoff score. Use the correction formula to adjust your proposed sample size based on pilot data size, power, and percent variability.",
+    "Report all values. Designate one as the minimum sample size, the cutoff score as the stopping rule for adaptive designs, and the maximum sample size.")
+  ), 
+  caption = "Proposed Procedure for Powering Studies with Multiple Items",
+  col.names = c("Step", "Proposed Steps"),
+  #align = c("m{1cm}", rep("m{6cm}", 2)),
+  #font_size = "footnotesize"
+) %>% 
+  kable_styling(kable_input = ., 
+                font_size = 25)
+```
+
+## Package{.smaller}
+
+- Upcoming package `semanticprimeR` as part of a larger project 
+- `devtools::install_github("SemanticPriming/semanticprimeR")`
+- Functions for each step of the proposed process
+- Functionality for when you have example data and when you do not (i.e., simulate example multiple-item data)
+- As part of the manuscript and *semanticprimeR* package, we provide 12+ examples online 
+- Psycholinguistics, social psychology, COVID related, traditional cognitive psychology 
+
+## Example: Step 1 (Pilot Sample){.smaller}
+
+```{r import-data-example, include = F, echo = F}
+elpDF <- import("../../data/ELPDecisionData.zip")
+conDF <- import("../../data/concreteness_trial.rda")
+
+# grab only the overlap for this fake study
+elpDF <- elpDF %>% 
+  filter(Stimulus %in% conDF$Word) %>% 
+  filter(Type == 1)
+
+conDF <- conDF %>% 
+  filter(Word %in% elpDF$Stimulus) 
+
+# sample the data of with 20 words in each category
+average_item_score <- conDF %>% 
+  filter(Rating != "N" & Rating != "n") %>% 
+  mutate(Rating = as.numeric(Rating)) %>% 
+  group_by(Word) %>% 
+  summarize(avgrating = mean(Rating))
+
+con_words <- c(
+  average_item_score %>% 
+    filter(avgrating <= 2) %>% 
+    sample_n(size = 20) %>% 
+    pull(Word), 
+  average_item_score %>% 
+    filter(avgrating >= 4) %>% 
+    sample_n(size = 20) %>% 
+    pull(Word)
+)
+
+elp_small <- elpDF %>% filter(Stimulus %in% con_words)
+# elp_small$Stimulus <- droplevels(elp_small$Stimulus) already a character
+
+# figure out pilot size
+pilot_size_e <- round(mean(tapply(elp_small$RT, elp_small$Stimulus, length)))
+
+# figure out data loss
+elp_small$RT[elp_small$Accuracy == "0"] <- NA
+data_loss_e <- elp_small %>% 
+ group_by(Stimulus, Type) %>% 
+ summarize(percent_correct = sum(!is.na(RT))/n(), .groups = "keep")
+elp_use <- elp_small %>% filter(!is.na(RT))
+
+# cutoff score 
+SE_e <- tapply(elp_use$RT, elp_use$Stimulus, function (x) { sd(x)/sqrt(length(x))})
+cutoff_e <- quantile(SE_e, probs = seq(from = .1, to = .9, by = .1))
+
+elp_use <- elp_use %>% 
+  ungroup() %>% 
+  as.data.frame()
+```
+
+- You want to run a lexical decision project measuring response latencies for concrete and abstract words 
+- You can use the English Lexicon Project as pilot data + previous publications of concreteness ratings 
+- In these studies, we also have to factor in data loss!
+  - Combined data includes `r length(unique(elpDF$Stimulus))` real words filtered down to `r length(unique(elp_small$Stimulus))` selected stimuli
+  - Average sample size per word:  `r format(round(mean(tapply(elp_small$RT, elp_small$Stimulus, length)), digits = 2), nsmall = 2)` (*SD* = `r round(sd(tapply(elp_small$RT, elp_small$Stimulus, length)), digits = 2)`)
+  - Pilot sample size: *n* = `r pilot_size_e`
+
+## Example: Step 2 (Calculate Cutoff){.smaller}
+
+```{r echo = T}
+library(semanticprimeR)
+cutoff <- calculate_cutoff(population = elp_use, # pilot data or simulated data
+  grouping_items = "Stimulus", # name of the item indicator column
+  score = "RT", # name of the dependent variable column
+  minimum = min(elp_use$RT), # minimum possible/found score
+  maximum = max(elp_use$RT)) # maximum possible/found score
+```
+
+## Example: Step 2 (Calculate Cutoff){.smaller}
+
+```{r echo = T}
+cutoff$se_items # all standard errors of items
+cutoff$sd_items # standard deviation of the standard errors
+cutoff$cutoff # 40% decile score
+cutoff$prop_var # proportion of possible variance 
+```
+
+## Example: Step 3 (BootSim Samples){.smaller}
+
+```{r boot-sample, include = T, echo = T}
+samples <- bootstrap_samples(start = 20, # starting sample size
+  stop = 100, # stopping sample size
+  increase = 5, # increase bootstrapped samples by this amount
+  population = elp_use, # population or pilot data
+  replace = TRUE, # bootstrap with replacement? 
+  nsim = 500, # number of simulations to run
+  grouping_items = "Stimulus") # item column label  
+
+head(samples[[1]])
+```
+
+```{r echo = F}
+for (i in 1:length(samples)){
+  samples[[i]] <- samples[[i]] %>% 
+    ungroup() %>% 
+    as.data.frame()
+}
+```
+
+## Example: Step 4-5 (Calculate Proportion){.smaller}
+
+```{r echo = F}
+calculate_proportion <- function(samples,
+                                 cutoff,
+                                 grouping_items = NULL,
+                                 score){
+
+  if(is.null(samples)){ stop("You must include list of samples to examine.") }
+  if(is.null(cutoff)){ stop("You must include the cutoff score for standard error.") }
+  if(is.null(grouping_items)){ stop("You must include the grouping variable,
+                                    which is normally the item number.") }
+  if(is.null(score)){ stop("You must include the score or variable you are
+                           estimating sample size for.") }
+
+  summary_list <- list()
+  score2 <- sym(score)
+
+  # loop and calculate
+  for (i in 1:length(samples)){
+
+    summary_list[[i]] <- samples[[i]] %>%
+      group_by(.data[[grouping_items]]) %>%
+      summarize(se = sd(.data[[score]])/sqrt(n())) %>%
+      ungroup() %>%
+      summarize(percent_below = sum(se <= cutoff) / length(se),
+                num_items = length(se)) %>%
+      mutate(sample_size = nrow(samples[[i]]) / num_items)
+
+  } # end loop and calculate
+
+  # create end summary
+  summary_DF <- bind_rows(summary_list) %>%
+    select(-num_items) %>%
+    group_by(sample_size) %>%
+    summarize(percent_below = mean(percent_below))
+
+  # return values
+  return(summary_DF)
+
+}
+
+```
+
+```{r calc-prop, include = T, echo = T}
+proportion_summary <- calculate_proportion(samples = samples, # samples list
+  cutoff = cutoff$cutoff, # cut off score 
+  grouping_items = "Stimulus", # item column name
+  score = "RT") # dependent variable column name 
+
+head(proportion_summary)
+```
+
+## Example: Step 6 (Apply Correction){.smaller}
+
+```{r calc-correct, include = T, echo = T}
+corrected_summary <- calculate_correction(
+  proportion_summary = proportion_summary, # prop from above
+  pilot_sample_size = pilot_size_e, # number of participants in the pilot data 
+  proportion_variability = cutoff$prop_var, # proportion variance from cutoff scores
+  power_levels = c(80, 85, 90, 95)) # what levels of power to calculate 
+
+corrected_summary
+```
+
+## Last Thoughts{.smaller}
+
+- Use case: multiple items that intend on using item level focused analyses
+- Should simulate only what is expected for a participant to do in the study 
+  - Large numbers of items may bias estimates 
+- Could combine with "traditional" power 
+- Provides "well-measured" data --> not a specific decision for a specific sample 
+
+## Thanks{.smaller}
+
+- Thanks for listening!
+- Reproducible manuscript: https://github.com/SemanticPriming/stimuli-power 
+- Package: https://github.com/SemanticPriming/semanticprimeR
+- Scan me for a copy of this talk with links:
+
+```{r include = T}
+knitr::include_graphics("aps_24_qr.png")
+```
+
+## Simulation Method{.smaller}
+
+- To evaluate our approach, we ran a simulation study: 
+  - Scale size: popular cognitive scales (1-7 measurements, 0-100 percentage measurements, and 0-3000 response latency type scale data)
+  - Item heterogeneity: small, medium, large
+  - Skew: normal distributions versus skewed (ceiling) distributions 
+  - Pilot sample size: 20 to 100 increasing in units of 10
+- 1,620,000 simulations of 3 X 3 X 2 X 9 design
+
+```{r table-sim}
+#| fig-cap: " "
+#| filters:
+#| - parse-latex
+#| 
+kable(data.frame(
+  Information = c("Minimum", "Maximum", "Mu", "Skewed Mu", "Sigma Mu", 
+                  "Sigma", "Small Sigma Sigma", 
+                  "Medium Sigma Sigma", "Large Sigma Sigma"),
+  Likert = c(1, 7, 4, 6, .25, 2, .2, .4, .8),
+  Percent = c(0, 100, 50, 85, 10, 25, 4, 8, 16),
+  Milliseconds = c(0, 3000, 1000, 2500, 150, 400, 50, 100, 200)
+), caption = "Parameter Values for Data Simulation",
+escape = FALSE,
+#format = "latex"
+) %>% 
+  kable_styling(kable_input = ., 
+                font_size = 25)
+
+```
+
+## Simulation Results: Scale Size{.smaller} 
+
+```{r import-data}
+summary_long <- bind_rows(
+  import("../../simulation_study/simulation_middle/simulated_summary_data_middle.csv") %>% 
+    mutate(data_type = "Normal"), 
+    import("../../simulation_study/simulation_ceiling/simulated_summary_data_ceiling.csv") %>% 
+    mutate(data_type = "Ceiling"))
+
+summary_long$scale_size <- factor(summary_long$scale_size,
+                                  levels = c("Likert", "Percent", "Milliseconds"))
+summary_long$variability <- factor(summary_long$variability, 
+                                   levels = c("Small Heterogeneity", 
+                                              "Medium Heterogeneity", 
+                                              "Large Heterogeneity"))
+
+### make a decision here ### 
+summary_long <- summary_long %>% filter(name != "Decile 0" & name != "Decile 10" & name != "Decile 20")
+```
+
+```{r scale-size-figure}
+
+likert_var <- sqrt(((7-1)^2)/4)
+percent_var <- sqrt(((100-0)^2)/4)
+millisecond_var <- sqrt(((3000-0)^2)/4)
+
+summary_long$percent_var <- ifelse(
+  summary_long$scale_size == "Likert", summary_long$sd_item/likert_var, ifelse(
+    summary_long$scale_size == "Percent", summary_long$sd_item/percent_var, 
+      summary_long$sd_item/millisecond_var
+  )
+)
+
+mean_var <- tapply(summary_long$percent_var, summary_long$scale_size, mean)
+
+# New facet label names for power variable
+power.labs <- c("80% of items", "85% of items",
+                "90% of items", "95% of items")
+names(power.labs) <- c("80", "85", "90", "95")
+
+plot_colors <- c("#4FEAAC", "#FF826F", "#4F84FD")
+
+ggplot(summary_long %>% 
+         group_by(original_n, power, scale_size) %>% 
+         summarize(sample_size_avg = mean(sample_size)),
+       aes(original_n, sample_size_avg, color = scale_size)) + 
+  geom_point() + 
+  geom_point(aes(original_n, original_n), color = "black") + 
+  geom_line() + 
+  geom_line(aes(original_n, original_n), color = "black") + 
+  theme_linedraw(base_size = 15) + 
+  xlab("\nPilot Sample Size") + 
+  ylab("Projected Sample Size\n") + 
+  scale_color_manual(name = "Scale Size",
+                     values = c(plot_colors)) +
+  facet_wrap(~power,
+             labeller = labeller(power = power.labs))+
+  theme_bw() +
+  theme(legend.position="bottom")
+```
+
+## Simulation Results: Skew{.smaller}
+
+```{r scale-skew-figure}
+
+ggplot(summary_long %>% 
+         group_by(original_n, power, data_type) %>% 
+         summarize(sample_size_avg = mean(sample_size)),
+       aes(original_n, sample_size_avg, color = data_type)) + 
+  geom_point() + 
+  geom_point(aes(original_n, original_n), color = "black") + 
+  geom_line() + 
+  geom_line(aes(original_n, original_n), color = "black") + 
+  theme_linedraw(base_size = 15) + 
+  xlab("\nPilot Sample Size") + 
+  ylab("Projected Sample Size\n") + 
+  scale_color_manual(name = "Scale Skew",
+                     values = c(plot_colors)) +
+  facet_wrap(~power,
+             labeller = labeller(power = power.labs))+
+  theme_bw() +
+  theme(legend.position="bottom")
+```
+
+## Simulation Results: Item Heterogeneity{.smaller}
+
+```{r scale-hetero-figure}
+
+ggplot(summary_long %>% 
+         group_by(original_n, power, variability) %>% 
+         summarize(sample_size_avg = mean(sample_size)),
+       aes(original_n, sample_size_avg, color = variability)) + 
+  geom_point() + 
+  geom_point(aes(original_n, original_n), color = "black") + 
+  geom_line() + 
+  geom_line(aes(original_n, original_n), color = "black") + 
+  theme_linedraw() + 
+  xlab("Pilot Sample Size") + 
+  ylab("Projected Sample Size") + 
+  scale_color_manual(name = "Item Heterogeneity",
+                     values = c(plot_colors)) +
+  facet_wrap(~power,
+             labeller = labeller(power = power.labs))+
+  theme_bw() +
+  theme(legend.position="bottom")
+```
+
+## Dealing with Pilot Sample Size{.smaller} 
+
+- At some point, power usually asymptotes with increasing sample size 
+- So, we need a correction: 
+
+$$ 1 - \sqrt{\frac{N_{Pilot} - min(N_{Simulation})}{N_{Pilot}}}^{log_2(N_{Pilot})}$$
+
+## Dealing with Pilot Sample Size{.smaller}
+
+```{r corrected-figure}
+
+decay <- 1-sqrt((summary_long$original_n-20)/summary_long$original_n)^log2(summary_long$original_n)
+summary_long$new_sample <- summary_long$sample_size*decay
+ggplot(summary_long %>% 
+         group_by(original_n, power, variability) %>% 
+         summarize(sample_size_avg = mean(sample_size),
+                   new_sample_size_avg = mean(new_sample)),
+       aes(original_n, new_sample_size_avg, color = variability)) + 
+  geom_line(aes(original_n, original_n), color = "black") +
+  geom_point(aes(original_n, original_n), color = "black") + 
+  geom_point() + 
+  geom_line() + 
+  xlab("\nPilot Sample Size") + 
+  ylab("Projected Sample Size\n") + 
+  scale_color_manual(name = "Item Heterogeneity",
+                     values = c(plot_colors)) +
+  facet_wrap(~power,
+             labeller = labeller(power = power.labs))+
+  theme_bw() +
+  theme(legend.position="bottom")
+```
+
+## Researchers Have *One* Sample{.smaller} 
+
+- Long story short: we can provide a function for researchers to use to control pilot sample size
+- We also determined *which* level "sufficiently small" was probably best 
+
+```{r R2-cutoff, include = F, echo = F}
+by_cutoff <- list()
+R2 <- list()
+for (cutoff in unique(summary_long$name)){
+ by_cutoff[[cutoff]] <- lm(new_sample ~ sample_size + percent_var + original_n + power + log2(sample_size) + log2(percent_var) + log2(original_n) + log2(power), data = summary_long %>% filter(name == cutoff))
+ R2[cutoff] <- summary(by_cutoff[[cutoff]])$r.squared
+}
+```
+
+```{r table-decile}
+table_correct <- tidy(summary(by_cutoff$`Decile 40`))
+table_correct <- table_correct[c(1, 2, 4, 6, 8, 9, 3, 7, 5) , ]
+table_correct$term <- c("Intercept", "Projected Sample Size", "Pilot Sample Size", 
+                        "Log2 Projected Sample Size", "Log2 Pilot Sample Size", 
+                        "Log2 Power", "Proportion Variability", 
+                        "Log2 Proportion Variability", "Power")
+table_correct$estimate <- printnum(table_correct$estimate, digits = 3)
+table_correct$std.error <- printnum(table_correct$std.error, digits = 3)
+table_correct$statistic <- printnum(table_correct$statistic, digits = 3)
+table_correct$p.value <- printnum(table_correct$p.value, digits = 3,
+                 zero = FALSE, gt1 = F)
+kable(table_correct, 
+     col.names = c("Term", "Estimate", "SE", "t", "p"),
+     caption = "Parameters for 40% Decile Cutoff Scores") %>% 
+  kable_styling(font_size = 25)
+```
