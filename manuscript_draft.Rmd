@@ -1,5 +1,5 @@
 ---
-title       : "Accuracy in Parameter Estimation and Simulation Approaches for Sample Size Planning with Multiple Stimuli"
+title       : "Accuracy in Parameter Estimation and Simulation Approaches for Sample Size Planning Accounting for Item Effects"
 shorttitle    : "AIPE BOOTSTRAPPING"
 author:
   - name: Erin M. Buchanan
@@ -742,7 +742,7 @@ apa_table(results_table_example,
 
 In order to evaluate our approach, we used data simulation to create representative pilot datasets of several popular cognitive scales (1-7 measurements, 0-100 percentage measurements, and 0-3000 response latency type scale data). For each of these scales, we also manipulated item heterogeneity by simulating small differences in item variances to large differences in item variances based on original scale size. On each of the simulated datasets, we applied the above proposed method to determine how the procedure would perform and evaluated what criteria should be used for cutoff selection (Step 2). This procedure was performed on distributions in the middle of the scale (i.e., normal) and at the ceiling of the scale (i.e., skewed). With this simulation, we will answer several questions:
 
-1)  How do pilot data influence sample size suggestions?
+1)  How does pilot data influence sample size suggestions?
 
 A. How does scale size impact sample size estimations? In theory, the size of the scale used should not impact the power estimates; however, larger scales have a potential for more variability in their item standard deviations (see point C).
 

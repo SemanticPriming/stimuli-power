@@ -1,0 +1,140 @@
+---
+title: "Methods Power Study - Bimodal Simulations"
+author: "Erin M. Buchanan"
+date: "Last Knitted: `r Sys.Date()`"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Libraries
+
+```{r message = F}
+set.seed(895893) # 233232
+library(dplyr)
+library(ggplot2)
+library(tidyr)
+library(semanticprimeR)
+```
+
+This document examines a test of what a researcher might find if they had bimodal distributions on their data. We will simulate a pilot study by generating normal, floor, and ceiling scores. From those populations, we will select a mix of items that are "normal" and a mix of items that are bimodal (by joining together the ceiling and floor effects with a .5 probability). Finally, we will calculate the rest of the steps proposed as normal. 
+
+```{r simulate-bimodal}
+# simulate population 
+normal_pops <- simulate_population(mu = 4, # item means
+  mu_sigma = .2, # variability in item means 
+  sigma = 2, # item standard deviations
+  sigma_sigma = .2, # standard deviation of the standard deviations
+  number_items = 30, # number of items
+  number_scores = 1000, # number of participants
+  smallest_sigma = .02, #* smallest possible standard deviation
+  min_score = 1, #* minimum score for truncating purposes
+  max_score = 7, #* maximum score for truncating purposes
+  digits = 0) #* number of digits for rounding
+  
+floor_pops <- simulate_population(mu = 2, # item means
+  mu_sigma = .2, # variability in item means 
+  sigma = 1, # item standard deviations
+  sigma_sigma = .1, # standard deviation of the standard deviations
+  number_items = 30, # number of items
+  number_scores = 1000, # number of participants
+  smallest_sigma = .02, #* smallest possible standard deviation
+  min_score = 1, #* minimum score for truncating purposes
+  max_score = 7, #* maximum score for truncating purposes
+  digits = 0) #* number of digits for rounding
+  
+ceiling_pops <- simulate_population(mu = 6, # item means
+  mu_sigma = .2, # variability in item means 
+  sigma = 1, # item standard deviations
+  sigma_sigma = .1, # standard deviation of the standard deviations
+  number_items = 30, # number of items
+  number_scores = 1000, # number of participants
+  smallest_sigma = .02, #* smallest possible standard deviation
+  min_score = 1, #* minimum score for truncating purposes
+  max_score = 7, #* maximum score for truncating purposes
+  digits = 0) #* number of digits for rounding
+
+# simulate sample 
+item_number <- 1:30
+prop_mix <- 1 # manipulated this number 
+pilot_sample_size <- 30
+bimodal_items <- sample(item_number, size = round(length(item_number)*prop_mix), replace = FALSE)
+
+researcher_sample <- 
+  bind_rows(
+    floor_pops %>% 
+      filter(item %in% bimodal_items) %>% 
+      group_by(item) %>% 
+      slice_sample(n = pilot_sample_size / 2), 
+    ceiling_pops %>% 
+      filter(item %in% bimodal_items) %>% 
+      group_by(item) %>% 
+      slice_sample(n = pilot_sample_size / 2),
+    normal_pops %>% 
+      filter(!(item %in% bimodal_items)) %>% 
+      group_by(item) %>% 
+      slice_sample(n = pilot_sample_size)
+  )
+
+# researcher_sample %>% 
+#   group_by(item) %>% 
+#   summarize(n = n(),
+#             mean = mean(score),
+#             sd = sd(score), 
+#             min = min(score),
+#             max = max(score))
+# 
+# researcher_sample %>% 
+#   filter(item %in% bimodal_items) %>% 
+#   group_by(item) %>%
+#   table()
+
+# calculate cutoff 
+cutoff <- calculate_cutoff(population = researcher_sample, # pilot data or simulated data
+  grouping_items = "item", # name of the item indicator column
+  score = "score", # name of the dependent variable column
+  minimum = 1, # minimum possible/found score
+  maximum = 7) # maximum possible/found score
+
+# bootstrap samples
+samples <- bootstrap_samples(start = 20, # starting sample size
+  stop = 100, # stopping sample size
+  increase = 5, # increase bootstrapped samples by this amount
+  population = researcher_sample, # population or pilot data
+  replace = TRUE, # bootstrap with replacement? 
+  nsim = 1000, # number of simulations to run
+  grouping_items = "item") # item column label  
+
+# calculate proportions
+proportion_summary <- calculate_proportion(samples = samples, # samples list
+  cutoff = cutoff$cutoff, # cut off score 
+  grouping_items = "item", # item column name
+  score = "score") # dependent variable column name 
+
+# calculate correction
+corrected_summary <- calculate_correction(
+  proportion_summary = proportion_summary, # prop from above
+  pilot_sample_size = 30, # number of participants in the pilot data 
+  proportion_variability = cutoff$prop_var, # proportion variance from cutoff scores
+  power_levels = c(80, 85, 90, 95)) # what levels of power to calculate 
+
+rio::export(corrected_summary, paste0("simulation_bimodal/summary_", 
+                                 prop_mix, ".csv"), 
+                                 row.names = F)
+```
+
+```{r}
+list_files <- list.files("simulation_bimodal/",
+                         pattern = "*.csv",
+                         full.names = TRUE)
+
+import_files <- lapply(list_files, rio::import)
+
+full_data <- bind_rows(import_files) %>% 
+  mutate(size = rep(c(.1, .2, .3, .4, .5, .6, .7, .8, .9, 0, 1), each = 4))
+
+rio::export(full_data, "simulation_bimodal/summary_bimodal.csv", row.names = F)
+```
+
