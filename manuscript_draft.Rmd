@@ -1374,7 +1374,7 @@ ggplot(researcher_sample %>%
 
 Figure \@\ref(fig:bimodal-figure) portrays the results of the suggested procedure. The sample with 0 bimodal items demonstrates the same values as above. The proposed sample size increases from 10 to 40% because of the heterogeneity in SE across items (i.e., with 10% of items with a larger SE due to their bimodal nature, the required sample size increases). From 50% to 100% the sample size decreases because the variance of the SEs across items decreases (i.e., at 100 percent, they are all larger rather than a mix). In theory, these results map onto the conceptual framework - if all items are truly bimodal, we have precisely measured the mean of the bimodal distribution, but this result is likely not the intended result. If researchers expect these distributions (or have representative pilot data), they could examine the data for bimodal items. These items could be estimated separately (i.e., floor effects item 1, ceiling effects item 1) to ensure that both populations of answers are represented in the data.
 
-```{r bimodal-results, fig.cap = "Estimated sample sizes for distributions that vary in the number of bimodal items. Note that percent below is treated as a continuous factor", fig.height=8, fig.width=8}
+```{r bimodal-results, fig.cap = "Estimated sample sizes for distributions that vary in the number of bimodal items. Note that percent below is treated as a continuous factor, and therefore, some estimates are the same (i.e., below 80 and 85 percent may be both estimated as 88%).", fig.height=8, fig.width=8}
 ggplot(bi_DF, aes(x = percent_below,
                   y = corrected_sample_size, 
                   color = factor(size),
