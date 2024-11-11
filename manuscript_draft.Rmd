@@ -1,6 +1,6 @@
 ---
 title       : "Accuracy in Parameter Estimation and Simulation Approaches for Sample Size Planning Accounting for Item Effects"
-shorttitle    : "AIPE BOOTSTRAPPING"
+shorttitle    : "AIPE MONTE CARLO"
 author:
   - name: Erin M. Buchanan
     affiliation: '1'
@@ -319,23 +319,25 @@ update_file(file = "manuscript_draft.Rmd",
       hide_code = TRUE)
 ```
 
-An inevitable decision in almost any empirical research is deciding on the sample size. Statistical power and power analyses are arguably some of the most important components in planning a research study and its corresponding sample size [@cohen1990]. However, if reviews of transparency and openness in research publications are any clue, researchers in the social sciences commonly fail to implement proper power analyses as part of their research workflow [@hardwicke2020; @doi:10.1177/1745691620979806]. The replication "crisis" and credibility revolution have shown that published studies in psychology are underpowered [@opensciencecollaboration2015; @vazire2018; @korbmacher2023]. Pre-registration of a study involves outlining the study and hypotheses before data collection begins [@stewart2020; @d.chambers2014; @nosek2014], and details of a power analyses or limitations on resources are often used to provide justification for the pre-registered sample quota [@pownall2023; @vandenakker2023; @akker2023]. Given the combined issues of publish-or-perish and that most non-significant results do not result in published manuscripts, power analysis may be especially critical for early career researchers to increase the likelihood that they will identify significant effects if they exist [@rosenthal1979; @simmons2011]. Justified sample sizes through power analyses may allow for publication of non-significant, yet well measured effects, along with the smallest effect of interest movement [@anvari2021], potentially improving the credibility of published work. 
+An inevitable decision in almost any empirical research is deciding on the sample size. Statistical power and power analyses are arguably some of the most important components in planning a research study and its corresponding sample size [@cohen1990]. However, if reviews of transparency and openness in research publications are any clue, researchers in the social sciences commonly fail to implement proper power analyses as part of their research workflow [@hardwicke2020; @doi:10.1177/1745691620979806]. The replication "crisis" and credibility revolution have shown that published studies in psychology are underpowered [@opensciencecollaboration2015; @vazire2018; @korbmacher2023]. Potential reasons for underpowered studies include questionable research practices [@john2012; but see @fiedler2016], weak psychological theories [@proulx2021; @szollosi2021], testing multiple hypotheses [@maxwell2004], and poor intuitions about power [@bakker2016].
 
-A recent review of power analyses found - across behavioral, cognitive, and social science journal articles - researchers did not provide enough information to understand their power analyses and often chose effect sizes that were unjustified [@beribisky2019]. One solution to this power analysis problem is the plethora of tools made available for researchers to make power computations accessible to non-statisticians; however, a solid education in power is necessary to use these tools properly. G\*Power is one of the most popular free power software options [@faul2007; @erdfelder1996] that provides a simple point and click graphical user interface for power calculations [however, see @brysbaert2019]. Web-based tools have also sprung up for overall and statistical test specific sample size planning including <https://powerandsamplesize.com>, <https://jakewestfall.shinyapps.io/pangea/>, <https://pwrss.shinyapps.io/index/>, and <https://designingexperiments.com> [@anderson2017]. *R*-coding based packages, such as *pwr* [@champely2017], *faux* [@debruine2021], *simr* [@simr:an], *mixedpower* [@kumle2020], and *SimDesign* [@chalmers2020], can be used to examine power and plan sample sizes, usually with simulation. Researchers must be careful using any toolkit, as errors can occur with the over-reliance on software [e.g., it should not be a substitute for critical thinking, @nuijten2016]. Additionally, many tools assume data normality, place an overemphasis on statistical significance, and may rely on simplified assumptions that do not reflect the actual data. When computing sample size estimates, it is important to remember that the effects sizes are estimates, not exact calculations guaranteed to produce a specific result [@batterham2005]. For example, it is hard to accurately estimate all parameters from a study, and if any were incorrect, then the sample size estimate tied to that specific level of power may be incorrect [@albers2018].
+Pre-registration of a study involves outlining the study and hypotheses before data collection begins [@stewart2020; @d.chambers2014; @nosek2014], and details of a power analyses or limitations on resources are often used to provide justification for the pre-registered sample quota [@pownall2023; @vandenakker2023; @akker2023]. Given the combined issues of publish-or-perish and that most non-significant results do not result in published manuscripts, power analysis may be especially critical for early career researchers to increase the likelihood that they will identify significant effects if they exist [@rosenthal1979; @simmons2011]. Justified sample sizes through power analyses may allow for publication of non-significant, yet well measured effects, along with the smallest effect of interest movement [@anvari2021], potentially improving the credibility of published work.
+
+A recent review of power analyses found - across behavioral, cognitive, and social science journal articles - researchers did not provide enough information to understand their power analyses and often chose effect sizes that were unjustified [@beribisky2019]. One solution to this power analysis problem is the plethora of tools made available for researchers to make power computations accessible to non-statisticians; however, a solid education in power is necessary to use these tools properly. G\*Power is one of the most popular free power software options [@faul2007; @erdfelder1996] that provides a simple point and click graphical user interface for power calculations [however, see @brysbaert2019]. Web-based tools have also sprung up for overall and statistical test specific sample size planning including <https://powerandsamplesize.com>, <https://jakewestfall.shinyapps.io/pangea/>, <https://pwrss.shinyapps.io/index/>, and <https://designingexperiments.com> [@anderson2017]. *R*-coding based packages, such as *pwr* [@champely2017], *faux* [@debruine2021], *simr* [@simr:an], *mixedpower* [@kumle2020], and *SimDesign* [@chalmers2020], can be used to examine power and plan sample sizes, usually with simulation. Researchers must be careful using any toolkit, as errors can occur with the over-reliance on software [e.g., it should not be a substitute for critical thinking, @nuijten2016]. Additionally, many tools assume data normality, place an overemphasis on statistical significance, and may rely on simplified assumptions that do not reflect the actual data. Further, the social sciences often ignores robust statistical methods as an option for analysis [@field2017; @erceg-hurn2008], and the implementation of these analyses in power software is somewhat sporadic. Finally, when computing sample size estimates, it is important to remember that the effects sizes are estimates, not exact calculations guaranteed to produce a specific result [@batterham2005]. For example, it is hard to accurately estimate all parameters from a study, and if any were incorrect, then the sample size estimate tied to that specific level of power may be incorrect [@albers2018].
 
 Changes in publication practices and research design have also created new challenges in providing a sample size plan for a research study. While statistics courses often suggest that a specific research design leads to a specific statistical test, meta-science work has shown that given the same data and hypothesis, researchers can come up with multiple ways to analyze the data [@silberzahn2018many; @coretta]. Therefore, a single power analysis only corresponds to the specific analysis that the researcher expects to implement. Analyses may evolve during the research project or be subject to secondary analysis; thus, power and sample size estimation based on one analysis is potentially less useful than previously imagined. Further, research projects often have multiple testable hypotheses, but it is unclear which hypothesis or test should be used to estimate sample size with a power analysis. Last, research investigations may not even have a specific, testable hypothesis, as some projects are intended to curate a large dataset for future reuse [i.e., stimuli database creation, @buchanan2019].
 
-In light of these analytical (or lack thereof) concerns, we propose a new method to determine a sample size in cases where a more traditional power analysis might be less appropriate or even impossible. This approach combines accuracy in parameter estimation [AIPE, @kelley2007; @maxwell2008] and bootstrapped simulation on pilot data [@rousselet]. This method accounts for a potential lack of hypothesis test (or simply no good way to estimate an effect size of interest), and/or an exploratory design with an unknown set of potential hypotheses and analytical choices. Specifically, this manuscript focuses on research designs that use multiple items to measure the phenomena of interest. For example, semantic priming is measured with multiple paired stimuli [@meyer1971], which traditionally has been analyzed by creating person or item-level averages to test using an ANOVA [@brysbaert2018]. However, research implementing multilevel models with random effects for the stimuli has demonstrated potential variability in their impact on outcomes; thus, we should be careful not to assume that all items in a research study have the same "effect".
+In light of these analytical (or lack thereof) concerns, we propose a new method to determine a sample size in cases where a more traditional power analysis might be less appropriate or even impossible. This approach combines accuracy in parameter estimation [AIPE, @kelley2007; @maxwell2008] and data-driven Monte-Carlo simulation on pilot data [@rousselet]. This method accounts for a potential lack of hypothesis test (or simply no good way to estimate an effect size of interest), and/or an exploratory design with an unknown set of potential hypotheses and analytical choices. Specifically, this manuscript focuses on research designs that use multiple items to measure the phenomena of interest. For example, semantic priming is measured with multiple paired stimuli [@meyer1971], which traditionally has been analyzed by creating person or item-level averages to test using an ANOVA [@brysbaert2018]. However, research implementing multilevel models with random effects for the stimuli has demonstrated potential variability in their impact on outcomes; thus, we should be careful not to assume that all items in a research study have the same "effect".
 
 ## Accuracy in Parameter Estimation
 
-AIPE shifts the focus away from finding a significant *p*-value to finding a parameter that is "accurately measured". For example, researchers may wish to detect a specific mean in a study, *M* = .35. They could then use AIPE to estimate the sample size needed to find a "sufficiently narrow" confidence interval around that mean. Sufficiently narrow is often defined by the researcher using a minimum parameter size of interest and/or confidence intervals. Therefore, they could decide that their 95% confidence interval should be approximately between .20 and .50, and sufficiently narrow could be defined as a width of .30 or .15 on each side. While confidence intervals are related to null hypothesis significance testing (i.e., 95% confidence intervals that do not include zero would indicate a significant difference from zero at $\alpha$ \< .05), AIPE procedures suggest how we can define a sample size with a given width of confidence interval, regardless of whether it includes zero.
+AIPE shifts the focus away from finding a significant *p*-value to finding a parameter that is accurately measured. For example, researchers may wish to detect a specific mean in a study, *M* = .35. They could then use AIPE to estimate the sample size needed to find a sufficiently narrow confidence interval around that mean. Sufficiently narrow is often defined by the researcher using a minimum parameter size of interest and/or confidence intervals. Therefore, they could decide that their 95% confidence interval should be approximately between .20 and .50, and sufficiently narrow could be defined as a width of .30 or .15 on each side. While confidence intervals are related to null hypothesis significance testing (i.e., 95% confidence intervals that do not include zero would indicate a significant difference from zero at $\alpha$ \< .05), AIPE procedures suggest how we can define a sample size with a given width of confidence interval, regardless of whether it includes zero.
 
-## Bootstrapping and Simulation
+## Monte Carlo Simulation
 
-One form of data simulation is bootstrapping, which involves using data obtained to simulate similar datasets by drawing from the original data with replacement [@efron2000; @rousselet]. Bootstrapping allows one to calculate parameter estimates, confidence intervals, and to simulate the potential population distribution, shape, and bias. Simulation is often paired with re-creating a data set with a similar structure for testing analyses and hypotheses based on proposed effect sizes or suggested population means. Generally, we would suggest starting with pilot data of a smaller sample size (e.g., 20 to 50) to understand the variability in potential items used to represent your phenomenon, especially if they are to be used in a larger study. However, given some background knowledge about the potential items, one could simulate example pilot data to use in a similar manner in our suggested procedure. 
+One form of data simulation is data-driven Monte-Carlo simulation, which involves using data obtained to simulate similar datasets by drawing from the original data with replacement [@efron2000; @rousselet]. This type of simulation allows one to calculate parameter estimates, confidence intervals, and to simulate the potential population distribution, shape, and bias. Simulation is often paired with re-creating a data set with a similar structure for testing analyses and hypotheses based on proposed effect sizes or suggested population means. Generally, we would suggest starting with pilot data of a smaller sample size (e.g., 20 to 50) to understand the variability in potential items used to represent your phenomenon, especially if they are to be used in a larger study. However, given some background knowledge about the potential items, one could simulate example pilot data to use in a similar manner in our suggested procedure.
 
-Pilot or simulated data would be used to estimate the variability within items and select a "sufficiently narrow" window for overall item confidence interval for AIPE (i.e., by selecting a specific standard error criterion, given the formula for confidence intervals). The advantage to this method over simple power estimation from pilot effect sizes is the multiple simulations to average out potential variability, as well as a shift away from traditional NHST to parameter estimation. Bootstrapping would then be used to determine how many participants may be necessary to achieve a dataset wherein as many items as required meet the pre-specified well-measured criterion.
+Pilot or simulated data would be used to estimate the variability within items and select a sufficiently narrow window for overall item confidence interval for AIPE (i.e., by selecting a specific standard error criterion, given the formula for confidence intervals). The advantage to this method over simple power estimation from pilot effect sizes is the multiple simulations to average out potential variability, as well as a shift away from traditional NHST to parameter estimation. Simulation would then be used to determine how many participants may be necessary to achieve a dataset wherein as many items as required meet the pre-specified well-measured criterion.
 
 ```{r echo = F, eval = F}
 library(MBESS)
@@ -347,7 +349,7 @@ ss.aipe.R2(Population.R2 = 0.35^2, # our correlation squared
 
 ## Sequential Testing
 
-Researchers could then use sequential testing to estimate their parameter of interest after each participant's data or at regular intervals during data collection to determine whether they have achieved their expected width of the confidence interval around that parameter. One would set a minimum sample size (e.g., based on known data collection ability) and use the confidence interval width as a stopping rule (i.e., stop data collection when the confidence interval is sufficiently narrow, as defined above). Next, researchers would use the estimated sample size associated with the simulation results of many items obtaining the stopping rule as a maximum sample size (e.g., they expect 90% of items to meet their stopping rule with 100 participants based on simulation). By defining each of these components, researchers could ensure a feasible minimum sample size, a way to stop data collection when goals have been met, and a maximum sample size rule to ensure an actual end to data collection. The maximum stopping rule could also be defined by resources (e.g., two semesters data collection), but nevertheless should be included. Therefore, we propose a method that leverages the ideas behind AIPE, paired with simulation and bootstrapping, to estimate the minimum and maximum proposed sample sizes and stopping rules for studies that use multiple items with expected variability in their estimates to measure an overall phenomena.
+Researchers could then use sequential testing to estimate their parameter of interest after each participant's data or at regular intervals during data collection to determine whether they have achieved their expected width of the confidence interval around that parameter. One would set a minimum sample size (e.g., based on known data collection ability) and use the confidence interval width as a stopping rule (i.e., stop data collection when the confidence interval is sufficiently narrow, as defined above). Next, researchers would use the estimated sample size associated with the simulation results of many items obtaining the stopping rule as a maximum sample size (e.g., they expect 90% of items to meet their stopping rule with 100 participants based on simulation). By defining each of these components, researchers could ensure a feasible minimum sample size, a way to stop data collection when goals have been met, and a maximum sample size rule to ensure an actual end to data collection. The maximum stopping rule could also be defined by resources (e.g., two semesters data collection), but nevertheless should be included. Therefore, we propose a method that leverages the ideas behind AIPE, paired with simulation and Monte Carlo simulation, to estimate the minimum and maximum proposed sample sizes and stopping rules for studies that use multiple items with expected variability in their estimates to measure an overall phenomena.
 
 ## Proposed Method for Sample Size Planning
 
@@ -357,15 +359,15 @@ Building on these ideas, we suggest the following procedure to determine a sampl
 
 1)  Use pilot data that closely resembles data you intend to collect. This dataset should contain items that are identical or similar to those that will be implemented in the study. In this procedure, it is important to ensure that the data is representative of a larger population of sampled items that you intend to assess. Generally, pilot data sample sizes will be smaller than the overall intended project (e.g., 20 to 50), as the goal would be to determine how many participants would be necessary to reach a "stable" standard error for the accurately measured confidence interval rule.
 
-2)  For each item in the pilot data, calculate the standard error (SE). Select a cutoff SE that defines when items are considered "accurately measured". The simulations described in the Data Simulation section will explore what criterion should be used to determine the cutoff SE from the pilot data.
+2)  For each item in the pilot data, calculate the standard error (SE). Select a cutoff SE that defines when items are considered accurately measured. The simulations described in the Data Simulation section will explore what criterion should be used to determine the cutoff SE from the pilot data.
 
-### Bootstrap Samples
+### Monte Carlo Samples
 
 3)  Sample, with replacement, from your pilot data using sample sizes starting at a value that you consider the minimal sample size per item and increase in small units up to a value that you consider the maximum sample size. We will demonstrate example maximum sample sizes based on the data simulation below; however, a practical maximum sample size may be determined by time (e.g., one semester data collection) or resources (e.g., 200 participants worth of funding). As for the minimal sample size, we suggest using 20 as a reasonable value for simulation purposes. For each sample size simulation, calculate the SE for each item. Use multiple simulations (e.g., *n* = 500 to 1000) to avoid issues with random sampling variability.
 
 ### Determine Minimum, Maximum Sample Size
 
-4)  Use the simulated SEs to determine the percentage of items that meet the cutoff score determined in Step 2. Each sample size from Step 3 will have multiple bootstrapped simulations, and therefore, create an average percentage score for each sample size for Step 5.
+4)  Use the simulated SEs to determine the percentage of items that meet the cutoff score determined in Step 2. Each sample size from Step 3 will have multiple simulations, and therefore, create an average percentage score for each sample size for Step 5.
 
 5)  Find the minimum sample size so that 80%, 85%, 90%, and 95% of the items meet the cutoff score and can be considered accurately measured. We recommend these scores to ensure that most items are accurately measured, in a similar vein to the common power-criterion suggestions. Each researcher can determine which of these is their minimum or maximum sample size (e.g., individuals can choose to use 80% as a minimum and 90% as a maximum or use values from Step 3 based on resources).
 
@@ -381,14 +383,14 @@ apa_table(data.frame(
   "Proposed Steps" = c(
     "Use representative pilot data.",
     "Calculate standard error of each of the items in the pilot data. Determine the appropriate SE for the stopping rule.",
-    "Create bootstrapped samples of your pilot data starting with at least 20 participants up to a maximum number of participants.", 
-    "Calculate the standard error of each of the items in the bootstrapped data. From these scores, calculate the percent of items below the cutoff score from Step 2.",
+    "Create simulated samples of your pilot data starting with at least 20 participants up to a maximum number of participants.", 
+    "Calculate the standard error of each of the items in the simulated data. From these scores, calculate the percent of items below the cutoff score from Step 2.",
     "Determine the sample size at which 80%, 85%, 90%, 95% of items are below the cutoff score.",
     "Report all values. Designate one as the minimum sample size, the cutoff score as the stopping rule for adaptive designs, and the maximum sample size."),
     "Updated Steps" = c("Use representative pilot data.",
     "Calculate standard error of each of the items in the pilot data. Using the 40%, determine the cutoff and stopping rule for the standard error of the items.",
-    "Create bootstrapped samples of your pilot data starting with at least 20 participants up to a maximum number of participants.", 
-    "Calculate the standard error of each of the items in the bootstrapped data. From these scores, calculate the percent of items below the cutoff score from Step 2.",
+    "Create simulated samples of your pilot data starting with at least 20 participants up to a maximum number of participants.", 
+    "Calculate the standard error of each of the items in the simulated data. From these scores, calculate the percent of items below the cutoff score from Step 2.",
     "Determine the sample size at which 80%, 85%, 90%, 95% of items are below the cutoff score. Use the correction formula to adjust your proposed sample size based on pilot data size, power, and percent variability.",
     "Report all values. Designate one as the minimum sample size, the cutoff score as the stopping rule for adaptive designs, and the maximum sample size.")
   ), 
@@ -461,7 +463,7 @@ SE_c <- tapply(con_use$Rating, con_use$Word, function (x) { sd(x)/sqrt(length(x)
 cutoff_c <- quantile(SE_c, probs = seq(from = .1, to = .9, by = .1))
 ```
 
-*Step 1*. The concreteness ratings data includes `r length(unique(conDF$Word))` concepts that were rated for their concreteness. We randomly selected *n* = 20 abstract words ($M_{Rating}$ \<= 2) and *n* = 20 concrete words ($M_{Rating}$ \>= 4). In the original study, not every participant rated every word, which created uneven sample sizes for each word. Further, participants were allowed to indicate they did not know a word, and those responses were set to missing data. In our sample of 40 words, the average pilot sample size was `r round(mean(tapply(con_small$Rating, con_small$Word, length)), digits = 2)` (*SD* = `r round(sd(tapply(con_small$Rating, con_small$Word, length)), digits = 2)`), and we will use `r pilot_size_c` as our pilot sample size for the concreteness ratings (this information will be used in the follow-up to the simulation study). 
+*Step 1*. The concreteness ratings data includes `r length(unique(conDF$Word))` concepts that were rated for their concreteness. We randomly selected *n* = 20 abstract words ($M_{Rating}$ \<= 2) and *n* = 20 concrete words ($M_{Rating}$ \>= 4). In the original study, not every participant rated every word, which created uneven sample sizes for each word. Further, participants were allowed to indicate they did not know a word, and those responses were set to missing data. In our sample of 40 words, the average pilot sample size was `r round(mean(tapply(con_small$Rating, con_small$Word, length)), digits = 2)` (*SD* = `r round(sd(tapply(con_small$Rating, con_small$Word, length)), digits = 2)`), and we will use `r pilot_size_c` as our pilot sample size for the concreteness ratings (this information will be used in the follow-up to the simulation study).
 
 ```{r elp-estimate, echo = F, include = F}
 elp_small <- elpDF %>% filter(Stimulus %in% con_words)
@@ -482,11 +484,11 @@ SE_e <- tapply(elp_use$RT, elp_use$Stimulus, function (x) { sd(x)/sqrt(length(x)
 cutoff_e <- quantile(SE_e, probs = seq(from = .1, to = .9, by = .1))
 ```
 
-We first filtered the ELP data to the same real words as the concreteness subset selected above, and this data includes `r length(unique(elpDF$Stimulus))` real words. The average pilot sample size for this random sample was `r format(round(mean(tapply(elp_small$RT, elp_small$Stimulus, length)), digits = 2), nsmall = 2)` (*SD* = `r round(sd(tapply(elp_small$RT, elp_small$Stimulus, length)), digits = 2)`), and *n* = `r pilot_size_e` will be our pilot size for the lexical decision task. 
+We first filtered the ELP data to the same real words as the concreteness subset selected above, and this data includes `r length(unique(elpDF$Stimulus))` real words. The average pilot sample size for this random sample was `r format(round(mean(tapply(elp_small$RT, elp_small$Stimulus, length)), digits = 2), nsmall = 2)` (*SD* = `r round(sd(tapply(elp_small$RT, elp_small$Stimulus, length)), digits = 2)`), and *n* = `r pilot_size_e` will be our pilot size for the lexical decision task.
 
 *Step 2*. Table \@ref(tab:table-example) demonstrates the cutoff scores for deciles of the SEs for the concreteness ratings and lexical decision response latency items. A researcher could potentially pick any of these cutoffs or other percentage options not shown here (e.g., 35%). We will use simulation to determine the suggestion that best captures the balance of adequately powering our sample and feasibility. This component is explored in the Data Simulation section.
 
-*Step 3-5*. The pilot data was then bootstrapped with replacement creating samples of 20 to 300 participants per item increasing in units of 5, for concreteness ratings and lexical decision latencies separately (Step 3). Each of these 57 sample sizes was then repeated 500 times. The SE of each item was calculated for the bootstrapped samples separately for concreteness ratings and lexical decision times (Step 4), and the average percentage of items for each sample size (averaging across the 500 simulations) below each potential cutoff was gathered for each (Step 5). The smallest sample size with at least 80%, 85%, 90%, and 95% of items below the cutoff are reported in Table \@ref(tab:table-example) for each task (Step 5).
+*Step 3-5*. The pilot data was then simulated with replacement creating samples of 20 to 300 participants per item increasing in units of 5, for concreteness ratings and lexical decision latencies separately (Step 3). Each of these 57 sample sizes was then repeated 500 times. The SE of each item was calculated for the simulated samples separately for concreteness ratings and lexical decision times (Step 4), and the average percentage of items for each sample size (averaging across the 500 simulations) below each potential cutoff was gathered for each (Step 5). The smallest sample size with at least 80%, 85%, 90%, and 95% of items below the cutoff are reported in Table \@ref(tab:table-example) for each task (Step 5).
 
 ```{r con-sample, include = F, echo = F}
 # sequence of sample sizes to try
@@ -702,9 +704,9 @@ lexical_cuts <- values_80_e %>%
   select(e_80, e_85, e_90, e_95)
 
 results_table <- matrix(NA, nrow = 9, ncol = 11)
-results_table[ , 1] <- c("Decile 10", "Decile 20", "Decile 30", 
-                         "Decile 40", "Decile 50", "Decile 60", 
-                         "Decile 70", "Decile 80", "Decile 90")
+results_table[ , 1] <- c("Decile 1", "Decile 2", "Decile 3", 
+                         "Decile 4", "Decile 5", "Decile 6", 
+                         "Decile 7", "Decile 8", "Decile 9")
 results_table[1 , 2:11] <- unlist(c(cutoff_c[1], concrete_cuts[1 , ], 
                                     cutoff_e[1], lexical_cuts[1, ]))
 results_table[2 , 2:11] <- unlist(c(cutoff_c[2], concrete_cuts[2 , ], 
@@ -732,11 +734,10 @@ results_table_example$`L SE` <- apa_num(as.numeric(results_table_example$`L SE`)
 
 apa_table(results_table_example, 
           caption = "Sample Size Estimates by Decile for Example Study",
-          note = "C = Concreteness rating, L = Lexical Decision Response Latencies. Estimates are based on meeting at least the minimum percent of items (e.g., 80%) but may be estimated over that amount (e.g., 82.5%). SE columns represent the standard error value cutoff for each decile, while 80/85/90/95 percent columns represent the sample size needed to have that percent of items below the SE cutoff. For example, 150 participants are required to ensure at least 95% of concreteness items SE are below the 10 percent decile SE cutoff, and 345 participants are necessary for the lexical decision SE to be below its 10 percent decile cutoff.")
+          note = "C = Concreteness rating, L = Lexical Decision Response Latencies. Estimates are based on meeting at least the minimum percent of items (e.g., 80%) but may be estimated over that amount (e.g., 82.5%). SE columns represent the standard error value cutoff for each decile, while 80/85/90/95 percent columns represent the sample size needed to have that percent of items below the SE cutoff. For example, 150 participants are required to ensure at least 95% of concreteness items SE are below the 1st decile SE cutoff, and 345 participants are necessary for the lexical decision SE to be below its 1st decile cutoff.")
 ```
 
 *Step 6*. In the last step, the researcher would indicate their smallest sample size, the cutoff SE criterion if they wanted to adaptively test (e.g., examine the SE after each participant and stop data collection if all items reached criteria), and their maximum sample size. As mentioned earlier, the decile for a balanced SE cutoff is unclear and without guidance, a potential set of researcher degrees of freedom could play a role in the chosen cutoff [@simmons2011]. Even though both measurements (ratings and response latencies) appear to converge on similar sample size suggestions for each decile and percent level, the impact of scale size (i.e., concreteness ratings 1-5 versus response latencies in ms 0-`r max(elp_small$RT, na.rm = T)`) and heterogeneity of item standard errors (concrete $SD_{SD}$ = `r apa_num(sd_items_c)` and lexical $SD_{SD}$ = `r apa_num(sd_items_e)`) is not obvious. Last, by selecting the ends of the distribution for our concreteness words, skew of the distribution may additionally impact our estimates. Each of these will be explored in our simulation.
-
 
 # Simulation Method
 
@@ -786,7 +787,7 @@ In this section, we simulate what a researcher might do if they follow our sugge
 
 We then simulated samples of 20 to 2000 increasing in units of 20 to determine what the new sample size suggestion would be (Step 3). We assume that samples over 500 may be considered too large for many researchers who do not work in teams or have participant funds. However, the sample size simulations were estimated over this amount to determine the pattern of suggested sample sizes (i.e., the function between original pilot sample size and projected sample size).
 
-Next, we calculated the percentage of items that fell below the cutoff score, and therefore, would be considered "well-measured" for each decile by sample (Step 4). From these data, we pinpoint the smallest suggested sample size at which 80%, 85%, 90% and 95% of the items fall below the cutoff criterion (Step 5). These values were chosen as popular measures of "power" in which one could determine the minimum suggested sample size (potentially 80% of the items) and the maximum suggested sample size (selected from a higher percentage, such as 90% or 95%).
+Next, we calculated the percentage of items that fell below the cutoff score, and therefore, would be considered "well-measured for each decile by sample (Step 4). From these data, we pinpoint the smallest suggested sample size at which 80%, 85%, 90% and 95% of the items fall below the cutoff criterion (Step 5). These values were chosen as popular, yet arbitrary, measures of "power" in which one could determine the minimum suggested sample size (potentially 80% of the items) and the maximum suggested sample size (selected from a higher percentage, such as 90% or 95%).
 
 In order to minimize the potential for random quirks to arise, we simulated the sample selection from the population 100 times and the researcher simulation 100 times for each of those selections. This resulted in 1,620,000 simulations of all combinations of variables (i.e., scale of the data, heterogeneity, data skew, pilot study size, researcher simulation size). The average of these simulations is presented in the results.
 
@@ -1053,9 +1054,9 @@ for (scale_loop in unique(summary_long$scale_size)){
 # plot(fit_model, resid_model); abline(v = 0); abline(h = 0)
 ```
 
-Last, we examined the question of an appropriate SE decile. First, the 0%, 10%, and 20% deciles are likely too restrictive, providing very large estimates that do not always find a reasonable sample size in proportion to the pilot sample size, scale size, and heterogeneity. If we examine the $R^2$ values for each decile of our regression equation separately, we find that the values are all $R^2$ \> .99 with very little differences between them. Figures \@ref(fig:decile40-figure) and \@ref(fig:decile50-figure) illustrate the corrected scores for simulations at the 40% and 50% decile recommended cutoff for item standard errors. For small heterogeneity, differences in decile are minimal, while larger heterogeneity shows more correction at the 40% decile range, especially for scales with larger potential variance. Therefore, we would suggest the 40% decile to overpower each item for Step 2. 
+Last, we examined the question of an appropriate SE decile. First, the 0, 1st, and 2nd deciles are likely too restrictive, providing very large estimates that do not always find a reasonable sample size in proportion to the pilot sample size, scale size, and heterogeneity. If we examine the $R^2$ values for each decile of our regression equation separately, we find that the values are all $R^2$ \> .99 with very little differences between them. Figures \@ref(fig:decile40-figure) and \@ref(fig:decile50-figure) illustrate the corrected scores for simulations at the 4th and 5th decile recommended cutoff for item standard errors. For small heterogeneity, differences in decile are minimal, while larger heterogeneity shows more correction at the 4th decile range, especially for scales with larger potential variance. Therefore, we would suggest the 4th decile to overpower each item for Step 2.
 
-```{r decile40-figure, fig.cap = "Comparison of the cutoffs for 40% deciles across heterogeneity (columns), powering of items (rows), and scale size (color).", fig.height=8, fig.width=8}
+```{r decile40-figure, fig.cap = "Comparison of the cutoffs for 4th deciles across heterogeneity (columns), powering of items (rows), and scale size (color).", fig.height=8, fig.width=8}
 summary_long %>% 
   filter(name == "Decile 40") %>% 
   group_by(variability, original_n, scale_size, name, power) %>% 
@@ -1068,7 +1069,7 @@ summary_long %>%
   theme_classic(base_size = 10) + 
   facet_grid(power~ variability,
              labeller = labeller(power = power.labs)) +
-  ggtitle("Results for 40% deciles") +
+  ggtitle("Results for 4th deciles") +
   xlab("\nPilot Sample Size") + 
   ylab("Corrected Sample Size\n") + 
   scale_color_manual(name = "Scale Size",
@@ -1078,7 +1079,7 @@ summary_long %>%
 
 ```
 
-```{r decile50-figure, fig.cap = "Comparison of the cutoffs for 50% deciles across heterogeneity (columns), powering of items (rows), and scale size (color).", fig.height=8, fig.width=8}
+```{r decile50-figure, fig.cap = "Comparison of the cutoffs for 5th decile across heterogeneity (columns), powering of items (rows), and scale size (color).", fig.height=8, fig.width=8}
 summary_long %>% 
   filter(name == "Decile 50") %>% 
   group_by(variability, original_n, scale_size, name, power) %>% 
@@ -1091,7 +1092,7 @@ summary_long %>%
   theme_classic(base_size = 10) + 
   facet_grid(power~ variability,
              labeller = labeller(power = power.labs)) + 
-  ggtitle("Results for 50% deciles") +
+  ggtitle("Results for 5th decile") +
   xlab("\nPilot Sample Size") + 
   ylab("Corrected Sample Size\n") + 
   scale_shape_discrete(name = "Scale Size") +
@@ -1102,7 +1103,7 @@ summary_long %>%
 
 ```
 
-The final formula for 40% decile correction is provided in Table \@ref(tab:table-decile). Proportion of variance can be calculated with the following:
+The final formula for 4th decile correction is provided in Table \@ref(tab:table-decile). Proportion of variance can be calculated with the following:
 
 $$\frac{SD_{Item SD}}{\sqrt{\frac{(Maximum - Minimum)^2}{4}}}$$ where maximum and minimum are the max and min values found in the scale (or the data, if the scale is unbounded). This formula would be applied in Step 5 of the proposed procedure. While the estimated coefficients could change given variations on our simulation parameters, the general size and pattern of coefficients was consistent, and therefore, we believe this correction equation should work for a variety of use cases. We will now demonstrate the final procedure on the example provided earlier.
 
@@ -1120,7 +1121,7 @@ table_correct$p.value <- printnum(table_correct$p.value, digits = 3,
                  zero = FALSE, gt1 = F)
 apa_table(table_correct, 
      col.names = c("Term", "Estimate", "$SE$", "$t$", "$p$"),
-     caption = "Parameters for 40% Decile Cutoff Scores")
+     caption = "Parameters for 4th decile Cutoff Scores")
 ```
 
 # Updated Example
@@ -1215,7 +1216,7 @@ apa_table(table_correction_applied,
           note = "SS = Sample Size, Proj = Projected, Prop = Proportion, Var = Variance, Cor = Corrected")
 ```
 
-The updated proposal steps are in Table \@ref(tab:table-summary) on the right hand side. The main change occurs in Step 2 with a designated cutoff decile, and Step 5 with a correction score. Using the data from the 40% decile in Table \@ref(tab:table-example), we can determine that the stopping rule SE for concreteness ratings would be `r apa_num(cutoff_c[4])`, and the stopping rule SE for lexical decision times would be `r apa_num(cutoff_e[4])`. For Step 5, we apply our correction formula separately for each one, as they have different variability scores, and these scores are shown in Table \@ref(tab:table-scores-updated). Each row was multiplied by row one's formula, and then these scores are summed for the final corrected sample size. Sample sizes cannot be proportional, so we recommend rounding up to the nearest whole number.
+The updated proposal steps are in Table \@ref(tab:table-summary) on the right hand side. The main change occurs in Step 2 with a designated cutoff decile, and Step 5 with a correction score. Using the data from the 4th decile in Table \@ref(tab:table-example), we can determine that the stopping rule SE for concreteness ratings would be `r apa_num(cutoff_c[4])`, and the stopping rule SE for lexical decision times would be `r apa_num(cutoff_e[4])`. For Step 5, we apply our correction formula separately for each one, as they have different variability scores, and these scores are shown in Table \@ref(tab:table-scores-updated). Each row was multiplied by row one's formula, and then these scores are summed for the final corrected sample size. Sample sizes cannot be proportional, so we recommend rounding up to the nearest whole number.
 
 For one additional consideration, we calculated the potential amount of data retention given that participants could indicate they did not know a word ($M_{answered}$ = `r round(mean(data_loss_c$percent_correct), digits = 2)`, *SD* = `r round(sd(data_loss_c$percent_correct), digits = 2)`) in the concreteness task or answer a trial incorrectly in the lexical decision task ($M_{correct}$ = `r round(mean(data_loss_e$percent_correct), digits = 2)`, *SD* = `r round(sd(data_loss_e$percent_correct), digits = 2)`). In order to account for this data loss, the potential sample sizes were multiplied by $\frac{1}{p_{retained}}$ where the denominator is proportion retained for each task.
 
@@ -1244,7 +1245,7 @@ pops <- simulate_population(mu = 4, # item means
 head(pops)
 ```
 
-*Step 2*. In step 2, we can use `calculate_cutoff()` to calculate the standard error of the items, the standard deviation of the standard errors and the corresponding proportion of variance possible, and the 40% decile cutoff score. The `pops` dataframe can be used in this function, which has columns named `item` for the item labels (i.e., 1, 2, 3, 4 or characters can be used), and `score` for the dependent variable. This function returns a list of values to be used in subsequent steps.
+*Step 2*. In step 2, we can use `calculate_cutoff()` to calculate the standard error of the items, the standard deviation of the standard errors and the corresponding proportion of variance possible, and the 4th decile cutoff score. The `pops` dataframe can be used in this function, which has columns named `item` for the item labels (i.e., 1, 2, 3, 4 or characters can be used), and `score` for the dependent variable. This function returns a list of values to be used in subsequent steps.
 
 ```{r calc_cut, include = T, echo = T}
 cutoff <- calculate_cutoff(population = pops, # pilot data or simulated data
@@ -1255,25 +1256,25 @@ cutoff <- calculate_cutoff(population = pops, # pilot data or simulated data
                            
 cutoff$se_items # all standard errors of items
 cutoff$sd_items # standard deviation of the standard errors
-cutoff$cutoff # 40% decile score
+cutoff$cutoff # 4th decile score
 cutoff$prop_var # proportion of possible variance 
 ```
 
-*Step 3*. The `bootstrap_samples()` function creates bootstrapped samples from the pilot or simulated population data to estimate the number of participants needed for item standard error to be below the cutoff calculated in Step 2. This function returns a list of samples with sizes that start at the `start` size, increase by `increase`, and end with the `stop` sample size. The population or pilot data will be included in `population`, and the item column indicator should be included in `grouping_items`. The `nsim` argument determines the number of bootstrapped simulations to run.
+*Step 3*. The `simulate_samples()` function creates simulated samples from the pilot or simulated population data to estimate the number of participants needed for item standard error to be below the cutoff calculated in Step 2. This function returns a list of samples with sizes that start at the `start` size, increase by `increase`, and end with the `stop` sample size. The population or pilot data will be included in `population`, and the item column indicator should be included in `grouping_items`. The `nsim` argument determines the number of simulations to run.
 
 ```{r boot-sample, include = T, echo = T}
-samples <- bootstrap_samples(start = 20, # starting sample size
+samples <- simulate_samples(start = 20, # starting sample size
   stop = 100, # stopping sample size
-  increase = 5, # increase bootstrapped samples by this amount
+  increase = 5, # increase simulated samples by this amount
   population = pops, # population or pilot data
-  replace = TRUE, # bootstrap with replacement? 
+  replace = TRUE, # simulate with replacement? 
   nsim = 500, # number of simulations to run
   grouping_items = "item") # item column label  
 
 head(samples[[1]])
 ```
 
-*Step 4 and 5*. The proportion of bootstrapped items across sample sizes below the cutoff score can then be calculated using `calculate_proportion()`. This function returns a dataframe including each sample size with the proportion of items below that cutoff to use in the next function. The `samples` and `cutoff` arguments were previously calculated with our functions. The column for item labels and dependent variables are included as `grouping_items` and `score` arguments to ensure the right calculations.
+*Step 4 and 5*. The proportion of simulated items across sample sizes below the cutoff score can then be calculated using `calculate_proportion()`. This function returns a dataframe including each sample size with the proportion of items below that cutoff to use in the next function. The `samples` and `cutoff` arguments were previously calculated with our functions. The column for item labels and dependent variables are included as `grouping_items` and `score` arguments to ensure the right calculations.
 
 ```{r calc-prop, include = T, echo = T}
 proportion_summary <- calculate_proportion(samples = samples, # samples list
@@ -1298,37 +1299,34 @@ corrected_summary
 
 ## Vignettes
 
-While the example in this manuscript was cognitive linguistics focused, any research using repeated items as a unit of measure could benefit from the proposed newer sampling techniques. Therefore, we provide 12 example vignettes and varied code examples on our OSF page/GitHub site for this manuscript across a range of data types provided by the authors of this manuscript. Examples include psycholinguistics [@dedeyne2008; @heyman2014; @montefinese2022], social psychology data [@ulloa2014; @peterson2022; @grahe2022], COVID related data [@montefinese2021], and cognitive psychology [@röer2013; @10.7554/eLife.71601; @barzykowski2019]. These can be found on the package tutorial page: https://semanticpriming.github.io/semanticprimeR/. 
+While the example in this manuscript was cognitive linguistics focused, any research using repeated items as a unit of measure could benefit from the proposed newer sampling techniques. Therefore, we provide 12 example vignettes and varied code examples on our OSF page/GitHub site for this manuscript across a range of data types provided by the authors of this manuscript. Examples include psycholinguistics [@dedeyne2008; @heyman2014; @montefinese2022], social psychology data [@ulloa2014; @peterson2022; @grahe2022], COVID related data [@montefinese2021], and cognitive psychology [@röer2013; @10.7554/eLife.71601; @barzykowski2019]. These can be found on the package tutorial page: <https://semanticpriming.github.io/semanticprimeR/>.
 
 # Discussion
 
-We proposed a method combining AIPE, bootstrapping, and simulation to estimate a minimum and maximum sample size and to define a rule for stopping data collection based on narrow confidence intervals on a parameter of interest. In addition, we also demonstrated its practical applications using real-world data. We contend that this procedure is specifically useful for studies with multiple items that intend on using item level focused analyses; furthermore, the utility of measuring each item well can extend to many analysis choices. By focusing on collecting quality data, we can suggest that the data is useful, regardless of the outcome of any hypothesis test.
+We proposed a method combining AIPE and Monte Carlo simulation to estimate a minimum and maximum sample size and to define a rule for stopping data collection based on narrow confidence intervals on a parameter of interest. In addition, we also demonstrated its practical applications using real-world data. We contend that this procedure is specifically useful for studies with multiple items that intend on using item level focused analyses; furthermore, the utility of measuring each item well can extend to many analysis choices. By focusing on collecting quality data, we can suggest that the data is useful, regardless of the outcome of any hypothesis test.
 
-One limitation of these methods would be our decision to use datasets with very large numbers of items to simulate what might happen within one study. For example, the English Lexicon Project includes thousands of items, and if we were to simulate for all of those, our results would likely suggest needing thousands of participants for most items to reach the criterion. Additionally, as the number of items increases, you may also see very small estimates for sample size due to the correction factor (as with large numbers of items, you could find many items with standard errors below the 40% decile). Therefore, it would be beneficial to consider only simulating what a participant would reasonably complete in a study. Small numbers of repeated items usually result in larger sample sizes proposed from the original pilot data. This result occurs because the smaller number of items means more samples for nearly all to reach the cutoff criteria. These results are similar to what we might expect for a power analysis using a multilevel model - larger numbers of items tend to decrease necessary sample size, while smaller numbers of items tend to increase sample size.
+One limitation of these methods would be our decision to use datasets with very large numbers of items to simulate what might happen within one study. For example, the English Lexicon Project includes thousands of items, and if we were to simulate for all of those, our results would likely suggest needing thousands of participants for most items to reach the criterion. Additionally, as the number of items increases, you may also see very small estimates for sample size due to the correction factor (as with large numbers of items, you could find many items with standard errors below the 4th decile). Therefore, it would be beneficial to consider only simulating what a participant would reasonably complete in a study. Small numbers of repeated items usually result in larger sample sizes proposed from the original pilot data. This result occurs because the smaller number of items means more samples for nearly all to reach the cutoff criteria. These results are similar to what we might expect for a power analysis using a multilevel model - larger numbers of items tend to decrease necessary sample size, while smaller numbers of items tend to increase sample size.
 
-Second, these methods do not ensure the normal interpretation of power, where you know that you would find a specific effect for a specific test, $\alpha$, and so on. As discussed in the introduction, there is not necessarily a one-to-one mapping of hypothesis to analysis; many of the estimations within a traditional power analysis are just that - best approximations for various parameters. These proposed methods and traditional power analysis could be used together to strengthen our understanding of the sample size necessary for both a hypothesis test and a well-tuned estimation.
+Second, these methods do not ensure the normal interpretation of power, where you know that you would find a specific effect for a specific test, $\alpha$, and so on. As discussed in the introduction, there is not necessarily a one-to-one mapping of hypothesis to analysis; many of the estimations within a traditional power analysis are just that - best approximations for various parameters. These proposed methods and traditional power analysis could be used together to strengthen our understanding of the sample size necessary for both a hypothesis test and a well-tuned estimation. We would advise caution when oversampling (i.e., simulation from data with larger sample sizes than the pilot data) for null-hypothesis power estimates, as these may be upwardly biased in small samples creating Type-I error [@burns].
 
-Researchers should consider this hybrid approach for AIPE, bootstrapping, and simulation as a powerful tool for hypothesis testing and parameter estimation. This procedure holds benefits for various research studies, specifically replication studies, that usually prioritize subject sample size but rarely item sample size, in spite of the fact that item sample sizes can contribute to power in multilevel models [@brysbaert2018]. Replicated effects, accumulated through multiple studies and accurate measurement, contribute to robust meta-analyses, enhancing our understanding of the genuine nature of observed effects. This article helps to achieve this goal by encouraging researchers to conduct studies where the power analysis is not based on the size of the effect but on adequate sampling of the stimuli. We argue that this article can be the initial step to apply AIPE in a manner that can allow researchers to use item information to provide a more accurate and statistically reliable measure of the effect we aimed to investigate. In conclusion, item power analysis is a tool to avoid the waste of resources while ensuring that adequately measured items can be achieved. Well measured data can enable us to counteract the literature that contains false positives, allowing us to achieve replicable, high-quality science to establish answers to scientific questions with precision and accuracy.
+Researchers should consider this hybrid approach for AIPE and simulation as a powerful tool for hypothesis testing and parameter estimation. This procedure holds benefits for various research studies, specifically replication studies, that usually prioritize subject sample size but rarely item sample size, in spite of the fact that item sample sizes can contribute to power in multilevel models [@brysbaert2018]. Replicated effects, accumulated through multiple studies and accurate measurement, contribute to robust meta-analyses, enhancing our understanding of the genuine nature of observed effects. This article helps to achieve this goal by encouraging researchers to conduct studies where the power analysis is not based on the size of the effect but on adequate sampling of the stimuli. We argue that this article can be the initial step to apply AIPE in a manner that can allow researchers to use item information to provide a more accurate and statistically reliable measure of the effect we aimed to investigate. In conclusion, item power analysis is a tool to avoid the waste of resources while ensuring that adequately measured items can be achieved. Well measured data can enable us to counteract the literature that contains false positives, allowing us to achieve replicable, high-quality science to establish answers to scientific questions with precision and accuracy.
 
 # Open Practices
 
-- All data used in this manuscript and vignettes have been cited and can be found on our repository pages. 
-- Manuscript repository with code and data: https://osf.io/swmva/ or https://github.com/SemanticPriming/stimuli-power 
-- Package repository with vignettes and data: https://github.com/SemanticPriming/semanticprimeR
-- We did not pre-register this study, as it was a simulation study. No materials were used. 
+-   All data used in this manuscript and vignettes have been cited and can be found on our repository pages.
+-   Manuscript repository with code and data: <https://osf.io/swmva/> or <https://github.com/SemanticPriming/stimuli-power>
+-   Package repository with vignettes and data: <https://github.com/SemanticPriming/semanticprimeR>
+-   We did not pre-register this study, as it was a simulation study. No materials were used.
 
 \newpage
 
 # References
 
-```{=tex}
 \begingroup
 \setlength{\parindent}{-0.5in}
 \setlength{\leftskip}{0.5in}
-```
+
 ::: {#refs custom-style="Bibliography"}
 :::
 
-```{=tex}
 \endgroup
-```
