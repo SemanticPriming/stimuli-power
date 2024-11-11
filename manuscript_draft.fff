@@ -2,7 +2,7 @@
 \ifnextchar[{\eatarg}{}
 
 \centering
-\includegraphics{manuscript_draft_files/figure-latex/scale-size-figure-1.pdf}
+\pandocbounded{\includegraphics[keepaspectratio]{manuscript_draft_files/figure-latex/scale-size-figure-1.pdf}}
 \caption{\label{fig:scale-size-figure}Simulated pilot sample size and final projected sample size to achieve 80\%, 85\%, 90\%, and 95\% of items below threshold. These values are averaged over all other variables including decile. Black dots represent original sample size for reference.}
 \end{figure*}
 \efloatseparator
@@ -11,8 +11,8 @@
 \ifnextchar[{\eatarg}{}
 
 \centering
-\includegraphics{manuscript_draft_files/figure-latex/scale-skew-figure-1.pdf}
-\caption{\label{fig:scale-skew-figure}Simulated pilot sample size and final projected sample size to achieve 80\%, 85\%, 90\%, and 95\% of items below threshold. In comparison to Figure 1, this figure shows projected sample size for ceiling versus normal distributions on each scale. All other variables are averaged together, and black dots represent original sample size for reference.}
+\pandocbounded{\includegraphics[keepaspectratio]{manuscript_draft_files/figure-latex/scale-skew-figure-1.pdf}}
+\caption{\label{fig:scale-skew-figure}Simulated pilot sample size and final projected sample size to achieve 80\%, 85\%, 90\%, and 95\% of items below threshold. In comparison to Figure 1, this figure shows projected sample size for ceiling versus symmetric distributions on each scale. All other variables are averaged together, and black dots represent original sample size for reference.}
 \end{figure*}
 \efloatseparator
  
@@ -20,7 +20,7 @@
 \ifnextchar[{\eatarg}{}
 
 \centering
-\includegraphics{manuscript_draft_files/figure-latex/scale-hetero-figure-1.pdf}
+\pandocbounded{\includegraphics[keepaspectratio]{manuscript_draft_files/figure-latex/scale-hetero-figure-1.pdf}}
 \caption{\label{fig:scale-hetero-figure}Simulated pilot sample size and final projected sample size to achieve 80\%, 85\%, 90\%, and 95\% of items below threshold. In comparison to Figure 1 and 2, this figure shows projected sample size or differing amounts of heterogeneity on each scale. All other variables are averaged together, and black dots represent original sample size for reference.}
 \end{figure*}
 \efloatseparator
@@ -29,7 +29,7 @@
 \ifnextchar[{\eatarg}{}
 
 \centering
-\includegraphics{manuscript_draft_files/figure-latex/corrected-figure-1.pdf}
+\pandocbounded{\includegraphics[keepaspectratio]{manuscript_draft_files/figure-latex/corrected-figure-1.pdf}}
 \caption{\label{fig:corrected-figure}Corrected projected sample sizes for variability and power levels to achieve 80\%, 85\%, 90\%, and 95\% of items below threshold. All other variables are averaged together, and black dots represent original sample size for reference.}
 \end{figure*}
 \efloatseparator
@@ -38,8 +38,8 @@
 \ifnextchar[{\eatarg}{}
 
 \centering
-\includegraphics{manuscript_draft_files/figure-latex/decile40-figure-1.pdf}
-\caption{\label{fig:decile40-figure}Comparison of the cutoffs for 40\% deciles across heterogeneity (columns), powering of items (rows), and scale size (color).}
+\pandocbounded{\includegraphics[keepaspectratio]{manuscript_draft_files/figure-latex/decile40-figure-1.pdf}}
+\caption{\label{fig:decile40-figure}Comparison of the cutoffs for 4th deciles across heterogeneity (columns), powering of items (rows), and scale size (color).}
 \end{figure*}
 \efloatseparator
  
@@ -47,6 +47,24 @@
 \ifnextchar[{\eatarg}{}
 
 \centering
-\includegraphics{manuscript_draft_files/figure-latex/decile50-figure-1.pdf}
-\caption{\label{fig:decile50-figure}Comparison of the cutoffs for 50\% deciles across heterogeneity (columns), powering of items (rows), and scale size (color).}
+\pandocbounded{\includegraphics[keepaspectratio]{manuscript_draft_files/figure-latex/decile50-figure-1.pdf}}
+\caption{\label{fig:decile50-figure}Comparison of the cutoffs for 5th decile across heterogeneity (columns), powering of items (rows), and scale size (color).}
+\end{figure*}
+\efloatseparator
+ 
+\begin{figure*}[hbt]
+\ifnextchar[{\eatarg}{}
+
+\centering
+\pandocbounded{\includegraphics[keepaspectratio]{manuscript_draft_files/figure-latex/bimodal-figure-1.pdf}}
+\caption{\label{fig:bimodal-figure}Simulated example of Likert data with half of the items as bimodal distributions.}
+\end{figure*}
+\efloatseparator
+ 
+\begin{figure*}[hbt]
+\ifnextchar[{\eatarg}{}
+
+\centering
+\pandocbounded{\includegraphics[keepaspectratio]{manuscript_draft_files/figure-latex/bimodal-results-1.pdf}}
+\caption{\label{fig:bimodal-results}Estimated sample sizes for distributions that vary in the number of bimodal items. Note that percent below is treated as a continuous factor}
 \end{figure*}

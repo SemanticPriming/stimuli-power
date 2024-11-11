@@ -23,7 +23,7 @@ This document examines a test of what a researcher might find if they had bimoda
 
 ```{r simulate-bimodal}
 # simulate population 
-normal_pops <- simulate_population(mu = 4, # item means
+normal_pops <-semanticprimeR::simulate_population(mu = 4, # item means
   mu_sigma = .2, # variability in item means 
   sigma = 2, # item standard deviations
   sigma_sigma = .2, # standard deviation of the standard deviations
@@ -34,7 +34,7 @@ normal_pops <- simulate_population(mu = 4, # item means
   max_score = 7, #* maximum score for truncating purposes
   digits = 0) #* number of digits for rounding
   
-floor_pops <- simulate_population(mu = 2, # item means
+floor_pops <- semanticprimeR::simulate_population(mu = 2, # item means
   mu_sigma = .2, # variability in item means 
   sigma = 1, # item standard deviations
   sigma_sigma = .1, # standard deviation of the standard deviations
@@ -45,7 +45,7 @@ floor_pops <- simulate_population(mu = 2, # item means
   max_score = 7, #* maximum score for truncating purposes
   digits = 0) #* number of digits for rounding
   
-ceiling_pops <- simulate_population(mu = 6, # item means
+ceiling_pops <- semanticprimeR::simulate_population(mu = 6, # item means
   mu_sigma = .2, # variability in item means 
   sigma = 1, # item standard deviations
   sigma_sigma = .1, # standard deviation of the standard deviations
@@ -58,7 +58,7 @@ ceiling_pops <- simulate_population(mu = 6, # item means
 
 # simulate sample 
 item_number <- 1:30
-prop_mix <- 1 # manipulated this number 
+prop_mix <- .5 # manipulated this number 
 pilot_sample_size <- 30
 bimodal_items <- sample(item_number, size = round(length(item_number)*prop_mix), replace = FALSE)
 
@@ -77,6 +77,16 @@ researcher_sample <-
       group_by(item) %>% 
       slice_sample(n = pilot_sample_size)
   )
+
+library(ggridges)
+
+ggplot(researcher_sample %>% 
+         filter(item < 11), aes(x = score, y = factor(item), fill = factor(item))) +
+  geom_density_ridges(alpha = 0.7, scale = 1) +
+  labs(x = "Score", y = "Item") +
+  theme_minimal() +
+  theme(legend.position = "none") + 
+  coord_cartesian(xlim = c(1,7))
 
 # researcher_sample %>% 
 #   group_by(item) %>% 

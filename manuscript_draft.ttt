@@ -15,8 +15,8 @@ Step & Proposed Steps & Updated Steps\\
 \midrule
 1 & Use representative pilot data. & Use representative pilot data.\\
 2 & Calculate standard error of each of the items in the pilot data. Determine the appropriate SE for the stopping rule. & Calculate standard error of each of the items in the pilot data. Using the 40\%, determine the cutoff and stopping rule for the standard error of the items.\\
-3 & Create bootstrapped samples of your pilot data starting with at least 20 participants up to a maximum number of participants. & Create bootstrapped samples of your pilot data starting with at least 20 participants up to a maximum number of participants.\\
-4 & Calculate the standard error of each of the items in the bootstrapped data. From these scores, calculate the percent of items below the cutoff score from Step 2. & Calculate the standard error of each of the items in the bootstrapped data. From these scores, calculate the percent of items below the cutoff score from Step 2.\\
+3 & Create simulated samples of your pilot data starting with at least 20 participants up to a maximum number of participants. & Create simulated samples of your pilot data starting with at least 20 participants up to a maximum number of participants.\\
+4 & Calculate the standard error of each of the items in the simulated data. From these scores, calculate the percent of items below the cutoff score from Step 2. & Calculate the standard error of each of the items in the simulated data. From these scores, calculate the percent of items below the cutoff score from Step 2.\\
 5 & Determine the sample size at which 80\%, 85\%, 90\%, 95\% of items are below the cutoff score. & Determine the sample size at which 80\%, 85\%, 90\%, 95\% of items are below the cutoff score. Use the correction formula to adjust your proposed sample size based on pilot data size, power, and percent variability.\\
 6 & Report all values. Designate one as the minimum sample size, the cutoff score as the stopping rule for adaptive designs, and the maximum sample size. & Report all values. Designate one as the minimum sample size, the cutoff score as the stopping rule for adaptive designs, and the maximum sample size.\\
 \bottomrule
@@ -43,21 +43,21 @@ Step & Proposed Steps & Updated Steps\\
 \toprule
 Deciles & \multicolumn{1}{c}{C SE} & \multicolumn{1}{c}{C 80} & \multicolumn{1}{c}{C 85} & \multicolumn{1}{c}{C 90} & \multicolumn{1}{c}{C 95} & \multicolumn{1}{c}{L SE} & \multicolumn{1}{c}{L 80} & \multicolumn{1}{c}{L 85} & \multicolumn{1}{c}{L 90} & \multicolumn{1}{c}{L 95}\\
 \midrule
-Decile 10 & 0.11 & 115 & 125 & 135 & 150 & 33.70 & 170 & 200 & 245 & 345\\
-Decile 20 & 0.14 & 65 & 70 & 75 & 85 & 46.88 & 90 & 105 & 130 & 180\\
-Decile 30 & 0.17 & 50 & 55 & 60 & 65 & 50.45 & 80 & 95 & 115 & 160\\
-Decile 40 & 0.18 & 45 & 45 & 50 & 55 & 56.93 & 60 & 75 & 90 & 125\\
-Decile 50 & 0.19 & 40 & 45 & 45 & 50 & 65.23 & 50 & 60 & 70 & 95\\
-Decile 60 & 0.21 & 35 & 35 & 40 & 45 & 72.51 & 40 & 45 & 60 & 80\\
-Decile 70 & 0.21 & 35 & 35 & 40 & 45 & 81.21 & 30 & 40 & 50 & 65\\
-Decile 80 & 0.23 & 30 & 30 & 35 & 40 & 94.19 & 25 & 30 & 35 & 50\\
-Decile 90 & 0.25 & 25 & 30 & 30 & 35 & 114.51 & 20 & 20 & 25 & 35\\
+Decile 1 & 0.11 & 115 & 125 & 135 & 150 & 33.70 & 170 & 200 & 245 & 345\\
+Decile 2 & 0.14 & 65 & 70 & 75 & 85 & 46.88 & 90 & 105 & 130 & 180\\
+Decile 3 & 0.17 & 50 & 55 & 60 & 65 & 50.45 & 80 & 95 & 115 & 160\\
+Decile 4 & 0.18 & 45 & 45 & 50 & 55 & 56.93 & 60 & 75 & 90 & 125\\
+Decile 5 & 0.19 & 40 & 45 & 45 & 50 & 65.23 & 50 & 60 & 70 & 95\\
+Decile 6 & 0.21 & 35 & 35 & 40 & 45 & 72.51 & 40 & 45 & 60 & 80\\
+Decile 7 & 0.21 & 35 & 35 & 40 & 45 & 81.21 & 30 & 40 & 50 & 65\\
+Decile 8 & 0.23 & 30 & 30 & 35 & 40 & 94.19 & 25 & 30 & 35 & 50\\
+Decile 9 & 0.25 & 25 & 30 & 30 & 35 & 114.51 & 20 & 20 & 25 & 35\\
 \bottomrule
 \addlinespace
 \end{tabular}
 
 \begin{tablenotes}[para]
-\normalsize{\textit{Note.} C = Concreteness rating, L = Lexical Decision Response Latencies. Estimates are based on meeting at least the minimum percent of items (e.g., 80\%) but may be estimated over that amount (e.g., 82.5\%). SE columns represent the standard error value cutoff for each decile, while 80/85/90/95 percent columns represent the sample size needed to have that percent of items below the SE cutoff. For example, 150 participants are required to ensure at least 95\% of concreteness items SE are below the 10 percent decile SE cutoff, and 345 participants are necessary for the lexical decision SE to be below its 10 percent decile cutoff.}
+\normalsize{\textit{Note.} C = Concreteness rating, L = Lexical Decision Response Latencies. Estimates are based on meeting at least the minimum percent of items (e.g., 80\%) but may be estimated over that amount (e.g., 82.5\%). SE columns represent the standard error value cutoff for each decile, while 80/85/90/95 percent columns represent the sample size needed to have that percent of items below the SE cutoff. For example, 150 participants are required to ensure at least 95\% of concreteness items SE are below the 1st decile SE cutoff, and 345 participants are necessary for the lexical decision SE to be below its 1st decile cutoff.}
 \end{tablenotes}
 
 \end{threeparttable}
@@ -115,7 +115,7 @@ Pilot Sample Size & 1.51 & 0.03 & 54.76 & < .001 & .951\\
 Scale: Likert v Percent & 7.00 & 1.80 & 3.89 & < .001 & .088\\
 Scale: Likert v Milllisecond & 25.63 & 1.87 & 13.74 & < .001 & .548\\
 Proportion Variability & 312.44 & 19.86 & 15.73 & < .001 & .613\\
-Data: Ceiling v Normal & -7.16 & 1.41 & -5.08 & < .001 & .142\\
+Data: Ceiling v Symmetric & -7.16 & 1.41 & -5.08 & < .001 & .142\\
 \bottomrule
 \end{tabular}
 
@@ -134,19 +134,19 @@ Data: Ceiling v Normal & -7.16 & 1.41 & -5.08 & < .001 & .142\\
 
 \caption{\label{tab:table-correction}Parameters for All Decile Cutoff Scores}
 
-\begin{tabular}{llllll}
+\begin{tabular}{lllll}
 \toprule
-Term & Estimate & $SE$ & $t$ & $p$ & AIC\\
+Term & Estimate & $SE$ & $t$ & $p$\\
 \midrule
-Intercept & 111.049 & 78.248 & 1.419 & .156 & 29,996.94\\
-Projected Sample Size & 0.429 & 0.002 & 185.360 & < .001 & 20,327.79\\
-Pilot Sample Size & -0.718 & 0.007 & -103.787 & < .001 & 14,753.61\\
-Log2 Projected Sample Size & 19.522 & 0.215 & 90.693 & < .001 & 8,668.73\\
-Log2 Pilot Sample Size & 4.655 & 0.269 & 17.296 & < .001 & 8,363.69\\
-Log2 Power & -39.367 & 15.640 & -2.517 & .012 & 8,320.82\\
-Proportion Variability & 15.434 & 3.617 & 4.267 & < .001 & 8,297.71\\
-Log2 Proportion Variability & -0.729 & 0.232 & -3.143 & .002 & 8,289.81\\
-Power & 0.606 & 0.259 & 2.343 & .019 & 8,286.31\\
+Intercept & 111.049 & 78.248 & 1.419 & .156\\
+Projected Sample Size & 0.429 & 0.002 & 185.360 & < .001\\
+Pilot Sample Size & 15.434 & 3.617 & 4.267 & < .001\\
+Log2 Projected Sample Size & -0.718 & 0.007 & -103.787 & < .001\\
+Log2 Pilot Sample Size & 0.606 & 0.259 & 2.343 & .019\\
+Log2 Power & 19.522 & 0.215 & 90.693 & < .001\\
+Proportion Variability & -0.729 & 0.232 & -3.143 & .002\\
+Log2 Proportion Variability & 4.655 & 0.269 & 17.296 & < .001\\
+Power & -39.367 & 15.640 & -2.517 & .012\\
 \bottomrule
 \end{tabular}
 
@@ -163,7 +163,7 @@ Power & 0.606 & 0.259 & 2.343 & .019 & 8,286.31\\
 \begin{center}
 \begin{threeparttable}
 
-\caption{\label{tab:table-decile}Parameters for 40\% Decile Cutoff Scores}
+\caption{\label{tab:table-decile}Parameters for 4th decile Cutoff Scores}
 
 \begin{tabular}{lllll}
 \toprule
