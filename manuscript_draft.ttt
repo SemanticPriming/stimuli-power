@@ -14,7 +14,7 @@
 Step & Proposed Steps & Updated Steps\\
 \midrule
 1 & Use representative pilot data. & Use representative pilot data.\\
-2 & Calculate standard error of each of the items in the pilot data. Determine the appropriate SE for the stopping rule. & Calculate standard error of each of the items in the pilot data. Using the 40\%, determine the cutoff and stopping rule for the standard error of the items.\\
+2 & Calculate standard error of each of the items in the pilot data. Determine the appropriate SE for the stopping rule. & Calculate standard error of each of the items in the pilot data. Using the 4th decile, determine the cutoff and stopping rule for the standard error of the items.\\
 3 & Create simulated samples of your pilot data starting with at least 20 participants up to a maximum number of participants. & Create simulated samples of your pilot data starting with at least 20 participants up to a maximum number of participants.\\
 4 & Calculate the standard error of each of the items in the simulated data. From these scores, calculate the percent of items below the cutoff score from Step 2. & Calculate the standard error of each of the items in the simulated data. From these scores, calculate the percent of items below the cutoff score from Step 2.\\
 5 & Determine the sample size at which 80\%, 85\%, 90\%, 95\% of items are below the cutoff score. & Determine the sample size at which 80\%, 85\%, 90\%, 95\% of items are below the cutoff score. Use the correction formula to adjust your proposed sample size based on pilot data size, power, and percent variability.\\
