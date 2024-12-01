@@ -48,7 +48,7 @@
 
 \centering
 \pandocbounded{\includegraphics[keepaspectratio]{manuscript_draft_files/figure-latex/decile50-figure-1.pdf}}
-\caption{\label{fig:decile50-figure}Comparison of the cutoffs for 5th decile across heterogeneity (columns), powering of items (rows), and scale size (color).}
+\caption{\label{fig:decile50-figure}Comparison of the cutoffs for 5th deciles across heterogeneity (columns), powering of items (rows), and scale size (color).}
 \end{figure*}
 \efloatseparator
  

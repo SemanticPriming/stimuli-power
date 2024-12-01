@@ -741,7 +741,7 @@ apa_table(results_table_example,
 
 In order to evaluate our approach, we used data simulation to create representative pilot datasets of several popular cognitive scales (1-7 measurements, 0-100 percentage measurements, and 0-3000 response latency type scale data). For each of these scales, we also manipulated item heterogeneity by simulating small differences in item variances to large differences in item variances based on original scale size. On each of the simulated datasets, we applied the above proposed method to determine how the procedure would perform and evaluated what criteria should be used for cutoff selection (Step 2). This procedure was performed on distributions in the middle of the scale (i.e., symmetric) and at the ceiling of the scale (i.e., skewed). With this simulation, we will answer several questions:
 
-1)  How does pilot data influence sample size suggestions?
+1)  How do pilot data influence sample size suggestions?
 
 A. How does scale size impact sample size estimations? In theory, the size of the scale used should not impact the power estimates; however, larger scales have a potential for more variability in their item standard deviations (see point C).
 
@@ -1076,7 +1076,7 @@ summary_long %>%
 
 ```
 
-```{r decile50-figure, fig.cap = "Comparison of the cutoffs for 5th decile across heterogeneity (columns), powering of items (rows), and scale size (color).", fig.height=8, fig.width=8}
+```{r decile50-figure, fig.cap = "Comparison of the cutoffs for 5th deciles across heterogeneity (columns), powering of items (rows), and scale size (color).", fig.height=8, fig.width=8}
 summary_long %>% 
   filter(name == "Decile 50") %>% 
   group_by(variability, original_n, scale_size, name, power) %>% 
@@ -1089,7 +1089,7 @@ summary_long %>%
   theme_classic(base_size = 10) + 
   facet_grid(power~ variability,
              labeller = labeller(power = power.labs)) + 
-  ggtitle("Results for 5th decile") +
+  ggtitle("Results for 5th deciles") +
   xlab("\nPilot Sample Size") + 
   ylab("Corrected Sample Size\n") + 
   scale_shape_discrete(name = "Scale Size") +
@@ -1362,7 +1362,7 @@ researcher_sample <-
   )
 ```
 
-```{r bimodal-figure, fig.cap = "Simulated example of Likert data with half of the items as bimodal distributions.", fig.height=10, fig.width=7, warning = F, include = F, message = F}
+```{r bimodal-figure, fig.cap = "Simulated example of Likert data with half of the items as bimodal distributions.", fig.height=10, fig.width=7, warning = F, message = F}
 ggplot(researcher_sample %>% 
          filter(item < 11), aes(x = score)) +
   geom_histogram(aes(y = ..count..), bins = 7, position = "identity", alpha = 0.7, color = "black") +  # Stacked histograms
