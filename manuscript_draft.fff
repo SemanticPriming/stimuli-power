@@ -66,5 +66,5 @@
 
 \centering
 \pandocbounded{\includegraphics[keepaspectratio]{manuscript_draft_files/figure-latex/bimodal-results-1.pdf}}
-\caption{\label{fig:bimodal-results}Estimated sample sizes for distributions that vary in the number of bimodal items. Note that percent below is treated as a continuous factor}
+\caption{\label{fig:bimodal-results}Estimated sample sizes for distributions that vary in the number of bimodal items. Note that percent below is treated as a continuous factor, and therefore, some estimates are the same (i.e., below 80 and 85 percent may be both estimated as 88\%).}
 \end{figure*}

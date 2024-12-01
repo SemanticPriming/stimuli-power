@@ -223,10 +223,11 @@
 \makeatletter
 \xapptocmd\appendix
   {\xapptocmd\section
-    {\addcontentsline{toc}{section}{\appendixname\ifoneappendix\else~\theappendix\fi\\: #1}}
+    {\addcontentsline{toc}{section}{\appendixname\ifoneappendix\else~\theappendix\fi: #1}}
     {}{\InnerPatchFailed}%
   }
 {}{\PatchFailed}
+\makeatother
 \keywords{accuracy in parameter estimation, power, sampling, simulation, hypothesis testing}
 \DeclareDelayedFloatFlavor{ThreePartTable}{table}
 \DeclareDelayedFloatFlavor{lltable}{table}
@@ -391,11 +392,11 @@ Step & Proposed Steps & Updated Steps\\
 
 \section{Example}\label{example}
 
-In this section, we provide an example of the suggested procedure. The first dataset includes concreteness ratings from Brysbaert et al. (2014). Instructions given to participants denoted the difference between concrete (i.e., ``refers to something that exists in reality'') and abstract (i.e., ``something you cannot experience directly through your senses or actions'') terms. Participants were then asked to rate concreteness of terms using a 1 (\emph{abstract}) to 5 (\emph{concrete}) scale. This data represents a small scale dataset (i.e., the range of the scale of the data is small, 4 points) that could be used as pilot data for a study using concrete word ratings. The data is available at \url{https://osf.io/qpmf4/}.
+In this section, we provide an example of the suggested procedure. The first dataset includes concreteness ratings from Brysbaert et al. (2014). Instructions given to participants denoted the difference between concrete (i.e., ``refers to something that exists in reality'') and abstract (i.e., ``something you cannot experience directly through your senses or actions'') terms. Participants were then asked to rate concreteness of terms using a 1 (\emph{abstract}) to 5 (\emph{concrete}) scale. This data represents a small scale dataset (i.e., the range of the scale of the data is small, 4 points) that could be used as pilot data for a study using concrete word ratings. The data is available at \url{https://osf.io/qpmf4/} (see the following for thoughts on analyzing ordinal rating data: Bürkner \& Vuorre, 2019; Kubinec, 2023; Liddell \& Kruschke, 2018; Taylor et al., 2022).
 
 The second dataset includes a large scale dataset (i.e., wide range of possible data values) with response latencies, the English Lexicon Project (ELP, Balota et al., 2007). The ELP consists of lexical decision response latencies for written English words and pseudowords. In a lexical decision task, participants simply select ``word'' for real words (e.g., \emph{dog}) and ``nonword'' for pseudowords (e.g., \emph{wug}). The trial level data is available here: \url{https://elexicon.wustl.edu/}. Critically, in each of these datasets, the individual trial level data for each item is available to simulate and calculate standard errors on. Data that has been summarized could potentially be used, as long as the original standard deviations for each item were present. From the mean and standard deviation for each item, a simulated pilot dataset could be generated for estimating new sample sizes. All code to estimate sample sizes is provided on our OSF page, and this manuscript was created with a \emph{papaja} (Aust et al., 2022) formatted Rmarkdown document.
 
-For this example, imagine a researcher who wants to determine the differences in response latencies for abstract and concrete words (see the following for thoughts on analyzing this type of data: Bürkner \& Vuorre, 2019; Liddell \& Kruschke, 2018; Taylor et al., 2022). They will select \emph{n} = 40 words from the rating data from Brysbaert et al. (2014) that are split evenly into abstract and concrete ends of the rating scale. In the experiment, each participant will be asked to rate the words for their concreteness, and then complete a lexical decision task with these words as the phenomenon of interest. Using both datasets and the procedure outlined above, we can determine the sample size necessary to ensure adequately measured concreteness ratings and response latencies.
+For this example, imagine a researcher who wants to determine the differences in response latencies for abstract and concrete words. They will select \emph{n} = 40 words from the rating data from Brysbaert et al. (2014) that are split evenly into abstract and concrete ends of the rating scale. In the experiment, each participant will be asked to rate the words for their concreteness, and then complete a lexical decision task with these words as the phenomenon of interest. Using both datasets and the procedure outlined above, we can determine the sample size necessary to ensure adequately measured concreteness ratings and response latencies.
 
 \emph{Step 1}. The concreteness ratings data includes 27031 concepts that were rated for their concreteness. We randomly selected \emph{n} = 20 abstract words (\(M_{Rating}\) \textless= 2) and \emph{n} = 20 concrete words (\(M_{Rating}\) \textgreater= 4). In the original study, not every participant rated every word, which created uneven sample sizes for each word. Further, participants were allowed to indicate they did not know a word, and those responses were set to missing data. In our sample of 40 words, the average pilot sample size was 28.52 (\emph{SD} = 1.80), and we will use 29 as our pilot sample size for the concreteness ratings (this information will be used in the follow-up to the simulation study).
 
@@ -890,9 +891,19 @@ We have developed functions to implement the suggested procedure as part of a se
 ## 4          96.7          35                  33.7
 \end{verbatim}
 
-\subsection{Special Consideration: Bimodal Data}\label{special-consideration-bimodal-data}
+\subsection{Special Considerations}\label{special-considerations}
+
+\subsubsection{Bimodal Data}\label{bimodal-data}
 
 The above simulations assume symmetric population distributions with small, medium, or large heterogeneity or a skewed distribution with the same heterogeneity. However, as shown in Pollock (2018), sample rating data that appears to have a mean distribution may represent the average two separate distributions (i.e., a bimodal distribution). To examine our procedure with bimodal distributions, we estimated thirty items for three distributions: symmetric, ceiling, and floor distributions for Likert data with small heterogeneity. Bimodal data was created by selecting half of the ceiling distribution and floor distribution to combine together. The number of bimodal items was varied from 0 percent to 100 percent increasing by 10 percent increments for simulated samples. Figure @\ref(fig:bimodal-figure) shows an example of 10 of the items within a simulation that estimated that half of the Likert items would be bimodal in nature. The researcher procedure described above was then carried out using \emph{semanticprimeR}.
+
+\begin{verbatim}
+## Warning: The dot-dot notation (`..count..`) was deprecated in ggplot2 3.4.0.
+## i Please use `after_stat(count)` instead.
+## This warning is displayed once every 8 hours.
+## Call `lifecycle::last_lifecycle_warnings()` to see where this warning was
+## generated.
+\end{verbatim}
 
 \begin{figure}
 \centering
@@ -905,8 +916,12 @@ Figure @\ref(fig:bimodal-figure) portrays the results of the suggested procedure
 \begin{figure}
 \centering
 \pandocbounded{\includegraphics[keepaspectratio]{manuscript_draft_files/figure-latex/bimodal-results-1.pdf}}
-\caption{\label{fig:bimodal-results}Estimated sample sizes for distributions that vary in the number of bimodal items. Note that percent below is treated as a continuous factor}
+\caption{\label{fig:bimodal-results}Estimated sample sizes for distributions that vary in the number of bimodal items. Note that percent below is treated as a continuous factor, and therefore, some estimates are the same (i.e., below 80 and 85 percent may be both estimated as 88\%).}
 \end{figure}
+
+\subsubsection{Combine Parameters}\label{combine-parameters}
+
+Researchers may often be interested in more than just the precision for individual items. The estimation of power via traditional power calculations for a statistical test or the reliability of items could also be of interest for an appropriate dataset for analyses. We would suggest that researchers combine reliability with precision to collect data that are both reliable and precisely measured. For example, one could use our proposed procedure to calculate the sample size for precision. Separately, the researcher would determine the level of reliability they would like to find in items based on previous research or practical guidelines. The minimum sample size could be set based on estimations for hypothesis testing, the stopping rule based on minimum reliability and desired SE for items, and a maximum sample size based on simulations or practical matters. Each data collection represents a unique scenario in which researchers can combine tools based on their needs to collect precise, reliable, and (traditionally defined) adequately powered data. While our proposal may bring to mind the problems with researcher degrees of freedom (Simmons et al., 2011), transparent practices decisions around sample size planning should be encouraged to limit potential questionable research practices.
 
 \subsection{Vignettes}\label{vignettes}
 
@@ -927,13 +942,25 @@ Researchers should consider this hybrid approach for AIPE and simulation as a po
 \begin{itemize}
 \tightlist
 \item
-  All data used in this manuscript and vignettes have been cited and can be found on our repository pages.
+  Data: All data used in this manuscript and vignettes have been cited and can be found on our repository pages (\url{https://github.com/SemanticPriming/stimuli-power}).
 \item
-  Manuscript repository with code and data: \url{https://osf.io/swmva/} or \url{https://github.com/SemanticPriming/stimuli-power}
+  Scripts:
+
+  \begin{itemize}
+  \tightlist
+  \item
+    Manuscript repository with code and data: \url{https://osf.io/swmva/} or \url{https://github.com/SemanticPriming/stimuli-power}
+  \item
+    Package repository with vignettes and data: \url{https://github.com/SemanticPriming/semanticprimeR}
+  \end{itemize}
 \item
-  Package repository with vignettes and data: \url{https://github.com/SemanticPriming/semanticprimeR}
+  Pre-registration: We did not pre-register this study, as it was a simulation study.
 \item
-  We did not pre-register this study, as it was a simulation study. No materials were used.
+  Materials: No materials were used.
+\item
+  Funding: no funding was provided for this study.
+\item
+  Conflicts of interest: the researchers declare no conflicts of interest.
 \end{itemize}
 
 \newpage
@@ -1065,6 +1092,9 @@ Kelley, K., \& Maxwell, S. E. (2003). Sample Size for Multiple Regression: Obtai
 
 \bibitem[\citeproctext]{ref-korbmacher2023}
 Korbmacher, M., Azevedo, F., Pennington, C. R., Hartmann, H., Pownall, M., Schmidt, K., Elsherif, M., Breznau, N., Robertson, O., Kalandadze, T., Yu, S., Baker, B. J., O'Mahony, A., Olsnes, J. Ø.-S., Shaw, J. J., Gjoneska, B., Yamada, Y., Röer, J. P., Murphy, J., \ldots{} Evans, T. (2023). The replication crisis has led to positive structural, procedural, and community changes. \emph{Communications Psychology}, \emph{1}(1), 1--13. \url{https://doi.org/10.1038/s44271-023-00003-2}
+
+\bibitem[\citeproctext]{ref-kubinec2023}
+Kubinec, R. (2023). Ordered Beta Regression: A Parsimonious, Well-Fitting Model for Continuous Data with Lower and Upper Bounds. \emph{Political Analysis}, \emph{31}(4), 519--536. \url{https://doi.org/10.1017/pan.2022.20}
 
 \bibitem[\citeproctext]{ref-kumle2020}
 Kumle, L., \& DejanDraschkow. (2020). \emph{DejanDraschkow/mixedpower: The force awakens}. Zenodo. \url{https://doi.org/10.5281/zenodo.3733023}

@@ -416,11 +416,11 @@ conDF <- conDF %>%
   filter(Word %in% elpDF$Stimulus) 
 ```
 
-In this section, we provide an example of the suggested procedure. The first dataset includes concreteness ratings from @brysbaert2014. Instructions given to participants denoted the difference between concrete (i.e., "refers to something that exists in reality") and abstract (i.e., "something you cannot experience directly through your senses or actions") terms. Participants were then asked to rate concreteness of terms using a 1 (*abstract*) to 5 (*concrete*) scale. This data represents a small scale dataset (i.e., the range of the scale of the data is small, 4 points) that could be used as pilot data for a study using concrete word ratings. The data is available at <https://osf.io/qpmf4/>.
+In this section, we provide an example of the suggested procedure. The first dataset includes concreteness ratings from @brysbaert2014. Instructions given to participants denoted the difference between concrete (i.e., "refers to something that exists in reality") and abstract (i.e., "something you cannot experience directly through your senses or actions") terms. Participants were then asked to rate concreteness of terms using a 1 (*abstract*) to 5 (*concrete*) scale. This data represents a small scale dataset (i.e., the range of the scale of the data is small, 4 points) that could be used as pilot data for a study using concrete word ratings. The data is available at <https://osf.io/qpmf4/> [see the following for thoughts on analyzing ordinal rating data: @bürkner2019; @liddell2018; @taylor2022; @kubinec2023].
 
 The second dataset includes a large scale dataset (i.e., wide range of possible data values) with response latencies, the English Lexicon Project [ELP, @balota2007]. The ELP consists of lexical decision response latencies for written English words and pseudowords. In a lexical decision task, participants simply select "word" for real words (e.g., *dog*) and "nonword" for pseudowords (e.g., *wug*). The trial level data is available here: <https://elexicon.wustl.edu/>. Critically, in each of these datasets, the individual trial level data for each item is available to simulate and calculate standard errors on. Data that has been summarized could potentially be used, as long as the original standard deviations for each item were present. From the mean and standard deviation for each item, a simulated pilot dataset could be generated for estimating new sample sizes. All code to estimate sample sizes is provided on our OSF page, and this manuscript was created with a *papaja* [@aust2022] formatted Rmarkdown document.
 
-For this example, imagine a researcher who wants to determine the differences in response latencies for abstract and concrete words [see the following for thoughts on analyzing this type of data: @bürkner2019; @liddell2018; @taylor2022]. They will select *n* = 40 words from the rating data from @brysbaert2014 that are split evenly into abstract and concrete ends of the rating scale. In the experiment, each participant will be asked to rate the words for their concreteness, and then complete a lexical decision task with these words as the phenomenon of interest. Using both datasets and the procedure outlined above, we can determine the sample size necessary to ensure adequately measured concreteness ratings and response latencies.
+For this example, imagine a researcher who wants to determine the differences in response latencies for abstract and concrete words. They will select *n* = 40 words from the rating data from @brysbaert2014 that are split evenly into abstract and concrete ends of the rating scale. In the experiment, each participant will be asked to rate the words for their concreteness, and then complete a lexical decision task with these words as the phenomenon of interest. Using both datasets and the procedure outlined above, we can determine the sample size necessary to ensure adequately measured concreteness ratings and response latencies.
 
 ```{r con-estimate, echo = F, include = F}
 # sample the data of with 20 words in each category
@@ -463,8 +463,6 @@ SE_c <- tapply(con_use$Rating, con_use$Word, function (x) { sd(x)/sqrt(length(x)
 cutoff_c <- quantile(SE_c, probs = seq(from = .1, to = .9, by = .1))
 ```
 
-*Step 1*. The concreteness ratings data includes `r length(unique(conDF$Word))` concepts that were rated for their concreteness. We randomly selected *n* = 20 abstract words ($M_{Rating}$ \<= 2) and *n* = 20 concrete words ($M_{Rating}$ \>= 4). In the original study, not every participant rated every word, which created uneven sample sizes for each word. Further, participants were allowed to indicate they did not know a word, and those responses were set to missing data. In our sample of 40 words, the average pilot sample size was `r round(mean(tapply(con_small$Rating, con_small$Word, length)), digits = 2)` (*SD* = `r round(sd(tapply(con_small$Rating, con_small$Word, length)), digits = 2)`), and we will use `r pilot_size_c` as our pilot sample size for the concreteness ratings (this information will be used in the follow-up to the simulation study).
-
 ```{r elp-estimate, echo = F, include = F}
 elp_small <- elpDF %>% filter(Stimulus %in% con_words)
 # elp_small$Stimulus <- droplevels(elp_small$Stimulus) already a character
@@ -484,7 +482,7 @@ SE_e <- tapply(elp_use$RT, elp_use$Stimulus, function (x) { sd(x)/sqrt(length(x)
 cutoff_e <- quantile(SE_e, probs = seq(from = .1, to = .9, by = .1))
 ```
 
-We first selected the same real words in the ELP data as the concreteness subset selected above, and this data includes `r length(unique(elpDF$Stimulus))` real words. The average pilot sample size for this random sample was `r format(round(mean(tapply(elp_small$RT, elp_small$Stimulus, length)), digits = 2), nsmall = 2)` (*SD* = `r round(sd(tapply(elp_small$RT, elp_small$Stimulus, length)), digits = 2)`), and *n* = `r pilot_size_e` will be our pilot size for the lexical decision task.
+*Step 1*. The concreteness ratings data includes `r length(unique(conDF$Word))` concepts that were rated for their concreteness. We randomly selected *n* = 20 abstract words ($M_{Rating}$ \<= 2) and *n* = 20 concrete words ($M_{Rating}$ \>= 4). In the original study, not every participant rated every word, which created uneven sample sizes for each word. Further, participants were allowed to indicate they did not know a word, and those responses were set to missing data. In our sample of 40 words, the average pilot sample size was `r round(mean(tapply(con_small$Rating, con_small$Word, length)), digits = 2)` (*SD* = `r round(sd(tapply(con_small$Rating, con_small$Word, length)), digits = 2)`), and we will use `r pilot_size_c` as our pilot sample size for the concreteness ratings (this information will be used in the follow-up to the simulation study). We first selected the same real words in the ELP data as the concreteness subset selected above, and this data includes `r length(unique(elpDF$Stimulus))` real words. The average pilot sample size for this random sample was `r format(round(mean(tapply(elp_small$RT, elp_small$Stimulus, length)), digits = 2), nsmall = 2)` (*SD* = `r round(sd(tapply(elp_small$RT, elp_small$Stimulus, length)), digits = 2)`), and *n* = `r pilot_size_e` will be our pilot size for the lexical decision task.
 
 *Step 2*. Table \@ref(tab:table-example) demonstrates the cutoff scores for deciles of the SEs for the concreteness ratings and lexical decision response latency items. A researcher could potentially pick any of these cutoffs or other percentage options not shown here (e.g., 35%). We will use simulation to determine the suggestion that best captures the balance of adequately powering our sample and feasibility. This component is explored in the Data Simulation section.
 
@@ -1296,11 +1294,13 @@ corrected_summary <- calculate_correction(
 corrected_summary
 ```
 
-## Special Consideration: Bimodal Data
+## Special Considerations
 
-The above simulations assume symmetric population distributions with small, medium, or large heterogeneity or a skewed distribution with the same heterogeneity. However, as shown in @pollock2018, sample rating data that appears to have a mean distribution may represent the average two separate distributions (i.e., a bimodal distribution). To examine our procedure with bimodal distributions, we estimated thirty items for three distributions: symmetric, ceiling, and floor distributions for Likert data with small heterogeneity. Bimodal data was created by selecting half of the ceiling distribution and floor distribution to combine together. The number of bimodal items was varied from 0 percent to 100 percent increasing by 10 percent increments for simulated samples. Figure \@\ref(fig:bimodal-figure) shows an example of 10 of the items within a simulation that estimated that half of the Likert items would be bimodal in nature. The researcher procedure described above was then carried out using *semanticprimeR*.
+### Bimodal Data
 
-```{r import-bimodal, echo = F}
+The above simulations assume symmetric population distributions with small, medium, or large heterogeneity or a skewed distribution with the same heterogeneity. However, as shown in @pollock2018, sample rating data that appears to have a mean distribution may represent the average two separate distributions (i.e., a bimodal distribution). To examine our procedure with bimodal distributions, we estimated thirty items for three distributions: symmetric, ceiling, and floor distributions for Likert data with small heterogeneity. Bimodal data was created by selecting half of the ceiling distribution and floor distribution to combine together. The number of bimodal items was varied from 0 percent to 100 percent increasing by 10 percent increments for simulated samples. Figure \@ref(fig:bimodal-figure) shows an example of 10 of the items within a simulation that estimated that half of the Likert items would be bimodal in nature. The researcher procedure described above was then carried out using *semanticprimeR*.
+
+```{r import-bimodal, echo = F, warning = F, message = F}
 bi_DF <- import("simulation_study/simulation_bimodal/summary_bimodal.csv") %>% 
   mutate(new_percent = rep(c(80, 85, 90, 95), times = 11)) %>% 
   mutate(size = factor(size*100))
@@ -1362,17 +1362,19 @@ researcher_sample <-
   )
 ```
 
-```{r bimodal-figure, fig.cap = "Simulated example of Likert data with half of the items as bimodal distributions.", fig.height=8, fig.width=8}
+```{r bimodal-figure, fig.cap = "Simulated example of Likert data with half of the items as bimodal distributions.", fig.height=10, fig.width=7, warning = F, include = F, message = F}
 ggplot(researcher_sample %>% 
-         filter(item < 11), aes(x = score, y = factor(item), fill = factor(item))) +
-  geom_density_ridges(alpha = 0.7, scale = 1) +
+         filter(item < 11), aes(x = score)) +
+  geom_histogram(aes(y = ..count..), bins = 7, position = "identity", alpha = 0.7, color = "black") +  # Stacked histograms
   labs(x = "Score", y = "Item") +
   theme_minimal() +
-  theme(legend.position = "none") + 
-  coord_cartesian(xlim = c(1,7))
+  facet_wrap(~factor(item), scales = "free_y", nrow = 10) +  # Place each item in a separate row
+  theme(legend.position = "none",
+        axis.text.y = element_blank()) + 
+  coord_cartesian(xlim = c(1, 7))  # Set x-axis limits
 ```
 
-Figure \@\ref(fig:bimodal-figure) portrays the results of the suggested procedure. The sample with 0 bimodal items demonstrates the same values as above. The proposed sample size increases from 10 to 40% because of the heterogeneity in SE across items (i.e., with 10% of items with a larger SE due to their bimodal nature, the required sample size increases). From 50% to 100% the sample size decreases because the variance of the SEs across items decreases (i.e., at 100 percent, they are all larger rather than a mix). In theory, these results map onto the conceptual framework - if all items are truly bimodal, we have precisely measured the mean of the bimodal distribution, but this result is likely not the intended result. If researchers expect these distributions (or have representative pilot data), they could examine the data for bimodal items. These items could be estimated separately (i.e., floor effects item 1, ceiling effects item 1) to ensure that both populations of answers are represented in the data.
+Figure \@ref(fig:bimodal-figure) portrays the results of the suggested procedure. The sample with 0 bimodal items demonstrates the same values as above. The proposed sample size increases from 10 to 40% because of the heterogeneity in SE across items (i.e., with 10% of items with a larger SE due to their bimodal nature, the required sample size increases). From 50% to 100% the sample size decreases because the variance of the SEs across items decreases (i.e., at 100 percent, they are all larger rather than a mix). In theory, these results map onto the conceptual framework - if all items are truly bimodal, we have precisely measured the mean of the bimodal distribution, but this result is likely not the intended result. If researchers expect these distributions (or have representative pilot data), they could examine the data for bimodal items. These items could be estimated separately (i.e., floor effects item 1, ceiling effects item 1) to ensure that both populations of answers are represented in the data.
 
 ```{r bimodal-results, fig.cap = "Estimated sample sizes for distributions that vary in the number of bimodal items. Note that percent below is treated as a continuous factor, and therefore, some estimates are the same (i.e., below 80 and 85 percent may be both estimated as 88%).", fig.height=8, fig.width=8}
 ggplot(bi_DF, aes(x = percent_below,
@@ -1384,10 +1386,17 @@ ggplot(bi_DF, aes(x = percent_below,
   theme_classic() +
   xlab("Percent of Items Below Threshold") + 
   ylab("Corrected Sample Size") +
-  scale_color_viridis_d(option = "plasma") +  # Use the 'plasma' viridis option
+  scale_color_manual(values = c("#1f77b4", "#ff7f0e", "#2ca02c", "#d62728", "#9467bd", 
+                                "#8c564b", "#e377c2", "#7f7f7f", "#bcbd22", "#17becf", 
+                                "#9edae5")) +  # Custom high-contrast color palette
   scale_shape_manual(values = c(16, 17, 18, 19, 15, 3, 7, 8, 9, 13, 10)) +
   labs(color = "Size", shape = "Size")
 ```
+
+
+### Combining Tools
+
+Researchers may often be interested in more than just the precision for individual items. The estimation of power via traditional power calculations for a statistical test or the reliability of items could also be of interest for an appropriate dataset for analyses. We would suggest that researchers combine reliability with precision to collect data that are both reliable and precisely measured. For example, one could use our proposed procedure to calculate the sample size for precision. Separately, the researcher would determine the level of reliability they would like to find in items based on previous research or practical guidelines. The minimum sample size could be set based on estimations for hypothesis testing, the stopping rule based on minimum reliability and desired SE for items, and a maximum sample size based on simulations or practical matters. Each data collection represents a unique scenario in which researchers can combine tools based on their needs to collect precise, reliable, and (traditionally defined) adequately powered data. While our proposal may bring to mind the problems with researcher degrees of freedom [@simmons2011], transparent practices decisions around sample size planning should be encouraged to limit potential questionable research practices.
 
 ## Vignettes
 
@@ -1405,10 +1414,14 @@ Researchers should consider this hybrid approach for AIPE and simulation as a po
 
 # Open Practices
 
--   All data used in this manuscript and vignettes have been cited and can be found on our repository pages.
--   Manuscript repository with code and data: <https://osf.io/swmva/> or <https://github.com/SemanticPriming/stimuli-power>
--   Package repository with vignettes and data: <https://github.com/SemanticPriming/semanticprimeR>
--   We did not pre-register this study, as it was a simulation study. No materials were used.
+- Data: All data used in this manuscript and vignettes have been cited and can be found on our repository pages (https://github.com/SemanticPriming/stimuli-power).
+- Analysis Code: 
+  - Manuscript repository with code and data: <https://osf.io/swmva/> or <https://github.com/SemanticPriming/stimuli-power>
+  - Package repository with vignettes and data: <https://github.com/SemanticPriming/semanticprimeR>
+- Pre-registration: We did not pre-register this study, as it was a simulation study.
+- Materials: No materials were used.
+- Funding: no funding was provided for this study. 
+- Conflicts of interest: the researchers declare no conflicts of interest. 
 
 \newpage
 
