@@ -1414,14 +1414,18 @@ Researchers should consider this hybrid approach for AIPE and simulation as a po
 
 # Open Practices
 
+- Funding: no funding was provided for this study. 
+- Conflicts of interest: the researchers declare no conflicts of interest. 
+- Ethics approval: not applicable, simulation study.
+- Consent to participate: not applicable, simulation study.
+- Consent for publication: all authors approved the manuscript, no participant approval necessary. 
 - Data: All data used in this manuscript and vignettes have been cited and can be found on our repository pages (https://github.com/SemanticPriming/stimuli-power).
+- Materials: No materials were used.
 - Analysis Code: 
   - Manuscript repository with code and data: <https://osf.io/swmva/> or <https://github.com/SemanticPriming/stimuli-power>
   - Package repository with vignettes and data: <https://github.com/SemanticPriming/semanticprimeR>
 - Pre-registration: We did not pre-register this study, as it was a simulation study.
-- Materials: No materials were used.
-- Funding: no funding was provided for this study. 
-- Conflicts of interest: the researchers declare no conflicts of interest. 
+- Author contributions are printed at the top of the manuscript automatically in *papaja*. 
 
 \newpage
 
