@@ -1,0 +1,331 @@
+---
+title: "Methods Power Study - Pilot Sample Size Simulation"
+author: "Erin M. Buchanan"
+date: "Last Knitted: `r Sys.Date()`"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+Reviewer-requested simulation using semanticprimeR: Quantifies variability from pilot-based cutoffs and reports: (a) average final N and SE, (b) achieved power and SE
+
+## Libraries
+
+```{r}
+# install.packages("remotes") 
+# remotes::install_github("SemanticPriming/semanticprimeR")
+library(semanticprimeR)
+library(dplyr)
+library(purrr)
+library(tidyr)
+library(broom)
+library(ggplot2)
+
+set.seed(20250813)
+```
+
+## Parameters
+
+```{r}
+# ones to change for small, medium, large
+scale_min         <- 1
+scale_max         <- 7
+mu                <- 4
+mu_sigma          <- .25
+sigma             <- 2
+sigma_sigma       <- .8
+smallest_sigma    <- .08
+digits            <- 0
+labels            <- "small_large"
+
+# small - small 1, 7, 4, .25, 2, .2, .02, 0, "small_small"
+# small - medium 1, 7, 4, .25, 2, .4, .04, 0, "small_medium"
+# small - large 1, 7, 4, .25, 2, .8, .08, 0, "small_large"
+
+# ones to keep consistent 
+n_items           <- 30
+pop_scores_per_it <- 1000           # large to approximate "truth"
+target_q_percent  <- 0.40           # 4th decile (fixed)
+percent_levels    <- c(80,85,90,95) # targets in pipeline
+n_pilot_reps      <- 100            # 100 researchers all doing the same thing
+minN              <- 20
+maxN              <- 300
+stepN             <- 5
+pilot_sizes       <- c(20, 25, 30, 35, 40)
+```
+
+## True Population 
+
+```{r}
+# create a large population of items
+pop <- simulate_population(
+  mu = mu, 
+  mu_sigma = mu_sigma,
+  sigma = sigma, 
+  sigma_sigma = sigma_sigma,
+  number_items = n_items,
+  number_scores = pop_scores_per_it,
+  smallest_sigma = smallest_sigma,
+  min_score = scale_min,
+  max_score = scale_max,
+  digits = digits
+)
+
+# get population SD 
+pop_item_sigma <- pop %>%
+  dplyr::group_by(item) %>%
+  dplyr::summarise(sigma = sd(score), .groups = "drop")
+```
+
+## Pilot Helper Function
+
+```{r}
+# researcher running one pilot study --> uses variables from above 
+run_one_pilot <- function(rep_id, pilot_size) {
+
+  # Draw a pilot sample per item from the population
+  pilot <- pop %>%
+    group_by(item) %>%
+    slice_sample(n = pilot_size, replace = FALSE) %>%
+    ungroup()
+
+  # Step 2: get pilot-based cutoff & prop_var
+  cutoff <- calculate_cutoff(
+    population     = pilot,
+    grouping_items = "item",
+    score          = "score",
+    minimum        = scale_min,
+    maximum        = scale_max
+  )
+  pilot_cut <- cutoff$cutoff
+  prop_var  <- cutoff$prop_var
+
+  # Steps 3–5: simulate from pilot; proportion below pilot_cut; correction t0 final N
+  samp_list <- simulate_samples(
+    start = minN, 
+    stop = maxN, 
+    increase = stepN,
+    population = pilot, 
+    replace = TRUE, 
+    nsim = 500,
+    grouping_items = "item"
+  )
+
+  prop_tbl <- calculate_proportion(
+    samples = samp_list,
+    cutoff = pilot_cut,
+    grouping_items = "item",
+    score = "score"
+  )
+
+  corrected <- calculate_correction(
+    proportion_summary   = prop_tbl,
+    pilot_sample_size    = pilot_size,
+    proportion_variability = prop_var,
+    power_levels         = percent_levels
+  )
+
+  # Map noisy percent_below to nearest intended target level
+  final_Ns <- corrected %>%
+    mutate(target_level = percent_levels[
+      sapply(percent_below, function(x) which.min(abs(percent_levels - x)))
+    ]) %>%
+    group_by(target_level) %>%
+    summarise(final_N = ceiling(min(corrected_sample_size, na.rm = TRUE)), .groups = "drop")
+
+  # Evaluate precision achieved at final N (vs TRUE population threshold)
+  out <- map_dfr(seq_len(nrow(final_Ns)), function(i) {
+    
+    # target_pct is just a record of what proportion we were trying for
+    target_pct <- final_Ns$target_level[i]
+    
+    #	N_final is how many participants/items you’d actually collect in the main study according to the pilot’s advice.
+    N_final    <- final_Ns$final_N[i]
+    
+    # pretend to actually collect data based on that final sample size 
+    dat_final <- pop %>%
+      group_by(item) %>% 
+      slice_sample(n = N_final, replace = TRUE) %>% 
+      ungroup()
+
+    # Get the SE for each item in this simulated final dataset.
+    item_SE_final <- dat_final %>%
+      group_by(item) %>%
+      summarise(SE = sd(score)/sqrt(n()), .groups = "drop")
+    
+    # create the SE from the population sigma, gold standard cutoff 
+    true_SE_i_at_N      <- pop_item_sigma$sigma / sqrt(N_final)
+    pop_threshold_at_N  <- stats::quantile(true_SE_i_at_N, 
+                                           probs = target_q_percent, 
+                                           names = FALSE)
+    
+    # align order just to be safe
+    item_ids <- dplyr::arrange(item_SE_final, item)$item
+    SE_obs   <- dplyr::arrange(item_SE_final, item)$SE
+    SE_true  <- true_SE_i_at_N[order(dplyr::arrange(pop_item_sigma, item)$item)]
+    
+    # per-item errors
+    se_err        <- SE_obs - SE_true
+    se_rel_err    <- se_err / SE_true
+    mae           <- mean(abs(se_err))
+    rmse          <- sqrt(mean(se_err^2))
+    bias          <- mean(se_err)
+    mean_rel_err  <- mean(se_rel_err)
+    cov_within_5p <- mean(abs(se_rel_err) <= 0.05)  # within ±5% of true SE
+    cov_within_10p<- mean(abs(se_rel_err) <= 0.10)  # within ±10%
+    
+    # percent-below metrics (as before, now using threshold at this N)
+    pct_below_pop   <- mean(SE_obs <= pop_threshold_at_N)
+    pct_below_pilot <- mean(SE_obs <= pilot_cut)
+    delta_pct_pop   <- pct_below_pop - target_q_percent  # calibration vs truth
+    
+    # cutoff error (pilot threshold vs true threshold at this N)
+    cutoff_error      <- pilot_cut - pop_threshold_at_N
+    cutoff_rel_error  <- cutoff_error / pop_threshold_at_N
+    
+    tibble::tibble(
+      pilot_rep              = rep_id,
+      pilot_size             = pilot_size,
+      target_percent         = target_pct,
+      final_N                = N_final,
+      # thresholded metrics
+      pct_items_below_pop    = pct_below_pop,
+      pct_items_below_pilot  = pct_below_pilot,
+      delta_pct_pop          = delta_pct_pop,
+      # continuous accuracy of SEs
+      se_bias                = bias,
+      se_mae                 = mae,
+      se_rmse                = rmse,
+      se_mean_rel_err        = mean_rel_err,
+      se_cov_within_5pct     = cov_within_5p,
+      se_cov_within_10pct    = cov_within_10p,
+      # cutoff accuracy
+      cutoff_error           = cutoff_error,
+      cutoff_rel_error       = cutoff_rel_error
+    )
+  })
+
+  write.csv(out, paste0("simulation_pilot/pilot_sim", 
+                        rep_id, "_", pilot_size, "_", labels, ".csv"), row.names = F)
+  out
+}
+```
+
+## Run Multiple Researcher's Pilot Studies
+
+```{r}
+all_results <- map_dfr(pilot_sizes, function(ps) {
+  map_dfr(seq_len(n_pilot_reps), function(r) run_one_pilot(r, ps))
+})
+# beepr::beep()
+write.csv(all_results, 
+          paste0("simulation_pilot/pilot_simulation_", labels, ".csv"),
+          row.names = F)
+```
+
+```{r}
+
+# Per target & pilot size
+summary_by_size_target <- all_results %>%
+  group_by(pilot_size, target_percent) %>%
+  summarise(
+    avg_final_N           = mean(final_N, na.rm = TRUE),
+    se_final_N            = sd(final_N,   na.rm = TRUE)/sqrt(sum(!is.na(final_N))),
+    avg_pct_below_pop     = mean(pct_items_below_pop,   na.rm = TRUE),
+    se_pct_below_pop      = sd(pct_items_below_pop,     na.rm = TRUE)/sqrt(sum(!is.na(pct_items_below_pop))),
+    avg_pct_below_pilot   = mean(pct_items_below_pilot, na.rm = TRUE),
+    se_pct_below_pilot    = sd(pct_items_below_pilot,   na.rm = TRUE)/sqrt(sum(!is.na(pct_items_below_pilot))),
+    avg_delta_pct_pop     = mean(delta_pct_pop,         na.rm = TRUE),
+    avg_se_bias           = mean(se_bias,               na.rm = TRUE),
+    avg_se_mae            = mean(se_mae,                na.rm = TRUE),
+    avg_se_rmse           = mean(se_rmse,               na.rm = TRUE),
+    avg_se_mean_rel_err   = mean(se_mean_rel_err,       na.rm = TRUE),
+    avg_cov_within_5pct   = mean(se_cov_within_5pct,    na.rm = TRUE),
+    avg_cov_within_10pct  = mean(se_cov_within_10pct,   na.rm = TRUE),
+    avg_cutoff_error      = mean(cutoff_error,      na.rm = TRUE),
+    avg_cutoff_rel_error  = mean(cutoff_rel_error,  na.rm = TRUE),
+    .groups = "drop"
+  )
+
+# Collapse to find a pilot-size lower bound (bias & variability vs truth)
+# (Here: use mean absolute delta and its sd across targets)
+summary_pilot_only <- all_results %>%
+  group_by(pilot_size, pilot_rep) %>%
+  summarise(abs_delta = mean(abs(delta_pct_pop), na.rm = TRUE), .groups = "drop") %>%
+  group_by(pilot_size) %>%
+  summarise(
+    mean_abs_delta = mean(abs_delta, na.rm = TRUE),
+    sd_abs_delta   = sd(abs_delta,   na.rm = TRUE),
+    .groups = "drop"
+  )
+```
+
+```{r}
+# (A) Mean absolute deviation from population target by pilot size
+ggplot(summary_pilot_only, aes(x = pilot_size, y = mean_abs_delta)) +
+  geom_line() + geom_point() +
+  labs(x = "Pilot size", y = "Mean |Δ % below population|",
+       title = "Pilot size vs. deviation from population target")
+
+# (B) For each target, show avg_delta vs pilot size (calibration)
+ggplot(summary_by_size_target, aes(x = pilot_size, y = avg_delta_pct_pop, group = factor(target_percent))) +
+  geom_line() + geom_point() +
+  facet_wrap(~ target_percent, scales = "free_y") +
+  geom_hline(yintercept = 0, linetype = 2) +
+  labs(x = "Pilot size", y = "Avg (final % − population %)",
+       title = "Calibration vs. population threshold by target")
+```
+
+
+1. Columns about sample size
+	•	target_percent – The intended coverage or accuracy target for the stopping rule (e.g., stop when reaching 80%, 85%, etc.).
+	•	avg_final_N – Average number of observations at stopping, across the 10 runs.
+	•	se_final_N – Standard error of avg_final_N across runs (so here, how variable final N is between runs).
+
+⸻
+
+2. Proportion below population thresholds
+	•	avg_pct_below_pop – Mean proportion of items whose SE (at the end of data collection) is below the population threshold.
+	•	se_pct_below_pop – The standard error for that proportion across runs.
+	•	avg_pct_below_pilot / se_pct_below_pilot – Same idea, but threshold is based on the pilot’s SE rather than the population.
+
+⸻
+
+3. Difference from population performance
+	•	avg_delta_pct_pop – Mean difference between final proportion below threshold and the true (population) proportion below threshold.
+	•	Positive = slightly better than the population, negative = slightly worse.
+
+⸻
+
+4. SE bias & error metrics
+	•	avg_se_bias – Average signed difference between estimated SE and true SE.
+	•	Positive → overestimation; negative → underestimation.
+	•	avg_se_mae – Mean absolute error between estimated SE and true SE.
+	•	avg_se_rmse – Root mean square error — punishes large deviations more.
+	•	avg_se_mean_rel_err – Relative error: (SE_est - SE_true) / SE_true.
+
+⸻
+
+5. Coverage metrics
+	•	avg_cov_within_5pct – Proportion of items where the estimated SE is within 5% of the true SE.
+	•	avg_cov_within_10pct – Same, but within 10%.
+
+⸻
+
+6. Cutoff error
+	•	avg_cutoff_error – Mean absolute difference between the actual cutoff used to stop and the ideal cutoff.
+	•	avg_cutoff_rel_error – Same thing but relative to the ideal cutoff.
+
+⸻
+
+💡 Big picture:
+In these 10 runs, your bias metrics are very close to zero, suggesting no consistent over/underestimation. But your avg_pct_below_pop values aren’t super high (most ~0.4), meaning fewer than half of items hit the population-based SE threshold before stopping — which matches your earlier suspicion. The coverage columns (avg_cov_within_Xpct) suggest your SE estimates are within 10% of the true SE for about 50–72% of items.
+
+
+	•	Our diagnostics:
+	•	avg_delta_pct_pop (calibration): how close the observed % of items below the population threshold is to the nominal target.
+	•	mean_abs_delta (stability): smaller is better; plots show how it shrinks with pilot N.
+	•	SE-error metrics (bias/MAE/RMSE, coverage within 5% and 10%) to show absolute accuracy.
+	•	We define the minimum viable pilot N as the smallest pilot size where calibration is acceptably close to 0 (e.g., ±0.02) and variability is small (e.g., SD of |Δ| ≤ 0.03).
