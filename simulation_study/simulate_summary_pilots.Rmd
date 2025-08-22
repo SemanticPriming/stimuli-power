@@ -22,27 +22,33 @@ library(purrr)
 library(tidyr)
 library(broom)
 library(ggplot2)
-
+library(stringr)
 set.seed(20250813)
 ```
 
 ## Parameters
 
-```{r}
+```{r eval = F}
 # ones to change for small, medium, large
-scale_min         <- 1
-scale_max         <- 7
-mu                <- 4
-mu_sigma          <- .25
-sigma             <- 2
-sigma_sigma       <- .8
-smallest_sigma    <- .08
+scale_min         <- 0
+scale_max         <- 3000
+mu                <- 1000
+mu_sigma          <- 150
+sigma             <- 400
+sigma_sigma       <- 200
+smallest_sigma    <- 20
 digits            <- 0
-labels            <- "small_large"
+labels            <- "large_large"
 
-# small - small 1, 7, 4, .25, 2, .2, .02, 0, "small_small"
-# small - medium 1, 7, 4, .25, 2, .4, .04, 0, "small_medium"
-# small - large 1, 7, 4, .25, 2, .8, .08, 0, "small_large"
+# small - small 1, 7, 4, .25, 2, .2, .02, 0, "small_small" done
+# small - medium 1, 7, 4, .25, 2, .4, .04, 0, "small_medium" done
+# small - large 1, 7, 4, .25, 2, .8, .08, 0, "small_large" done
+# medium - small 0, 100, 50, 10, 25, 4, .4, 0, "medium_small" done
+# medium - medium 0, 100, 50, 10, 25, 8, .8, 0, "medium_medium" done
+# medium - large 0, 100, 50, 10, 25, 16, 1.6, 0, "medium_large" done
+# large - small 0, 3000, 1000, 150, 400, 50, 5, 0, "large_small" done
+# large - medium 0, 3000, 1000, 150, 400, 100, 10, "large_medium" done
+# large - large 0, 3000, 1000, 150, 400, 200, 20, "large_large" done
 
 # ones to keep consistent 
 n_items           <- 30
@@ -58,7 +64,7 @@ pilot_sizes       <- c(20, 25, 30, 35, 40)
 
 ## True Population 
 
-```{r}
+```{r eval = F}
 # create a large population of items
 pop <- simulate_population(
   mu = mu, 
@@ -81,7 +87,7 @@ pop_item_sigma <- pop %>%
 
 ## Pilot Helper Function
 
-```{r}
+```{r eval = F}
 # researcher running one pilot study --> uses variables from above 
 run_one_pilot <- function(rep_id, pilot_size) {
 
@@ -215,7 +221,7 @@ run_one_pilot <- function(rep_id, pilot_size) {
 
 ## Run Multiple Researcher's Pilot Studies
 
-```{r}
+```{r eval = F}
 all_results <- map_dfr(pilot_sizes, function(ps) {
   map_dfr(seq_len(n_pilot_reps), function(r) run_one_pilot(r, ps))
 })
@@ -225,107 +231,45 @@ write.csv(all_results,
           row.names = F)
 ```
 
-```{r}
-
-# Per target & pilot size
-summary_by_size_target <- all_results %>%
-  group_by(pilot_size, target_percent) %>%
-  summarise(
-    avg_final_N           = mean(final_N, na.rm = TRUE),
-    se_final_N            = sd(final_N,   na.rm = TRUE)/sqrt(sum(!is.na(final_N))),
-    avg_pct_below_pop     = mean(pct_items_below_pop,   na.rm = TRUE),
-    se_pct_below_pop      = sd(pct_items_below_pop,     na.rm = TRUE)/sqrt(sum(!is.na(pct_items_below_pop))),
-    avg_pct_below_pilot   = mean(pct_items_below_pilot, na.rm = TRUE),
-    se_pct_below_pilot    = sd(pct_items_below_pilot,   na.rm = TRUE)/sqrt(sum(!is.na(pct_items_below_pilot))),
-    avg_delta_pct_pop     = mean(delta_pct_pop,         na.rm = TRUE),
-    avg_se_bias           = mean(se_bias,               na.rm = TRUE),
-    avg_se_mae            = mean(se_mae,                na.rm = TRUE),
-    avg_se_rmse           = mean(se_rmse,               na.rm = TRUE),
-    avg_se_mean_rel_err   = mean(se_mean_rel_err,       na.rm = TRUE),
-    avg_cov_within_5pct   = mean(se_cov_within_5pct,    na.rm = TRUE),
-    avg_cov_within_10pct  = mean(se_cov_within_10pct,   na.rm = TRUE),
-    avg_cutoff_error      = mean(cutoff_error,      na.rm = TRUE),
-    avg_cutoff_rel_error  = mean(cutoff_rel_error,  na.rm = TRUE),
-    .groups = "drop"
-  )
-
-# Collapse to find a pilot-size lower bound (bias & variability vs truth)
-# (Here: use mean absolute delta and its sd across targets)
-summary_pilot_only <- all_results %>%
-  group_by(pilot_size, pilot_rep) %>%
-  summarise(abs_delta = mean(abs(delta_pct_pop), na.rm = TRUE), .groups = "drop") %>%
-  group_by(pilot_size) %>%
-  summarise(
-    mean_abs_delta = mean(abs_delta, na.rm = TRUE),
-    sd_abs_delta   = sd(abs_delta,   na.rm = TRUE),
-    .groups = "drop"
-  )
-```
+## Create Overall File
 
 ```{r}
-# (A) Mean absolute deviation from population target by pilot size
-ggplot(summary_pilot_only, aes(x = pilot_size, y = mean_abs_delta)) +
-  geom_line() + geom_point() +
-  labs(x = "Pilot size", y = "Mean |Δ % below population|",
-       title = "Pilot size vs. deviation from population target")
+file.list <- list.files(
+  path = "simulation_pilot",
+  pattern = "pilot_sim.*\\.csv$",
+  full.names = TRUE
+)
 
-# (B) For each target, show avg_delta vs pilot size (calibration)
-ggplot(summary_by_size_target, aes(x = pilot_size, y = avg_delta_pct_pop, group = factor(target_percent))) +
-  geom_line() + geom_point() +
-  facet_wrap(~ target_percent, scales = "free_y") +
-  geom_hline(yintercept = 0, linetype = 2) +
-  labs(x = "Pilot size", y = "Avg (final % − population %)",
-       title = "Calibration vs. population threshold by target")
+files.df <- lapply(file.list, function(f) {
+  
+  # Extract just the filename
+  fname <- basename(f)
+  
+  # Remove extension
+  fname_noext <- str_remove(fname, "\\.csv$")
+  
+  # Get the part after the last underscore (e.g., "small_large")
+  suffix <- str_extract(fname_noext, "[^_]+_[^_]+$")
+  
+  # Split into two parts
+  parts <- str_split(suffix, "_", simplify = TRUE)
+  
+  read.csv(f) %>%
+    mutate(
+      source_file = fname,
+      scale_size = parts[1],
+      variance_size   = parts[2]
+    )
+  
+}) %>%
+  bind_rows()
+
+counts <- files.df %>% 
+  select(scale_size, variance_size, pilot_size, pilot_rep) %>% 
+  unique() %>% 
+  group_by(scale_size, variance_size, pilot_size) %>% 
+  count()
+
+# View(counts)
+write.csv(files.df, "simulation_pilot/pilot_simulation_final.csv", row.names = F)
 ```
-
-
-1. Columns about sample size
-	•	target_percent – The intended coverage or accuracy target for the stopping rule (e.g., stop when reaching 80%, 85%, etc.).
-	•	avg_final_N – Average number of observations at stopping, across the 10 runs.
-	•	se_final_N – Standard error of avg_final_N across runs (so here, how variable final N is between runs).
-
-⸻
-
-2. Proportion below population thresholds
-	•	avg_pct_below_pop – Mean proportion of items whose SE (at the end of data collection) is below the population threshold.
-	•	se_pct_below_pop – The standard error for that proportion across runs.
-	•	avg_pct_below_pilot / se_pct_below_pilot – Same idea, but threshold is based on the pilot’s SE rather than the population.
-
-⸻
-
-3. Difference from population performance
-	•	avg_delta_pct_pop – Mean difference between final proportion below threshold and the true (population) proportion below threshold.
-	•	Positive = slightly better than the population, negative = slightly worse.
-
-⸻
-
-4. SE bias & error metrics
-	•	avg_se_bias – Average signed difference between estimated SE and true SE.
-	•	Positive → overestimation; negative → underestimation.
-	•	avg_se_mae – Mean absolute error between estimated SE and true SE.
-	•	avg_se_rmse – Root mean square error — punishes large deviations more.
-	•	avg_se_mean_rel_err – Relative error: (SE_est - SE_true) / SE_true.
-
-⸻
-
-5. Coverage metrics
-	•	avg_cov_within_5pct – Proportion of items where the estimated SE is within 5% of the true SE.
-	•	avg_cov_within_10pct – Same, but within 10%.
-
-⸻
-
-6. Cutoff error
-	•	avg_cutoff_error – Mean absolute difference between the actual cutoff used to stop and the ideal cutoff.
-	•	avg_cutoff_rel_error – Same thing but relative to the ideal cutoff.
-
-⸻
-
-💡 Big picture:
-In these 10 runs, your bias metrics are very close to zero, suggesting no consistent over/underestimation. But your avg_pct_below_pop values aren’t super high (most ~0.4), meaning fewer than half of items hit the population-based SE threshold before stopping — which matches your earlier suspicion. The coverage columns (avg_cov_within_Xpct) suggest your SE estimates are within 10% of the true SE for about 50–72% of items.
-
-
-	•	Our diagnostics:
-	•	avg_delta_pct_pop (calibration): how close the observed % of items below the population threshold is to the nominal target.
-	•	mean_abs_delta (stability): smaller is better; plots show how it shrinks with pilot N.
-	•	SE-error metrics (bias/MAE/RMSE, coverage within 5% and 10%) to show absolute accuracy.
-	•	We define the minimum viable pilot N as the smallest pilot size where calibration is acceptably close to 0 (e.g., ±0.02) and variability is small (e.g., SD of |Δ| ≤ 0.03).

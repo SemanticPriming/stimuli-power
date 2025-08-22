@@ -302,30 +302,32 @@ In light of these analytical (or lack thereof) concerns, we propose a new method
 
 \subsection{Accuracy in Parameter Estimation}\label{accuracy-in-parameter-estimation}
 
-AIPE shifts the focus away from finding a significant \emph{p}-value to finding a parameter that is accurately measured. As discussed in Kelley and Maxwell (Kelley \& Maxwell, 2003), one can estimate the sample size necessary to obtain precision in estimation of population parameters. Precision is defined as a researcher defined, sufficiently narrow, confidence interval in AIPE. For example, researchers may wish to detect a specific mean in a study, \emph{M} = .35. They could then use AIPE to estimate the sample size needed to find a sufficiently narrow window around that mean. Therefore, they could decide that sufficiently narrow could be defined as a width of .30 or .15 on each side of the mean. They would then estimate the number of participants needed to find that level of precision. Confidence intervals are often misinterpreted (Hoekstra et al., 2014; but see Miller \& Ulrich, 2016), and AIPE procedures are not designed to specify sample size for a hypothesis-driven decision (i.e., the confidence interval does not include a specific value of comparison). Instead, AIPE focuses on estimating the sample size necessary to ensure precise population parameters. Note that any particular confidence interval is not of interest within our procedure, but rather how to define the sufficiently narrow window a researcher should use for sample size estimation when designing studies with multiple items.
+AIPE shifts the focus away from finding a significant \emph{p}-value to finding a parameter that is accurately measured. As discussed in Kelley and Maxwell (2003), one can estimate the sample size necessary to obtain precision in estimation of population parameters. Precision is defined as a researcher defined, sufficiently narrow, confidence interval in AIPE. For example, researchers may wish to detect a specific mean in a study, \emph{M} = .35. They could then use AIPE to estimate the sample size needed to find a sufficiently narrow window around that mean. Therefore, they could decide that sufficiently narrow could be defined as a width of .30 or .15 on each side of the mean. They would then estimate the number of participants needed to find that level of precision.
+
+Hoekstra et al. (2014) argued that confidence intervals are often misinterpreted (see Miller \& Ulrich, 2016 for critique of this claim; see Morey et al., 2016 for original authors' response), and AIPE procedures are not designed to specify sample size for a hypothesis-driven decision (i.e., the confidence interval does not include a specific value of comparison). Instead, AIPE focuses on estimating the sample size necessary to ensure precise population parameters. Note that any particular confidence interval is not of interest within our procedure, but rather how to define the sufficiently narrow window a researcher should use for sample size estimation when designing studies with multiple items.
 
 \subsection{Monte Carlo Simulation}\label{monte-carlo-simulation}
 
-One form of data simulation is data-driven Monte-Carlo simulation, which involves using data obtained to simulate similar datasets by drawing from the original data with replacement (Efron, 2000; Rousselet et al., 2022). This type of simulation allows one to calculate parameter estimates, confidence intervals, and to simulate the potential population distribution, shape, and bias. Simulation is often paired with re-creating a data set with a similar structure for testing analyses and hypotheses based on proposed effect sizes or suggested population means. Generally, we would suggest starting with pilot data of a smaller sample size (e.g., 20 to 50) to understand the variability in potential items used to represent your phenomenon, especially if they are to be used in a larger study. However, given some background knowledge about the potential items, one could simulate example pilot data to use in a similar manner in our suggested procedure.
+One form of data simulation is data-driven Monte-Carlo simulation, which involves using data obtained to simulate similar datasets by drawing from the original data with replacement (Efron, 2000; Rousselet et al., 2022). This type of simulation allows one to calculate parameter estimates, confidence intervals, and to simulate the potential population distribution, shape, and bias. Simulation is often paired with re-creating a data set with a similar structure for testing analyses and hypotheses based on proposed effect sizes or suggested population means. Generally, we would suggest starting with pilot data of a smaller sample size (e.g., 20 to 50, see below for tests to determine the appropriate minimum) to understand the variability in potential items used to represent your phenomenon, especially if they are to be used in a larger study. However, given some background knowledge about the potential items, one could simulate example pilot data to use in a similar manner in our suggested procedure.
 
 Pilot or simulated data would be used to estimate the variability within items and select a sufficiently narrow window for overall item SE for AIPE sufficiently narrow windows. The advantage to this method over simple power estimation from pilot effect sizes is the multiple simulations to average out potential variability, as well as a shift away from traditional NHST to parameter estimation. Simulation would then be used to determine how many participants may be necessary to achieve a dataset wherein as many items as required meet the pre-specified well-measured criterion.
 
 \subsection{Sequential Testing}\label{sequential-testing}
 
-One would set a minimum sample size based on our procedure steps below to ensure an appropriate minimum for precise estimates. After meeting the minimum sample size, researchers could then use sequential testing to estimate their parameter of interest after each participant's data or at regular intervals during data collection to determine whether they have achieved their expected narrow window around that parameter. A stricter criterion could be defined for a stopping rule as a maximum sample size. By defining each of these components, researchers could ensure a feasible minimum sample size, a way to stop data collection when goals have been met, and a maximum sample size rule to ensure an actual end to data collection. The maximum stopping rule could also be defined by resources (e.g., two semesters data collection), but nevertheless should be included. The advantage of sequential testing lies within research studies that use a random selection of items across participants (i.e., participants do not see all items). Across participants, data can be shifted to items with more uncertainty to increase precision of estimates for those items. Sequential testing is not a necessary component to our proposed procedure but we outline how to use the sample size estimates below to set minimum, maximum, and stopping rules. If researchers will show all items to participants, they could simply select one of the proposed estimates for their minimum required sample size. Therefore, we propose a method that leverages the ideas behind AIPE, paired with simulation and Monte Carlo simulation, to estimate the minimum and maximum proposed sample sizes and stopping rules for studies that use multiple items with expected variability in their estimates.
+One would set a minimum sample size based on our procedure steps below to ensure an appropriate minimum for precise estimates. After meeting the minimum sample size, researchers could then use sequential testing to estimate their parameter of interest after each participant's data or at regular intervals during data collection to determine whether they have achieved their expected narrow window around that parameter. A stricter criterion could be defined for a stopping rule (i.e., the criterion that specifies when data collection ends, such as reaching a maximum sample size or achieving a desired level of precision). By defining each of these components, researchers could ensure a feasible minimum sample size, a way to stop data collection when goals have been met, and a maximum sample size rule to ensure an actual end to data collection. The maximum stopping rule could also be defined by resources (e.g., two semesters data collection), but nevertheless should be included. The advantage of sequential testing lies within research studies that use a random selection of items across participants (i.e., participants do not see all items). Across participants, data can be shifted to items with more uncertainty to increase precision of estimates for those items. Sequential testing is not a necessary component to our proposed procedure but we outline how to use the sample size estimates below to set minimum, maximum, and stopping rules. If researchers will show all items to participants, they could simply select one of the proposed estimates for their minimum required sample size. Therefore, we propose a method that leverages the ideas behind AIPE, paired with Monte Carlo simulation, to estimate the minimum and maximum proposed sample sizes and stopping rules for studies that use multiple items with expected variability in their estimates. Sequential testing and sequential AIPE methods have a substantial literature of their own (Chow \& Chang, 2006; Kelley, 2007; Kelley et al., 2018; Siegmund, 1985; Wald, 1992), and our approach is complementary rather than a replacement for those frameworks.
 
 \subsection{Proposed Method for Sample Size Planning}\label{proposed-method-for-sample-size-planning}
 
 Building on these ideas, we suggest the following procedure to determine a sample size for each item:
 
-\subsubsection{Calculate the Stopping Rule}\label{calculate-the-stopping-rule}
+\subsubsection{Define Pilot Data and Cutoff Criterion}\label{define-pilot-data-and-cutoff-criterion}
 
 \begin{enumerate}
 \def\labelenumi{\arabic{enumi})}
 \item
   Use pilot data that closely resembles data you intend to collect. This dataset should contain items that are identical or similar to those that will be implemented in the study. In this procedure, it is important to ensure that the data is representative of a larger population of sampled items that you intend to assess. Generally, pilot data sample sizes will be smaller than the overall intended project (e.g., 20 to 50), as the goal would be to determine how many participants would be necessary to reach a stable standard error for the accurately measured narrow window rule.
 \item
-  For each item in the pilot data, calculate the standard error (SE). Select a cutoff SE that defines when items are considered accurately measured. The simulations described in the Data Simulation section will explore what criterion should be used to determine the cutoff SE from the pilot data.
+  For each item in the pilot data, calculate the standard error (SE). Select a cutoff SE that defines when items are considered accurately measured. The simulations described in the Data Simulation section will explore what criterion should be used to determine the cutoff SE from the pilot data. Similar concepts appear in classical estimation work where lower bounds of population standard deviations are used as benchmarks (Chattopadhyay \& Banerjee, 2021; Mukhopadhyay, 1980).
 \end{enumerate}
 
 \subsubsection{Monte Carlo Samples}\label{monte-carlo-samples}
@@ -505,6 +507,8 @@ Large $\sigma_{\sigma}$ & 0.80 & 16.00 & 200.00\\
 
 \emph{Pilot Data Samples}. Each of the populations shown in Table \ref{tab:table-sim} was then sampled as if a researcher was conducting a pilot study. The sample sizes started at 20 participants per item, increasing in units of 10 up to 100 participants. Each of these samples would correspond to Step 1 of the proposed method where a researcher would use pilot data to start their estimation. Therefore, the simulations included 3 scales X 3 heterogeneity values X 2 symmetric/skewed distributions X 9 pilot sample sizes representing a potential Step 1 of our procedure.
 
+\emph{Assumptions.} Our procedure does not assume normality of the data. To illustrate this, we simulated populations with normal, skewed, and bimodal distributions (in special considerations section). What the procedure requires is that item-level scores are sampled from a reasonably stable distribution with finite moments (i.e., mean and variance exist). The method evaluates variability in standard errors rather than relying on strict distributional forms. Thus, while we show results under both normal and non-normal populations, the logic of the procedure is distribution-agnostic provided these basic moment conditions are met.
+
 \subsection{Researcher Sample Simulation}\label{researcher-sample-simulation}
 
 In this section, we simulate what a researcher might do if they follow our suggested application of AIPE to sample size planning based on well measured items. Assuming that each pilot sample represents a dataset that a researcher has collected (Step 1), the SEs for each item were calculated to mimic the AIPE procedure of finding a sufficiently narrow window. SEs were calculated at each decile of the items up to 90\% (i.e., 0\% smallest SE, 10\% \ldots, 90\% largest SE). The lower deciles would represent a strict criterion for accurate measurement, as many items would need smaller SEs to meet cutoff scores, while the higher deciles would represent less strict criteria for cutoff scores (Step 2).
@@ -632,7 +636,7 @@ Power & -39.367 & 15.640 & -2.517 & .012\\
 
 \subsection{Choosing an Appropriate cutoff}\label{choosing-an-appropriate-cutoff}
 
-Last, we examined the question of an appropriate SE decile. First, the 0, 1st, and 2nd deciles are likely too restrictive, providing very large estimates that do not always find a reasonable sample size in proportion to the pilot sample size, scale size, and heterogeneity. If we examine the \(R^2\) values for each decile of our regression equation separately, we find that the values are all \(R^2\) \textgreater{} .99 with very little differences between them. Figures \ref{fig:decile40-figure} and \ref{fig:decile50-figure} illustrate the corrected scores for simulations at the 4th and 5th decile recommended cutoff for item standard errors. For small heterogeneity, differences in decile are minimal, while larger heterogeneity shows more correction at the 4th decile range, especially for scales with larger potential variance. Therefore, we would suggest the 4th decile to overpower each item for Step 2.
+Last, we examined the question of an appropriate SE decile. The minimum and first two deciles are likely too restrictive, providing very large estimates that do not always find a reasonable sample size in proportion to the pilot sample size, scale size, and heterogeneity. If we examine the \(R^2\) values for each decile of our regression equation separately, we find that the values are all \(R^2\) \textgreater{} .99 with very little differences between them. Figures \ref{fig:decile40-figure} and \ref{fig:decile50-figure} illustrate the corrected scores for simulations at the 4th and 5th decile recommended cutoff for item standard errors. For small heterogeneity, differences in decile are minimal, while larger heterogeneity shows more correction at the 4th decile range, especially for scales with larger potential variance. Therefore, we would suggest the 4th decile to overpower each item for Step 2.
 
 \begin{figure}
 \centering
@@ -889,11 +893,50 @@ We have developed functions to implement the suggested procedure as part of a se
 ## 4          96.7          35                  33.7
 \end{verbatim}
 
+These corrected values represent the final recommended minimum sample sizes for achieving the specified precision thresholds (e.g., 90\%, 95\%). Researchers can use these numbers directly to determine the target N for their main study, and to define a feasible range of sample sizes. In practice, the corrected N can serve as the minimum sample size, while researchers may also set a maximum sample size based on available resources, and optionally apply sequential monitoring rules to stop data collection early if the desired precision is reached. These corrected estimates translate the pilot-based procedure into concrete targets that researchers can use when planning and monitoring data collection.
+
 \subsection{Special Considerations}\label{special-considerations}
+
+\subsubsection{Pilot Sample Size}\label{pilot-sample-size}
+
+Smaller pilot samples may be expected to show greater variability than larger samples or the full population. This variability could influence the sample size recommendations generated by our procedure. At the same time, the optimal size of the pilot sample was an open question in our framework. To address these questions, we ran simulations designed to identify the smallest pilot sample size that would minimize variability across researchers while also reducing bias when comparing pilot-derived estimates to population values. In these simulations, 100 researchers each drew a pilot sample from the same target population and applied our procedure. We generated nine populations (the combinations of scale size and heterogeneity described above), each with 30 items (\texttt{simulate\_population}). For each population, we varied the pilot sample size across 20, 25, 30, 35, and 40. Each simulated researcher then ran 500 replications, drawing between 20 and 300 participants in increments of 5 (\texttt{simulate\_samples}).
+
+We evaluated three statistics from these simulations:
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\tightlist
+\item
+  Variability of the recommended sample size. For each target level, we calculated the average recommended \emph{N} and the standard deviation of that recommendation. Large standard deviations indicate instability, meaning different researchers could receive very different recommendations from similar pilot studies.
+\item
+  Bias in item standard errors. For each item, we compared the estimated \emph{SE} from the sample to the true \emph{SE} from the population. Smaller bias reflects closer agreement between pilot-based estimates and population values. Because larger sample sizes and heterogeneity simulations will naturally show larger SEs in general, we calculated relative error by subtracting estimated \emph{SE} minus the true \emph{SE} divided by the true \emph{SE}.
+\item
+  Cut-off bias. The cut-off was fixed at the 4th decile in the population. For each pilot, we calculated the difference between the pilot-derived cut-off and the population cut-off. Smaller values indicate that pilot-derived thresholds align more closely with the population criterion. Again, we used the relative error by dividing by the true \emph{SE} cut off score to be able to compare across simulations.
+\end{enumerate}
+
+Results consistently indicated that smaller pilots produced less stable and a bit more biased recommendations. As shown in Figure \ref{fig:fig-pilot-sd-n}, the standard deviation of the recommended sample size was higher at pilot sizes of 20 and 25, particularly in large-scale, high-variance populations. This instability means that two researchers running similar small pilots could easily obtain divergent recommended \emph{N}s. By contrast, pilot sizes of 30 or larger substantially reduced this variability, and further increases to 35 or 40 provided little additional gain. Bias measures told a similar story. Figure \ref{fig:fig-pilot-bias} shows that average item \emph{SE} bias was near zero across most conditions, but small pilots (20--25) tended to produce more negative bias in large-scale populations. At pilot sizes of 30 and above, \emph{SE} bias converged toward zero across all conditions. Likewise, Figure \ref{fig:fig-pilot-cutoff} shows that relative cut-off bias was largest when pilot sizes were small, again especially under high-variance conditions, but shrank considerably by pilot size 30 and remained stable thereafter. Accordingly, we propose \textasciitilde30 participants as a practical lower bound for pilot studies using our procedure: large enough to ensure stability, accuracy, and calibration across a wide range of scale and variance conditions, but small enough to remain efficient.
+
+\begin{figure}
+\centering
+\pandocbounded{\includegraphics[keepaspectratio]{manuscript_draft_files/figure-latex/fig-pilot-sd-n-1.pdf}}
+\caption{\label{fig:fig-pilot-sd-n}Average standard deviation of suggested sample sizes for small, medium, and large scale sizes and heterogeneity.}
+\end{figure}
+
+\begin{figure}
+\centering
+\pandocbounded{\includegraphics[keepaspectratio]{manuscript_draft_files/figure-latex/fig-pilot-bias-1.pdf}}
+\caption{\label{fig:fig-pilot-bias}Average relative standard error bias calculated for each simulation of size and heterogeneity combination. Relative error subtracts the pilot sample size SE for each item by the true SE for each item and then divides by the true SE for each item to normalize across scales.}
+\end{figure}
+
+\begin{figure}
+\centering
+\pandocbounded{\includegraphics[keepaspectratio]{manuscript_draft_files/figure-latex/fig-pilot-cutoff-1.pdf}}
+\caption{\label{fig:fig-pilot-cutoff}Average relative cut-off score bias for scale size and heterogeneity combinations. Relative cut-off scores indicate the true population 4th decile SE compared to the pilot sample SE cutoff at the 4th decile, divided by the population SE.}
+\end{figure}
 
 \subsubsection{Bimodal Data}\label{bimodal-data}
 
-The above simulations assume symmetric population distributions with small, medium, or large heterogeneity or a skewed distribution with the same heterogeneity. However, as shown in Pollock (2018), sample rating data that appears to have a mean distribution may represent the average two separate distributions (i.e., a bimodal distribution). To examine our procedure with bimodal distributions, we estimated thirty items for three distributions: symmetric, ceiling, and floor distributions for Likert data with small heterogeneity. Bimodal data was created by selecting half of the ceiling distribution and floor distribution to combine together. The number of bimodal items was varied from 0 percent to 100 percent increasing by 10 percent increments for simulated samples. Figure \ref{fig:bimodal-figure} shows an example of 10 of the items within a simulation that estimated that half of the Likert items would be bimodal in nature. The researcher procedure described above was then carried out using \emph{semanticprimeR}.
+The above simulations assume symmetric population distributions with small, medium, or large heterogeneity or a skewed distribution with the same heterogeneity. However, as shown in @pollock2018, rating data that appears normally distributed at the aggregate level may in fact reflect the average of two distinct underlying distributions (i.e., a bimodal distribution). In such cases, a pilot sample may misleadingly suggest a single ``middle'' value that does not represent either true subgroup. To examine our procedure with bimodal distributions, we estimated thirty items for three distributions: symmetric, ceiling, and floor distributions for Likert data with small heterogeneity. Bimodal data was created by selecting half of the ceiling distribution and floor distribution to combine together. The number of bimodal items was varied from 0 percent to 100 percent increasing by 10 percent increments for simulated samples. Figure \ref{fig:bimodal-figure} shows an example of 10 of the items within a simulation that estimated that half of the Likert items would be bimodal in nature. The researcher procedure described above was then carried out using \emph{semanticprimeR}.
 
 \begin{figure}
 \centering
@@ -923,7 +966,7 @@ We proposed a method combining AIPE and Monte Carlo simulation to estimate a min
 
 One limitation of these methods would be our decision to use datasets with very large numbers of items to simulate what might happen within one study. For example, the English Lexicon Project includes thousands of items, and if we were to simulate for all of those, our results would likely suggest needing thousands of participants for most items to reach the criterion. Additionally, as the number of items increases, you may also see very small estimates for sample size due to the correction factor (as with large numbers of items, you could find many items with standard errors below the 4th decile). Therefore, it would be beneficial to consider only simulating what a participant would reasonably complete in a study. Small numbers of repeated items usually result in larger sample sizes proposed from the original pilot data. This result occurs because the smaller number of items means more samples for nearly all to reach the cutoff criteria. These results are similar to what we might expect for a power analysis using a multilevel model - larger numbers of items tend to decrease necessary sample size, while smaller numbers of items tend to increase sample size.
 
-Second, these methods do not ensure the normal interpretation of power, focusing on finding a specific effect for a specific test, \(\alpha\), and so on. As discussed in the introduction, there is not necessarily a one-to-one mapping of hypothesis to analysis; many of the estimations within a traditional power analysis are just that - best approximations for various parameters. These proposed methods and traditional power analysis could be used together to strengthen our understanding of the sample size necessary for both a hypothesis test and a well-tuned estimation. We would advise caution when oversampling (i.e., simulation from data with larger sample sizes than the pilot data) for null-hypothesis power estimates, as these may be upwardly biased in small samples creating Type-I error (Burns et al., 2023).
+Second, these methods do not ensure the normal interpretation of power, focusing on finding a specific effect for a specific test, \(\alpha\), and so on. As discussed in the introduction, there is not necessarily a one-to-one mapping of hypothesis to analysis; many of the estimations within a traditional power analysis are just that - best approximations for various parameters. These proposed methods and traditional power analysis could be used together to strengthen our understanding of the sample size necessary for both a hypothesis test and a well-tuned estimation. We would advise caution when resampling pilot data (e.g., oversampling beyond the available pilot sample) for power estimation. As Burns et al. (2023) note, resampling introduces estimation bias that increases as simulated sample sizes approach the full pilot size. This bias can occur not only for hypothesis tests but also when estimating descriptive statistics such as means, and it may distort power estimates, particularly in small samples.
 
 Researchers should consider this hybrid approach for AIPE and simulation as a powerful tool for hypothesis testing and parameter estimation. This procedure holds benefits for various research studies, specifically replication studies, that usually prioritize subject sample size but rarely item sample size, in spite of the fact that item sample sizes can contribute to power in multilevel models (Brysbaert \& Stevens, 2018; however, see Rouder \& Haaf, 2018 for a discussion of the item-sample size trade off). Replicated effects, accumulated through multiple studies and accurate measurement, contribute to robust meta-analyses, enhancing our understanding of the genuine nature of observed effects. This article helps to achieve this goal by encouraging researchers to conduct studies where the power analysis is not based on the size of the effect but on precise measurement of the stimuli. We argue that this article can be the initial step to apply AIPE in a manner that can allow researchers to use item information to provide a more accurate and statistically reliable measure of the effect we aimed to investigate. In conclusion, item power analysis is a tool to avoid the waste of resources while ensuring that adequately measured items can be achieved. Well measured data can enable us to counteract the literature that contains false positives, allowing us to achieve replicable, high-quality science to establish answers to scientific questions with precision and accuracy.
 
@@ -1028,6 +1071,12 @@ Chambers, C. D., Feredoes, E., D. Muthukumaraswamy, S., J. Etchells, P., \& 1 Ca
 \bibitem[\citeproctext]{ref-champely2017}
 Champely, S., Ekstrom, C., Dalgaard, P., Gill, J., Weibelzahl, S., Anandkumar, A., Ford, C., Volcic, R., \& De Rosario, H. (2017). \emph{Pwr: Basic functions for power analysis}.
 
+\bibitem[\citeproctext]{ref-chattopadhyay2021}
+Chattopadhyay, B., \& Banerjee, S. (2021). Estimation of location parameter within pre-specified error bound with second-order efficient two-stage procedure. \emph{South African Statistical Journal}, \emph{55}(1), 45--54. \url{https://doi.org/10.37920/sasj.2021.55.1.4}
+
+\bibitem[\citeproctext]{ref-chow2006}
+Chow, S.-C., \& Chang, M. (2006). \emph{Adaptive Design Methods in Clinical Trials} (0th ed.). Chapman; Hall/CRC. \url{https://doi.org/10.1201/9781584887775}
+
 \bibitem[\citeproctext]{ref-cohen1990}
 Cohen, J. (1990). Things I have learned (so far). \emph{American Psychologist}, \emph{45}(12), 1304--1312. \url{https://doi.org/10.1037/0003-066X.45.12.1304}
 
@@ -1085,6 +1134,9 @@ John, L. K., Loewenstein, G., \& Prelec, D. (2012). Measuring the Prevalence of 
 \bibitem[\citeproctext]{ref-kelley2007}
 Kelley, K. (2007). Sample size planning for the coefficient of variation from the accuracy in parameter estimation approach. \emph{Behavior Research Methods}, \emph{39}(4), 755--766. \url{https://doi.org/10.3758/BF03192966}
 
+\bibitem[\citeproctext]{ref-kelley2018}
+Kelley, K., Darku, F. B., \& Chattopadhyay, B. (2018). Accuracy in parameter estimation for a general class of effect sizes: A sequential approach. \emph{Psychological Methods}, \emph{23}(2), 226--243. \url{https://doi.org/10.1037/met0000127}
+
 \bibitem[\citeproctext]{ref-kelley2003}
 Kelley, K., \& Maxwell, S. E. (2003). Sample Size for Multiple Regression: Obtaining Regression Coefficients That Are Accurate, Not Simply Significant. \emph{Psychological Methods}, \emph{8}(3), 305--321. \url{https://doi.org/10.1037/1082-989X.8.3.305}
 
@@ -1118,6 +1170,12 @@ Montefinese, M., Ambrosini, E., \& Angrilli, A. (2021). Online search trends and
 \bibitem[\citeproctext]{ref-montefinese2022}
 Montefinese, M., Vinson, D., Vigliocco, G., \& Ambrosini, E. (2022). Italian age of acquisition norms for a large set of words (ItAoA). \emph{Open Science Framework}. \url{https://doi.org/10.17605/OSF.IO/3TRG2}
 
+\bibitem[\citeproctext]{ref-morey2016}
+Morey, R. D., Hoekstra, R., Rouder, J. N., \& Wagenmakers, E.-J. (2016). Continued misinterpretation of confidence intervals: response to Miller and Ulrich. \emph{Psychonomic Bulletin \& Review}, \emph{23}(1), 131--140. \url{https://doi.org/10.3758/s13423-015-0955-8}
+
+\bibitem[\citeproctext]{ref-mukhopadhyay1980}
+Mukhopadhyay, N. (1980). A consistent and asymptotically efficient two-stage procedure to construct fixed width confidence intervals for the mean. \emph{Metrika}, \emph{27}(1), 281--284. \url{https://doi.org/10.1007/BF01893607}
+
 \bibitem[\citeproctext]{ref-nosek2014}
 Nosek, B. A., \& Lakens, D. (2014). Registered Reports: A Method to Increase the Credibility of Published Results. \emph{Social Psychology}, \emph{45}(3), 137--141. \url{https://doi.org/10.1027/1864-9335/a000192}
 
@@ -1129,9 +1187,6 @@ Open Science Collaboration. (2015). Estimating the reproducibility of psychologi
 
 \bibitem[\citeproctext]{ref-peterson2022}
 Peterson, J. C., Uddenberg, S., Griffiths, T. L., Todorov, A., \& Suchow, J. W. (2022). Deep models of superficial face judgments. \emph{Proceedings of the National Academy of Sciences}, \emph{119}(17). \url{https://doi.org/10.1073/pnas.2115228119}
-
-\bibitem[\citeproctext]{ref-pollock2018}
-Pollock, L. (2018). Statistical and methodological problems with concreteness and other semantic variables: A list memory experiment case study. \emph{Behavior Research Methods}, \emph{50}(3), 1198--1216. \url{https://doi.org/10.3758/s13428-017-0938-y}
 
 \bibitem[\citeproctext]{ref-pownall2023}
 Pownall, M., Pennington, C. R., Norris, E., Juanchich, M., Smailes, D., Russell, S., Gooch, D., Evans, T. R., Persson, S., Mak, M. H. C., Tzavella, L., Monk, R., Gough, T., Benwell, C. S. Y., Elsherif, M., Farran, E., Gallagher-Mitchell, T., Kendrick, L. T., Bahnmueller, J., \ldots{} Clark, K. (2023). Evaluating the Pedagogical Effectiveness of Study Preregistration in the Undergraduate Dissertation. \emph{Advances in Methods and Practices in Psychological Science}, \emph{6}(4), 25152459231202724. \url{https://doi.org/10.1177/25152459231202724}
@@ -1153,6 +1208,9 @@ Rouder, J. N., \& Haaf, J. M. (2018). Power, Dominance, and Constraint: A Note o
 
 \bibitem[\citeproctext]{ref-rousselet}
 Rousselet, G., Pernet, D. C., \& Wilcox, R. R. (2022). An introduction to the bootstrap: A versatile method to make inferences by using data-driven simulations. \emph{Meta-Psychology}. \url{https://doi.org/10.31234/osf.io/h8ft7}
+
+\bibitem[\citeproctext]{ref-siegmund1985}
+Siegmund, D. (1985). \emph{Sequential Analysis: Tests and Confidence Intervals}. Springer New York.
 
 \bibitem[\citeproctext]{ref-silberzahn2018many}
 Silberzahn, R., Uhlmann, E. L., Martin, D. P., Anselmi, P., Aust, F., Awtrey, E., Bahník, Š., Bai, F., Bannard, C., Bonnier, E., \& others. (2018). Many analysts, one data set: Making transparent how variations in analytic choices affect results. \emph{Advances in Methods and Practices in Psychological Science}, \emph{1}(3), 337356. \url{https://doi.org/10.1177/2515245917747646}
@@ -1180,6 +1238,9 @@ van den Akker, O. R., Bakker, M., Assen, M. A. L. M. van, Pennington, C. R., Ver
 
 \bibitem[\citeproctext]{ref-vazire2018}
 Vazire, S. (2018). Implications of the Credibility Revolution for Productivity, Creativity, and Progress. \emph{Perspectives on Psychological Science}, \emph{13}(4), 411--417. \url{https://doi.org/10.1177/1745691617751884}
+
+\bibitem[\citeproctext]{ref-wald1992}
+Wald, A. (1992). \emph{Sequential tests of statistical hypotheses} (S. Kotz \& N. L. Johnson, Eds.; pp. 256--298). Springer New York. \url{http://link.springer.com/10.1007/978-1-4612-0919-5_18}
 
 \end{CSLReferences}
 

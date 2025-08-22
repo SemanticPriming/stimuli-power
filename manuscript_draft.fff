@@ -56,6 +56,33 @@
 \ifnextchar[{\eatarg}{}
 
 \centering
+\pandocbounded{\includegraphics[keepaspectratio]{manuscript_draft_files/figure-latex/fig-pilot-sd-n-1.pdf}}
+\caption{\label{fig:fig-pilot-sd-n}Average standard deviation of suggested sample sizes for small, medium, and large scale sizes and heterogeneity.}
+\end{figure*}
+\efloatseparator
+ 
+\begin{figure*}[hbt]
+\ifnextchar[{\eatarg}{}
+
+\centering
+\pandocbounded{\includegraphics[keepaspectratio]{manuscript_draft_files/figure-latex/fig-pilot-bias-1.pdf}}
+\caption{\label{fig:fig-pilot-bias}Average relative standard error bias calculated for each simulation of size and heterogeneity combination. Relative error subtracts the pilot sample size SE for each item by the true SE for each item and then divides by the true SE for each item to normalize across scales.}
+\end{figure*}
+\efloatseparator
+ 
+\begin{figure*}[hbt]
+\ifnextchar[{\eatarg}{}
+
+\centering
+\pandocbounded{\includegraphics[keepaspectratio]{manuscript_draft_files/figure-latex/fig-pilot-cutoff-1.pdf}}
+\caption{\label{fig:fig-pilot-cutoff}Average relative cut-off score bias for scale size and heterogeneity combinations. Relative cut-off scores indicate the true population 4th decile SE compared to the pilot sample SE cutoff at the 4th decile, divided by the population SE.}
+\end{figure*}
+\efloatseparator
+ 
+\begin{figure*}[hbt]
+\ifnextchar[{\eatarg}{}
+
+\centering
 \pandocbounded{\includegraphics[keepaspectratio]{manuscript_draft_files/figure-latex/bimodal-figure-1.pdf}}
 \caption{\label{fig:bimodal-figure}Simulated example of Likert data with half of the items as bimodal distributions.}
 \end{figure*}
