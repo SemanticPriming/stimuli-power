@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.28 (TeX Live 2025) (preloaded format=pdflatex 2025.8.20)  21 AUG 2025 20:33
+This is pdfTeX, Version 3.141592653-2.6-1.40.28 (TeX Live 2025) (preloaded format=pdflatex 2025.8.20)  21 AUG 2025 20:46
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -1123,9 +1123,14 @@ Underfull \vbox (badness 10000) has occurred while \output is active []
 
 
 
-[45] AED endfloat: Processing end Figures and Tables
+[45]
+Underfull \vbox (badness 10000) has occurred while \output is active []
 
-[46] (./manuscript_draft.ttt
+
+
+[46] AED endfloat: Processing end Figures and Tables
+
+[47] (./manuscript_draft.ttt
 LaTeX Font Info:    External font `lmex10' loaded for size
 (Font)              <10> on input line 12.
 LaTeX Font Info:    External font `lmex10' loaded for size
@@ -1134,12 +1139,8 @@ LaTeX Font Info:    External font `lmex10' loaded for size
 (Font)              <5> on input line 12.
 
 
-[47
-
-
-]
-
 [48
+
 
 ]
 
@@ -1161,100 +1162,104 @@ LaTeX Font Info:    External font `lmex10' loaded for size
 
 [53
 
+]
+
+[54
+
 
 ]) (./manuscript_draft.fff
-<manuscript_draft_files/figure-latex/scale-size-figure-1.pdf, id=508, 578.16pt x 433.62pt>
+<manuscript_draft_files/figure-latex/scale-size-figure-1.pdf, id=514, 578.16pt x 433.62pt>
 File: manuscript_draft_files/figure-latex/scale-size-figure-1.pdf Graphic file (type pdf)
 <use manuscript_draft_files/figure-latex/scale-size-figure-1.pdf>
 Package pdftex.def Info: manuscript_draft_files/figure-latex/scale-size-figure-1.pdf  used on input line 5.
 (pdftex.def)             Requested size: 578.15858pt x 433.61894pt.
 
 
-[54
+[55
 
 
  <./manuscript_draft_files/figure-latex/scale-size-figure-1.pdf>]
-<manuscript_draft_files/figure-latex/scale-skew-figure-1.pdf, id=518, 578.16pt x 433.62pt>
+<manuscript_draft_files/figure-latex/scale-skew-figure-1.pdf, id=525, 578.16pt x 433.62pt>
 File: manuscript_draft_files/figure-latex/scale-skew-figure-1.pdf Graphic file (type pdf)
 <use manuscript_draft_files/figure-latex/scale-skew-figure-1.pdf>
 Package pdftex.def Info: manuscript_draft_files/figure-latex/scale-skew-figure-1.pdf  used on input line 14.
 (pdftex.def)             Requested size: 578.15858pt x 433.61894pt.
 
 
-[55
+[56
 
  <./manuscript_draft_files/figure-latex/scale-skew-figure-1.pdf>]
-<manuscript_draft_files/figure-latex/scale-hetero-figure-1.pdf, id=529, 578.16pt x 433.62pt>
+<manuscript_draft_files/figure-latex/scale-hetero-figure-1.pdf, id=535, 578.16pt x 433.62pt>
 File: manuscript_draft_files/figure-latex/scale-hetero-figure-1.pdf Graphic file (type pdf)
 <use manuscript_draft_files/figure-latex/scale-hetero-figure-1.pdf>
 Package pdftex.def Info: manuscript_draft_files/figure-latex/scale-hetero-figure-1.pdf  used on input line 23.
 (pdftex.def)             Requested size: 578.15858pt x 433.61894pt.
 
 
-[56
+[57
 
  <./manuscript_draft_files/figure-latex/scale-hetero-figure-1.pdf>]
-<manuscript_draft_files/figure-latex/corrected-figure-1.pdf, id=539, 578.16pt x 433.62pt>
+<manuscript_draft_files/figure-latex/corrected-figure-1.pdf, id=545, 578.16pt x 433.62pt>
 File: manuscript_draft_files/figure-latex/corrected-figure-1.pdf Graphic file (type pdf)
 <use manuscript_draft_files/figure-latex/corrected-figure-1.pdf>
 Package pdftex.def Info: manuscript_draft_files/figure-latex/corrected-figure-1.pdf  used on input line 32.
 (pdftex.def)             Requested size: 578.15858pt x 433.61894pt.
 
 
-[57
+[58
 
  <./manuscript_draft_files/figure-latex/corrected-figure-1.pdf>]
-<manuscript_draft_files/figure-latex/decile40-figure-1.pdf, id=549, 578.16pt x 578.16pt>
+<manuscript_draft_files/figure-latex/decile40-figure-1.pdf, id=555, 578.16pt x 578.16pt>
 File: manuscript_draft_files/figure-latex/decile40-figure-1.pdf Graphic file (type pdf)
 <use manuscript_draft_files/figure-latex/decile40-figure-1.pdf>
 Package pdftex.def Info: manuscript_draft_files/figure-latex/decile40-figure-1.pdf  used on input line 41.
 (pdftex.def)             Requested size: 578.15858pt x 578.15858pt.
 
 
-[58
+[59
 
  <./manuscript_draft_files/figure-latex/decile40-figure-1.pdf>]
-<manuscript_draft_files/figure-latex/decile50-figure-1.pdf, id=559, 578.16pt x 578.16pt>
+<manuscript_draft_files/figure-latex/decile50-figure-1.pdf, id=565, 578.16pt x 578.16pt>
 File: manuscript_draft_files/figure-latex/decile50-figure-1.pdf Graphic file (type pdf)
 <use manuscript_draft_files/figure-latex/decile50-figure-1.pdf>
 Package pdftex.def Info: manuscript_draft_files/figure-latex/decile50-figure-1.pdf  used on input line 50.
 (pdftex.def)             Requested size: 578.15858pt x 578.15858pt.
 
 
-[59
+[60
 
  <./manuscript_draft_files/figure-latex/decile50-figure-1.pdf>]
-<manuscript_draft_files/figure-latex/fig-pilot-sd-n-1.pdf, id=569, 578.16pt x 433.62pt>
+<manuscript_draft_files/figure-latex/fig-pilot-sd-n-1.pdf, id=575, 578.16pt x 433.62pt>
 File: manuscript_draft_files/figure-latex/fig-pilot-sd-n-1.pdf Graphic file (type pdf)
 <use manuscript_draft_files/figure-latex/fig-pilot-sd-n-1.pdf>
 Package pdftex.def Info: manuscript_draft_files/figure-latex/fig-pilot-sd-n-1.pdf  used on input line 59.
 (pdftex.def)             Requested size: 578.15858pt x 433.61894pt.
 
 
-[60
+[61
 
  <./manuscript_draft_files/figure-latex/fig-pilot-sd-n-1.pdf>]
-<manuscript_draft_files/figure-latex/fig-pilot-bias-1.pdf, id=579, 578.16pt x 433.62pt>
+<manuscript_draft_files/figure-latex/fig-pilot-bias-1.pdf, id=586, 578.16pt x 433.62pt>
 File: manuscript_draft_files/figure-latex/fig-pilot-bias-1.pdf Graphic file (type pdf)
 <use manuscript_draft_files/figure-latex/fig-pilot-bias-1.pdf>
 Package pdftex.def Info: manuscript_draft_files/figure-latex/fig-pilot-bias-1.pdf  used on input line 68.
 (pdftex.def)             Requested size: 578.15858pt x 433.61894pt.
 
 
-[61
+[62
 
  <./manuscript_draft_files/figure-latex/fig-pilot-bias-1.pdf>]
-<manuscript_draft_files/figure-latex/fig-pilot-cutoff-1.pdf, id=590, 578.16pt x 433.62pt>
+<manuscript_draft_files/figure-latex/fig-pilot-cutoff-1.pdf, id=596, 578.16pt x 433.62pt>
 File: manuscript_draft_files/figure-latex/fig-pilot-cutoff-1.pdf Graphic file (type pdf)
 <use manuscript_draft_files/figure-latex/fig-pilot-cutoff-1.pdf>
 Package pdftex.def Info: manuscript_draft_files/figure-latex/fig-pilot-cutoff-1.pdf  used on input line 77.
 (pdftex.def)             Requested size: 578.15858pt x 433.61894pt.
 
 
-[62
+[63
 
  <./manuscript_draft_files/figure-latex/fig-pilot-cutoff-1.pdf>]
-<manuscript_draft_files/figure-latex/bimodal-figure-1.pdf, id=600, 505.89pt x 722.7pt>
+<manuscript_draft_files/figure-latex/bimodal-figure-1.pdf, id=606, 505.89pt x 722.7pt>
 File: manuscript_draft_files/figure-latex/bimodal-figure-1.pdf Graphic file (type pdf)
 <use manuscript_draft_files/figure-latex/bimodal-figure-1.pdf>
 Package pdftex.def Info: manuscript_draft_files/figure-latex/bimodal-figure-1.pdf  used on input line 86.
@@ -1264,15 +1269,15 @@ LaTeX Warning: Float too large for page by 50.4063pt on input line 88.
 
 
 
-[63 <./manuscript_draft_files/figure-latex/bimodal-figure-1.pdf>]
-<manuscript_draft_files/figure-latex/bimodal-results-1.pdf, id=613, 578.16pt x 578.16pt>
+[64 <./manuscript_draft_files/figure-latex/bimodal-figure-1.pdf>]
+<manuscript_draft_files/figure-latex/bimodal-results-1.pdf, id=619, 578.16pt x 578.16pt>
 File: manuscript_draft_files/figure-latex/bimodal-results-1.pdf Graphic file (type pdf)
 <use manuscript_draft_files/figure-latex/bimodal-results-1.pdf>
 Package pdftex.def Info: manuscript_draft_files/figure-latex/bimodal-results-1.pdf  used on input line 95.
 (pdftex.def)             Requested size: 578.15858pt x 578.15858pt.
 )
 
-[64
+[65
 
 
  <./manuscript_draft_files/figure-latex/bimodal-results-1.pdf>] (./manuscript_draft.aux)
@@ -1282,18 +1287,18 @@ L3 programming layer <2020/03/25>
  ***********
  ) 
 Here is how much of TeX's memory you used:
- 30045 strings out of 469781
- 560536 string characters out of 5480863
- 989641 words of memory out of 5000000
- 57494 multiletter control sequences out of 15000+600000
+ 30048 strings out of 469781
+ 560580 string characters out of 5480863
+ 989679 words of memory out of 5000000
+ 57495 multiletter control sequences out of 15000+600000
  710936 words of font info for 196 fonts, out of 8000000 for 9000
  14 hyphenation exceptions out of 8191
  99i,12n,105p,2419b,715s stack positions out of 10000i,1000n,20000p,200000b,200000s
 </Users/erinbuchanan/Library/TinyTeX/texmf-dist/fonts/type1/public/lm/lmbx12.pfb></Users/erinbuchanan/Library/TinyTeX/texmf-dist/fonts/type1/public/lm/lmbxi10.pfb></Users/erinbuchanan/Library/TinyTeX/texmf-dist/fonts/type1/public/lm/lmex10.pfb></Users/erinbuchanan/Library/TinyTeX/texmf-dist/fonts/type1/public/lm/lmmi12.pfb></Users/erinbuchanan/Library/TinyTeX/texmf-dist/fonts/type1/public/lm/lmmi6.pfb></Users/erinbuchanan/Library/TinyTeX/texmf-dist/fonts/type1/public/lm/lmmi8.pfb></Users/erinbuchanan/Library/TinyTeX/texmf-dist/fonts/type1/public/lm/lmr10.pfb></Users/erinbuchanan/Library/TinyTeX/texmf-dist/fonts/type1/public/lm/lmr12.pfb></Users/erinbuchanan/Library/TinyTeX/texmf-dist/fonts/type1/public/lm/lmr6.pfb></Users/erinbuchanan/Library/TinyTeX/texmf-dist/fonts/type1/public/lm/lmr8.pfb></Users/erinbuchanan/Library/TinyTeX/texmf-dist/fonts/type1/public/lm/lmri12.pfb></Users/erinbuchanan/Library/TinyTeX/texmf-dist/fonts/type1/public/lm/lmss8.pfb></Users/erinbuchanan/Library/TinyTeX/texmf-dist/fonts/type1/public/lm/lmsy10.pfb></Users/erinbuchanan/Library/TinyTeX/texmf-dist/fonts/type1/public/lm/lmsy8.pfb></Users/erinbuchanan/Library/TinyTeX/texmf-dist/fonts/type1/public/lm/lmtk10.pfb></Users/erinbuchanan/Library/TinyTeX/texmf-dist/fonts/type1/public/lm/lmtt12.pfb></Users/erinbuchanan/Library/TinyTeX/texmf-dist/fonts/type1/public/lm/lmtti10.pfb>
-Output written on manuscript_draft.pdf (64 pages, 590759 bytes).
+Output written on manuscript_draft.pdf (65 pages, 591691 bytes).
 PDF statistics:
- 850 PDF objects out of 1000 (max. 8388607)
- 716 compressed objects within 8 object streams
- 212 named destinations out of 1000 (max. 500000)
+ 856 PDF objects out of 1000 (max. 8388607)
+ 721 compressed objects within 8 object streams
+ 214 named destinations out of 1000 (max. 500000)
  43324 words of extra memory for PDF output out of 51595 (max. 10000000)
 
